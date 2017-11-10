@@ -34,8 +34,10 @@ namespace game {
 
             // Set node attributes
             void SetPosition(glm::vec3 position);
+			void SetPosition(float x, float y, float z);
             void SetOrientation(glm::quat orientation);
             void SetScale(glm::vec3 scale);
+			void SetScale(float x, float y, float z);
             
             // Perform transformations on node
             void Translate(glm::vec3 trans);

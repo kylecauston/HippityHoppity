@@ -5,6 +5,11 @@
 #include <sstream>
 #include <iostream>
 
+#include <string>
+#include <array>
+#include <vector>
+#include <iterator>
+
 #include "resource_manager.h"
 
 namespace game {
@@ -146,7 +151,6 @@ std::string ResourceManager::LoadTextFile(const char *filename){
 
     return content;
 }
-
 
 void ResourceManager::CreateTorus(std::string object_name, float loop_radius, float circle_radius, int num_loop_samples, int num_circle_samples){
 
@@ -298,9 +302,9 @@ void ResourceManager::CreateSphere(std::string object_name, float radius, int nu
             vertex_normal = glm::vec3(cos(theta)*sin(phi), sin(theta)*sin(phi), -cos(phi));
             // We need z = -cos(phi) to make sure that the z coordinate runs from -1 to 1 as phi runs from 0 to pi
             // Otherwise, the normal will be inverted
-            vertex_position = glm::vec3(vertex_normal.x*radius, 
-                                        vertex_normal.y*radius, 
-                                        vertex_normal.z*radius),
+			vertex_position = glm::vec3(vertex_normal.x*radius,
+				vertex_normal.y*radius,
+				vertex_normal.z*radius);
             vertex_color = glm::vec3(((float)i)/((float)num_samples_theta), 1.0-((float)j)/((float)num_samples_phi), ((float)j)/((float)num_samples_phi));
             vertex_coord = glm::vec2(((float)i)/((float)num_samples_theta), 1.0-((float)j)/((float)num_samples_phi));
 
@@ -421,6 +425,95 @@ void ResourceManager::CreateCube(std::string object_name) { //pulled this cube f
 
 	// Create resource
 	AddResource(PointSet, object_name, vbo, sizeof(vertex) / (sizeof(GLfloat) * 9));
+}
+
+void ResourceManager::CreateGround(std::string object_name) {
+	const char *const file = "\\heightmap.bmp";
+	cimg_library::CImg<> img;
+	img.assign(file);
+
+
+	// Number of vertices and faces to be created
+	const GLuint vertex_num = img.width() * img.height();
+	const GLuint face_num = vertex_num * 2;
+
+	// Number of attributes for vertices and faces
+	const int vertex_att = 11; // 11 attributes per vertex: 3D position (3), 3D normal (3), RGB color (3), 2D texture coordinates (2)
+	const int face_att = 3; // 3 indices per face
+
+	// Data buffers 
+	GLfloat *vertex = NULL;
+	GLuint *face = NULL;
+
+	// Allocate memory for buffers
+	try {
+		vertex = new GLfloat[vertex_num * vertex_att]; 
+		face = new GLuint[face_num * face_att]; 
+	}
+	catch (std::exception &e) {
+		throw e;
+	}
+
+	glm::vec3 vertex_position;
+	glm::vec3 vertex_normal;
+	glm::vec3 vertex_color;
+	glm::vec2 vertex_coord;
+
+	std::cout << img.height() << std::endl;
+	for (int i = 0; i < img.height(); i++) {
+		for (int j = 0; j < img.width(); j++) {
+			//std::cout << "i: " << i << " j: " << j << std::endl;
+
+															// Define position, normal and color of vertex
+					//vertex_normal = glm::vec3(cos(theta)*sin(phi), sin(theta)*sin(phi), -cos(phi));
+					// We need z = -cos(phi) to make sure that the z coordinate runs from -1 to 1 as phi runs from 0 to pi
+					// Otherwise, the normal will be inverted
+			vertex_position = glm::vec3(i*2, (img.atXY(i, j))/5, j*2);
+			vertex_normal = glm::vec3(0,1,0);
+			vertex_color = glm::vec3(img.atXY(i, j)/255, 1.0-(img.atXY(i, j) / 255), 0);
+			vertex_coord = glm::vec2(((float)i) / ((float)img.height()), 1.0 - ((float)j) / ((float)img.width()));
+
+					// Add vectors to the data buffer
+			for (int k = 0; k < 3; k++) {
+				vertex[(i*img.width() + j)*vertex_att + k] = vertex_position[k];
+				vertex[(i*img.width() + j)*vertex_att + k + 3] = vertex_normal[k];
+				vertex[(i*img.width() + j)*vertex_att + k + 6] = vertex_color[k];
+			}
+			vertex[(i*img.width() + j)*vertex_att + 9] = vertex_coord[0];
+			vertex[(i*img.width() + j)*vertex_att + 10] = vertex_coord[1];
+		}
+	}
+
+	// Create faces
+	for (int i = 0; i < img.height()-1; i++) {
+		for (int j = 0; j < (img.width()-1); j++) {
+			// Two triangles per quad
+			glm::vec3 t1(i*img.width() + j, i*img.width() + j + 1, (i+1)*img.width() + j);
+			glm::vec3 t2(i*img.width() + j + 1, (i + 1)*img.width() + j, (i + 1)*img.width() + j + 1);
+			// Add two triangles to the data buffer
+			for (int k = 0; k < 3; k++) {
+				face[(i*(img.width() - 1) + j)*face_att * 2 + k] = (GLuint)t1[k];
+				face[(i*(img.width() - 1) + j)*face_att * 2 + k + face_att] = (GLuint)t2[k];
+			}
+		}
+	}
+
+	GLuint vbo, ebo;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, vertex_num * vertex_att * sizeof(GLfloat), vertex, GL_STATIC_DRAW);
+
+	glGenBuffers(1, &ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, face_num * face_att * sizeof(GLuint), face, GL_STATIC_DRAW);
+
+	// Free data buffers
+	delete[] vertex;
+	delete[] face;
+
+	// Create resource
+	AddResource(Mesh, object_name, vbo, ebo, face_num * face_att);
+
 }
 
 } // namespace game;

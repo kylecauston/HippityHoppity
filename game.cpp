@@ -122,6 +122,8 @@ void Game::SetupResources(void){
 
 	resman_.CreateCube("CubePointSet"); //set up cube for the laser
 
+	resman_.CreateGround("Terrain"); // load terrain
+
     // Load material to be applied to asteroids
     std::string filename = std::string(MATERIAL_DIRECTORY) + std::string("/material");
     resman_.LoadResource(Material, "ObjectMaterial", filename.c_str());
@@ -135,11 +137,27 @@ void Game::SetupScene(void){
 
     // Create asteroid field
     CreateAsteroidField();
+
+	Resource *geom = resman_.GetResource("Terrain");
+	if (!geom) {
+		throw(GameException(std::string("Could not find resource \"") + "CubePointSet" + std::string("\"")));
+	}
+
+	Resource *mat = resman_.GetResource("ObjectMaterial");
+	if (!mat) {
+		throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
+	}
+
+	SceneNode* ground = new SceneNode("Ground", geom, mat);
+	scene_.AddNode(ground);
+	
+	//ground->SetScale(glm::vec3(0.5, 1.0, 0.5));
+	ground->SetPosition(glm::vec3(0, -100, 200));
 }
 
 
 void Game::MainLoop(void){
-
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     // Loop while the user did not close the window
     while (!glfwWindowShouldClose(window_)){
         // Animate the scene

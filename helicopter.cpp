@@ -129,12 +129,12 @@ namespace game {
 	}
 
 
-	void Helicopter::SetProjection(GLfloat fov, GLfloat near, GLfloat far, GLfloat w, GLfloat h) {
+	void Helicopter::SetProjection(GLfloat fov, GLfloat Near, GLfloat Far, GLfloat w, GLfloat h) {
 
 		// Set projection based on field-of-view
-		float top = tan((fov / 2.0)*(glm::pi<float>() / 180.0))*near;
+		float top = tan((fov / 2.0)*(glm::pi<float>() / 180.0))*Near;
 		float right = top * w / h;
-		projection_matrix_ = glm::frustum(-right, right, -top, top, near, far);
+		projection_matrix_ = glm::frustum(-right, right, -top, top, Near, Far);
 	}
 
 

@@ -8,6 +8,7 @@
 #include <GLFW/glfw3.h>
 
 #include "resource.h"
+#include "CImg-2.1.6_pre110917\CImg.h"
 
 // Default extensions for different shader source files
 #define VERTEX_PROGRAM_EXTENSION "_vp.glsl"
@@ -31,10 +32,10 @@ namespace game {
             Resource *GetResource(const std::string name) const;
 
             // Methods to create specific resources
-            // Create the geometry for a torus and add it to the list of resources
             void CreateTorus(std::string object_name, float loop_radius = 0.6, float circle_radius = 0.2, int num_loop_samples = 90, int num_circle_samples = 30);
             void CreateSphere(std::string object_name, float radius = 0.6, int num_samples_theta = 90, int num_samples_phi = 45);
 			void CreateCube(std::string object_name);
+			void CreateGround(std::string object_name);
 
 			//static GLuint prgm;
 
@@ -47,6 +48,8 @@ namespace game {
             void LoadMaterial(const std::string name, const char *prefix);
             // Load a text file into memory (could be source code)
             std::string LoadTextFile(const char *filename);
+			// Load a BMP file into an array
+			std::vector<char> ResourceManager::readBMP(const std::string &file);
 
     }; // class ResourceManager
 

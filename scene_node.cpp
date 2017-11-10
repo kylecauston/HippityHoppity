@@ -69,20 +69,24 @@ glm::vec3 SceneNode::GetScale(void) const {
 
 
 void SceneNode::SetPosition(glm::vec3 position){
-
     position_ = position;
 }
 
+void SceneNode::SetPosition(float x, float y, float z) {
+	this->SetPosition(glm::vec3(x, y, z));
+}
 
 void SceneNode::SetOrientation(glm::quat orientation){
-
     orientation_ = orientation;
 }
 
 
 void SceneNode::SetScale(glm::vec3 scale){
-
     scale_ = scale;
+}
+
+void SceneNode::SetScale(float x, float y, float z) {
+	this->SetScale(glm::vec3(x, y, z));
 }
 
 
