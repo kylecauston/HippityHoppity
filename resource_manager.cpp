@@ -445,7 +445,7 @@ void ResourceManager::CreateCube(std::string object_name) { //pulled this cube f
 }
 
 void ResourceManager::CreateGround(std::string object_name) {
-	const char *const file = "\\heightmap.bmp";
+	const char *const file = "C:\\Users\\kylec\\Documents\\School\\COMP3501\\Project\\HippityHoppity\\heightmap.bmp";
 	cimg_library::CImg<> img;
 	img.assign(file);
 
