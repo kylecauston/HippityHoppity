@@ -12,6 +12,7 @@
 #include <iterator>
 
 #include "resource_manager.h"
+#include "bin/path_config.h"
 
 namespace game {
 
@@ -445,7 +446,8 @@ void ResourceManager::CreateCube(std::string object_name) { //pulled this cube f
 }
 
 void ResourceManager::CreateGround(std::string object_name) {
-	const char *const file = "C:\\Users\\kylec\\Documents\\School\\COMP3501\\Project\\HippityHoppity\\heightmap.bmp";
+	std::string filename = std::string(MATERIAL_DIRECTORY) + std::string("/heightmap.bmp");
+	const char *const file = filename.c_str();
 	cimg_library::CImg<> img;
 	img.assign(file);
 
@@ -487,7 +489,8 @@ void ResourceManager::CreateGround(std::string object_name) {
 					// Otherwise, the normal will be inverted
 			vertex_position = glm::vec3(i*2, (img.atXY(i, j))/5, j*2);
 			vertex_normal = glm::vec3(0,1,0);
-			vertex_color = glm::vec3(img.atXY(i, j)/255, 1.0-(img.atXY(i, j) / 255), 0);
+			//vertex_color = glm::vec3(img.atXY(i, j)/255, 1.0-(img.atXY(i, j) / 255), 0);
+			vertex_color = glm::vec3(0, 1.0 - (img.atXY(i, j) / 255), 0);
 			vertex_coord = glm::vec2(((float)i) / ((float)img.height()), 1.0 - ((float)j) / ((float)img.width()));
 
 					// Add vectors to the data buffer
