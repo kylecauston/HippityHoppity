@@ -51,6 +51,8 @@ namespace game {
 			// Load a BMP file into an array
 			std::vector<char> ResourceManager::readBMP(const std::string &file);
 
+			void LoadTexture(const std::string name, const char *filename);
+
     }; // class ResourceManager
 
 } // namespace game
