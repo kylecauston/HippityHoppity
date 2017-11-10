@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <SOIL/SOIL.h>
 
 #include "resource_manager.h"
 
@@ -40,11 +41,27 @@ void ResourceManager::AddResource(ResourceType type, const std::string name, GLu
 void ResourceManager::LoadResource(ResourceType type, const std::string name, const char *filename){
 
     // Call appropriate method depending on type of resource
-    if (type == Material){
-        LoadMaterial(name, filename);
-    } else {
-        throw(std::invalid_argument(std::string("Invalid type of resource")));
-    }
+	if (type == Material) {
+		LoadMaterial(name, filename);
+	}
+	else if (type == Texture) {
+		LoadTexture(name, filename);
+	}
+	else {
+		throw(std::invalid_argument(std::string("Invalid type of resource")));
+	}
+}
+
+void ResourceManager::LoadTexture(const std::string name, const char *filename) {
+
+	// Load texture from file
+	GLuint texture = SOIL_load_OGL_texture(filename, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, 0);
+	if (!texture) {
+		throw(std::ios_base::failure(std::string("Error loading texture ") + std::string(filename) + std::string(": ") + std::string(SOIL_last_result())));
+	}
+
+	// Create resource
+	AddResource(Texture, name, texture, 0);
 }
 
 
@@ -254,105 +271,105 @@ void ResourceManager::CreateTorus(std::string object_name, float loop_radius, fl
 }
 
 
-void ResourceManager::CreateSphere(std::string object_name, float radius, int num_samples_theta, int num_samples_phi){
+void ResourceManager::CreateSphere(std::string object_name, float radius, int num_samples_theta, int num_samples_phi) {
 
-    // Create a sphere using a well-known parameterization
+	// Create a sphere using a well-known parameterization
 
-    // Number of vertices and faces to be created
-    const GLuint vertex_num = num_samples_theta*num_samples_phi;
-    const GLuint face_num = num_samples_theta*(num_samples_phi-1)*2;
+	// Number of vertices and faces to be created
+	const GLuint vertex_num = num_samples_theta*num_samples_phi;
+	const GLuint face_num = num_samples_theta*(num_samples_phi - 1) * 2;
 
-    // Number of attributes for vertices and faces
-    const int vertex_att = 11;
-    const int face_att = 3;
+	// Number of attributes for vertices and faces
+	const int vertex_att = 11;
+	const int face_att = 3;
 
-    // Data buffers 
-    GLfloat *vertex = NULL;
-    GLuint *face = NULL;
+	// Data buffers 
+	GLfloat *vertex = NULL;
+	GLuint *face = NULL;
 
-    // Allocate memory for buffers
-    try {
-        vertex = new GLfloat[vertex_num * vertex_att]; // 11 attributes per vertex: 3D position (3), 3D normal (3), RGB color (3), 2D texture coordinates (2)
-        face = new GLuint[face_num * face_att]; // 3 indices per face
-    }
-    catch  (std::exception &e){
-        throw e;
-    }
+	// Allocate memory for buffers
+	try {
+		vertex = new GLfloat[vertex_num * vertex_att]; // 11 attributes per vertex: 3D position (3), 3D normal (3), RGB color (3), 2D texture coordinates (2)
+		face = new GLuint[face_num * face_att]; // 3 indices per face
+	}
+	catch (std::exception &e) {
+		throw e;
+	}
 
-    // Create vertices 
-    float theta, phi; // Angles for parametric equation
-    glm::vec3 vertex_position;
-    glm::vec3 vertex_normal;
-    glm::vec3 vertex_color;
-    glm::vec2 vertex_coord;
-   
-    for (int i = 0; i < num_samples_theta; i++){
-            
-        theta = 2.0*glm::pi<GLfloat>()*i/(num_samples_theta-1); // angle theta
-            
-        for (int j = 0; j < num_samples_phi; j++){
-                    
-            phi = glm::pi<GLfloat>()*j/(num_samples_phi-1); // angle phi
+	// Create vertices 
+	float theta, phi; // Angles for parametric equation
+	glm::vec3 vertex_position;
+	glm::vec3 vertex_normal;
+	glm::vec3 vertex_color;
+	glm::vec2 vertex_coord;
 
-            // Define position, normal and color of vertex
-            vertex_normal = glm::vec3(cos(theta)*sin(phi), sin(theta)*sin(phi), -cos(phi));
-            // We need z = -cos(phi) to make sure that the z coordinate runs from -1 to 1 as phi runs from 0 to pi
-            // Otherwise, the normal will be inverted
-            vertex_position = glm::vec3(vertex_normal.x*radius, 
-                                        vertex_normal.y*radius, 
-                                        vertex_normal.z*radius),
-            vertex_color = glm::vec3(((float)i)/((float)num_samples_theta), 1.0-((float)j)/((float)num_samples_phi), ((float)j)/((float)num_samples_phi));
-            vertex_coord = glm::vec2(((float)i)/((float)num_samples_theta), 1.0-((float)j)/((float)num_samples_phi));
+	for (int i = 0; i < num_samples_theta; i++) {
 
-            // Add vectors to the data buffer
-            for (int k = 0; k < 3; k++){
-                vertex[(i*num_samples_phi+j)*vertex_att + k] = vertex_position[k];
-                vertex[(i*num_samples_phi+j)*vertex_att + k + 3] = vertex_normal[k];
-                vertex[(i*num_samples_phi+j)*vertex_att + k + 6] = vertex_color[k];
-            }
-            vertex[(i*num_samples_phi+j)*vertex_att + 9] = vertex_coord[0];
-            vertex[(i*num_samples_phi+j)*vertex_att + 10] = vertex_coord[1];
-        }
-    }
+		theta = 2.0*glm::pi<GLfloat>()*i / (num_samples_theta - 1); // angle theta
 
-    // Create faces
-    for (int i = 0; i < num_samples_theta; i++){
-        for (int j = 0; j < (num_samples_phi-1); j++){
-            // Two triangles per quad
-            glm::vec3 t1(((i + 1) % num_samples_theta)*num_samples_phi + j, 
-                         i*num_samples_phi + (j + 1),
-                         i*num_samples_phi + j);
-            glm::vec3 t2(((i + 1) % num_samples_theta)*num_samples_phi + j, 
-                         ((i + 1) % num_samples_theta)*num_samples_phi + (j + 1), 
-                         i*num_samples_phi + (j + 1));
-            // Add two triangles to the data buffer
-            for (int k = 0; k < 3; k++){
-                face[(i*(num_samples_phi-1)+j)*face_att*2 + k] = (GLuint) t1[k];
-                face[(i*(num_samples_phi-1)+j)*face_att*2 + k + face_att] = (GLuint) t2[k];
-            }
-        }
-    }
+		for (int j = 0; j < num_samples_phi; j++) {
 
-    // Create OpenGL buffers and copy data
-    //GLuint vao;
-    //glGenVertexArrays(1, &vao);
-    //glBindVertexArray(vao);
+			phi = glm::pi<GLfloat>()*j / (num_samples_phi - 1); // angle phi
 
-    GLuint vbo, ebo;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertex_num * vertex_att * sizeof(GLfloat), vertex, GL_STATIC_DRAW);
+																// Define position, normal and color of vertex
+			vertex_normal = glm::vec3(cos(theta)*sin(phi), sin(theta)*sin(phi), -cos(phi));
+			// We need z = -cos(phi) to make sure that the z coordinate runs from -1 to 1 as phi runs from 0 to pi
+			// Otherwise, the normal will be inverted
+			vertex_position = glm::vec3(vertex_normal.x*radius,
+				vertex_normal.y*radius,
+				vertex_normal.z*radius),
+				vertex_color = glm::vec3(((float)i) / ((float)num_samples_theta), 1.0 - ((float)j) / ((float)num_samples_phi), ((float)j) / ((float)num_samples_phi));
+			vertex_coord = glm::vec2(((float)i) / ((float)num_samples_theta), 1.0 - ((float)j) / ((float)num_samples_phi));
 
-    glGenBuffers(1, &ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, face_num * face_att * sizeof(GLuint), face, GL_STATIC_DRAW);
+			// Add vectors to the data buffer
+			for (int k = 0; k < 3; k++) {
+				vertex[(i*num_samples_phi + j)*vertex_att + k] = vertex_position[k];
+				vertex[(i*num_samples_phi + j)*vertex_att + k + 3] = vertex_normal[k];
+				vertex[(i*num_samples_phi + j)*vertex_att + k + 6] = vertex_color[k];
+			}
+			vertex[(i*num_samples_phi + j)*vertex_att + 9] = vertex_coord[0];
+			vertex[(i*num_samples_phi + j)*vertex_att + 10] = vertex_coord[1];
+		}
+	}
 
-    // Free data buffers
-    delete [] vertex;
-    delete [] face;
+	// Create faces
+	for (int i = 0; i < num_samples_theta; i++) {
+		for (int j = 0; j < (num_samples_phi - 1); j++) {
+			// Two triangles per quad
+			glm::vec3 t1(((i + 1) % num_samples_theta)*num_samples_phi + j,
+				i*num_samples_phi + (j + 1),
+				i*num_samples_phi + j);
+			glm::vec3 t2(((i + 1) % num_samples_theta)*num_samples_phi + j,
+				((i + 1) % num_samples_theta)*num_samples_phi + (j + 1),
+				i*num_samples_phi + (j + 1));
+			// Add two triangles to the data buffer
+			for (int k = 0; k < 3; k++) {
+				face[(i*(num_samples_phi - 1) + j)*face_att * 2 + k] = (GLuint)t1[k];
+				face[(i*(num_samples_phi - 1) + j)*face_att * 2 + k + face_att] = (GLuint)t2[k];
+			}
+		}
+	}
 
-    // Create resource
-    AddResource(Mesh, object_name, vbo, ebo, face_num * face_att);
+	// Create OpenGL buffers and copy data
+	//GLuint vao;
+	//glGenVertexArrays(1, &vao);
+	//glBindVertexArray(vao);
+
+	GLuint vbo, ebo;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, vertex_num * vertex_att * sizeof(GLfloat), vertex, GL_STATIC_DRAW);
+
+	glGenBuffers(1, &ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, face_num * face_att * sizeof(GLuint), face, GL_STATIC_DRAW);
+
+	// Free data buffers
+	delete[] vertex;
+	delete[] face;
+
+	// Create resource
+	AddResource(Mesh, object_name, vbo, ebo, face_num * face_att);
 }
 
 void ResourceManager::CreateCube(std::string object_name) { //pulled this cube function out of my assignment 1

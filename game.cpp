@@ -22,7 +22,7 @@ const bool window_full_screen_g = false;
 float camera_near_clip_distance_g = 0.01;
 float camera_far_clip_distance_g = 1000.0;
 float camera_fov_g = 20.0; // Field-of-view of camera
-const glm::vec3 viewport_background_color_g(0.0, 0.0, 0.0);
+const glm::vec3 viewport_background_color_g(0.0, 0.3, 0.6);
 glm::vec3 camera_position_g(0.0, 0.0, 800.0);
 glm::vec3 camera_look_at_g(0.0, 0.0, 0.0);
 glm::vec3 camera_up_g(0.0, 1.0, 0.0);
@@ -125,6 +125,14 @@ void Game::SetupResources(void){
     // Load material to be applied to asteroids
     std::string filename = std::string(MATERIAL_DIRECTORY) + std::string("/material");
     resman_.LoadResource(Material, "ObjectMaterial", filename.c_str());
+
+	//new asteroid texture - CLOUDS
+	//textured material
+	filename = std::string(MATERIAL_DIRECTORY) + std::string("/shiny_texture");
+	resman_.LoadResource(Material, "ShinyTextureMaterial", filename.c_str());
+
+	filename = std::string(MATERIAL_DIRECTORY) + std::string("/cloudtex.jpg");
+	resman_.LoadResource(Texture, "Cloud", filename.c_str());
 }
 
 
@@ -134,7 +142,9 @@ void Game::SetupScene(void){
     scene_.SetBackgroundColor(viewport_background_color_g);
 
     // Create asteroid field
-    CreateAsteroidField();
+    CreateAsteroidField(200);
+
+	prgm = resman_.GetResource("ObjectMaterial")->GetResource();
 }
 
 
@@ -158,7 +168,7 @@ void Game::MainLoop(void){
         // Draw the scene
         scene_.Draw(&camera_);
 
-		GLuint prgm = scene_.GetNode("AsteroidInstance1")->GetMaterial();
+		
 		heli_.DrawHelicopter(prgm, &camera_);
         // Push buffer drawn in the background onto the display
         glfwSwapBuffers(window_);
@@ -253,7 +263,7 @@ Game::~Game(){
 }
 
 
-Asteroid *Game::CreateAsteroidInstance(std::string entity_name, std::string object_name, std::string material_name){
+Asteroid *Game::CreateAsteroidInstance(std::string entity_name, std::string object_name, std::string material_name, std::string tex_name){
 
     // Get resources
     Resource *geom = resman_.GetResource(object_name);
@@ -266,8 +276,16 @@ Asteroid *Game::CreateAsteroidInstance(std::string entity_name, std::string obje
         throw(GameException(std::string("Could not find resource \"")+material_name+std::string("\"")));
     }
 
+	Resource *tex = NULL;
+	if (tex_name != "") {
+		tex = resman_.GetResource(tex_name);
+		if (!tex) {
+			throw(GameException(std::string("Could not find resource \"") + tex_name + std::string("\"")));
+		}
+	}
+
     // Create asteroid instance
-    Asteroid *ast = new Asteroid(entity_name, geom, mat);
+    Asteroid *ast = new Asteroid(entity_name, geom, mat, tex);
     scene_.AddNode(ast);
     return ast;
 }
@@ -303,7 +321,8 @@ void Game::CreateAsteroidField(int num_asteroids){
         std::string name = "AsteroidInstance" + index;
 
         // Create asteroid instance
-        Asteroid *ast = CreateAsteroidInstance(name, "SimpleSphereMesh", "ObjectMaterial");
+        //Asteroid *ast = CreateAsteroidInstance(name, "SimpleSphereMesh", "ObjectMaterial");
+		Asteroid *ast = CreateAsteroidInstance(name, "SimpleSphereMesh", "ShinyTextureMaterial", "Cloud");
 
         // Set attributes of asteroid: random position, orientation, and
         // angular momentum

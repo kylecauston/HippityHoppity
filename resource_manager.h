@@ -48,6 +48,8 @@ namespace game {
             // Load a text file into memory (could be source code)
             std::string LoadTextFile(const char *filename);
 
+			void LoadTexture(const std::string name, const char *filename);
+
     }; // class ResourceManager
 
 } // namespace game
