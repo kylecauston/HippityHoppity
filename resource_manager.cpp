@@ -446,15 +446,23 @@ void ResourceManager::CreateCube(std::string object_name) { //pulled this cube f
 }
 
 void ResourceManager::CreateGround(std::string object_name) {
+	struct Vertex {
+		glm::vec3 vertex_position;
+		glm::vec3 vertex_normal;
+		glm::vec3 vertex_color;
+		glm::vec2 vertex_coord;
+	};
+	
 	std::string filename = std::string(MATERIAL_DIRECTORY) + std::string("/heightmap.bmp");
 	const char *const file = filename.c_str();
 	cimg_library::CImg<> img;
 	img.assign(file);
 
-
 	// Number of vertices and faces to be created
 	const GLuint vertex_num = img.width() * img.height();
 	const GLuint face_num = vertex_num * 2;
+
+	std::vector<std::vector<Vertex>> vertices = std::vector<std::vector<Vertex>>();
 
 	// Number of attributes for vertices and faces
 	const int vertex_att = 11; // 11 attributes per vertex: 3D position (3), 3D normal (3), RGB color (3), 2D texture coordinates (2)
@@ -473,48 +481,88 @@ void ResourceManager::CreateGround(std::string object_name) {
 		throw e;
 	}
 
-	glm::vec3 vertex_position;
-	glm::vec3 vertex_normal;
-	glm::vec3 vertex_color;
-	glm::vec2 vertex_coord;
+	Vertex v;
+	for (float i = 0; i < img.height(); i++) {
+		vertices.push_back(std::vector<Vertex>());
+		for (float j = 0; j < img.width(); j++) {
 
-	std::cout << img.height() << std::endl;
-	for (int i = 0; i < img.height(); i++) {
-		for (int j = 0; j < img.width(); j++) {
-			//std::cout << "i: " << i << " j: " << j << std::endl;
+			v.vertex_position = glm::vec3(i*2, (img.atXY(i, j))/5, j*2);
+			v.vertex_normal = glm::vec3(0,0,0);
+			v.vertex_color = glm::vec3(0, 1.0 - (img.atXY(i, j) / 255), 0);
 
-															// Define position, normal and color of vertex
-					//vertex_normal = glm::vec3(cos(theta)*sin(phi), sin(theta)*sin(phi), -cos(phi));
-					// We need z = -cos(phi) to make sure that the z coordinate runs from -1 to 1 as phi runs from 0 to pi
-					// Otherwise, the normal will be inverted
-			vertex_position = glm::vec3(i*2, (img.atXY(i, j))/5, j*2);
-			vertex_normal = glm::vec3(0,1,0);
-			//vertex_color = glm::vec3(img.atXY(i, j)/255, 1.0-(img.atXY(i, j) / 255), 0);
-			vertex_color = glm::vec3(0, 1.0 - (img.atXY(i, j) / 255), 0);
-			vertex_coord = glm::vec2(((float)i) / ((float)img.height()), 1.0 - ((float)j) / ((float)img.width()));
-
-					// Add vectors to the data buffer
-			for (int k = 0; k < 3; k++) {
-				vertex[(i*img.width() + j)*vertex_att + k] = vertex_position[k];
-				vertex[(i*img.width() + j)*vertex_att + k + 3] = vertex_normal[k];
-				vertex[(i*img.width() + j)*vertex_att + k + 6] = vertex_color[k];
-			}
-			vertex[(i*img.width() + j)*vertex_att + 9] = vertex_coord[0];
-			vertex[(i*img.width() + j)*vertex_att + 10] = vertex_coord[1];
+			// fix texture coords :(
+			v.vertex_coord = glm::vec2(i/img.height(), j/img.width());
+			
+			vertices[i].push_back(v);
 		}
 	}
 
 	// Create faces
+	glm::vec3 t1, t2;
+	glm::vec3 face_normal;
+	int index1, index2, index3;
+	Vertex *v1, *v2, *v3;
+	glm::vec3 e1, e2;
 	for (int i = 0; i < img.height()-1; i++) {
 		for (int j = 0; j < (img.width()-1); j++) {
+			// get each vertex of triangle
+			v1 = &vertices[i][j];
+			v2 = &vertices[i][j+1];
+			v3 = &vertices[i+1][j];
+
+			// calculate the normal
+			e1 = v2->vertex_position - v1->vertex_position;
+			e2 = v3->vertex_position - v1->vertex_position;
+			face_normal = glm::cross(e1, e2);
+			face_normal = glm::normalize(face_normal);
+
+			// apply the normals to the vertices
+			v1->vertex_normal += face_normal;
+			v2->vertex_normal += face_normal;
+			v3->vertex_normal += face_normal;
+
+			// and now do it for the second triangle
+			// get each vertex of triangle
+			v1 = &vertices[i + 1][j + 1];
+			v2 = &vertices[i][j + 1];
+			v3 = &vertices[i + 1][j];
+
+			// calculate the normal
+			e1 = v2->vertex_position - v1->vertex_position;
+			e2 = v3->vertex_position - v1->vertex_position;
+			face_normal = glm::cross(e2, e1);
+			face_normal = glm::normalize(face_normal);
+
+			v1->vertex_normal += face_normal;
+			v2->vertex_normal += face_normal;
+			v3->vertex_normal += face_normal;
+
 			// Two triangles per quad
-			glm::vec3 t1(i*img.width() + j, i*img.width() + j + 1, (i+1)*img.width() + j);
-			glm::vec3 t2(i*img.width() + j + 1, (i + 1)*img.width() + j, (i + 1)*img.width() + j + 1);
-			// Add two triangles to the data buffer
+			t1 = glm::vec3(i*img.width() + j, i*img.width() + j + 1, (i + 1)*img.width() + j);
+			t2 = glm::vec3(i*img.width() + j + 1, (i + 1)*img.width() + j + 1, (i + 1)*img.width() + j);
+			
+ 			// Add two triangles to the data buffer
 			for (int k = 0; k < 3; k++) {
 				face[(i*(img.width() - 1) + j)*face_att * 2 + k] = (GLuint)t1[k];
 				face[(i*(img.width() - 1) + j)*face_att * 2 + k + face_att] = (GLuint)t2[k];
 			}
+		}
+	}
+
+	// now we're going to write all the vertices to buffers
+	//Vertex v;
+	for (int i = 0; i < img.height(); i++) {
+		for (int j = 0; j < img.width(); j++) {
+			v = vertices[i][j];
+			v.vertex_normal = glm::normalize(v.vertex_normal);
+
+			for (int k = 0; k < 3; k++) {
+				vertex[(i*img.width() + j)*vertex_att + k] = v.vertex_position[k];
+				vertex[(i*img.width() + j)*vertex_att + k + 3] = v.vertex_normal[k];
+				vertex[(i*img.width() + j)*vertex_att + k + 6] = v.vertex_normal[k];
+			}
+			vertex[(i*img.width() + j)*vertex_att + 9] = v.vertex_coord[0];
+			vertex[(i*img.width() + j)*vertex_att + 10] = v.vertex_coord[1];
 		}
 	}
 
@@ -533,7 +581,6 @@ void ResourceManager::CreateGround(std::string object_name) {
 
 	// Create resource
 	AddResource(Mesh, object_name, vbo, ebo, face_num * face_att);
-
 }
 
 } // namespace game;
