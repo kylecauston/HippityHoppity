@@ -17,7 +17,7 @@ namespace game {
 	class Laser : public SceneNode {
 
 	public:
-		Laser(const std::string name, const Resource *geometry, const Resource *material);
+		Laser(const std::string name, const Resource *geometry, const Resource *material, const Resource *tex = NULL);
 
 		// Destructor
 		~Laser();

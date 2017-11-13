@@ -309,7 +309,7 @@ Asteroid *Game::CreateAsteroidInstance(std::string entity_name, std::string obje
     return ast;
 }
 
-Laser *Game::LaserCube(std::string entity_name, std::string object_name, std::string material_name) {
+Laser *Game::LaserCube(std::string entity_name, std::string object_name, std::string material_name, std::string tex_name) {
 
 	// Get resources
 	Resource *geom = resman_.GetResource(object_name);
@@ -322,8 +322,16 @@ Laser *Game::LaserCube(std::string entity_name, std::string object_name, std::st
 		throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
 	}
 
+	Resource *tex = NULL;
+	if (tex_name != "") {
+		tex = resman_.GetResource(tex_name);
+		if (!tex) {
+			throw(GameException(std::string("Could not find resource \"") + tex_name + std::string("\"")));
+		}
+	}
+
 	// Create asteroid instance
-	Laser *cube = new Laser(entity_name, geom, mat);
+	Laser *cube = new Laser(entity_name, geom, mat, tex);
 	scene_.AddNode(cube);
 	return cube;
 }
@@ -353,7 +361,8 @@ void Game::CreateAsteroidField(int num_asteroids){
 
 void Game::FireLaser() {
 	scene_.RemoveLast("Laser1"); //only one laser can exist at once
-	Laser *cube = LaserCube("Laser1", "CubePointSet", "ObjectMaterial");
+	//Laser *cube = LaserCube("Laser1", "CubePointSet", "ObjectMaterial");
+	Laser *cube = LaserCube("Laser1", "CubePointSet", "ShinyTextureMaterial", "Cloud");
 	cube->SetPosition(camera_.GetPosition()); //fires outward from the player's position
 	cube->SetOrientation(camera_.GetOrientation());
 	cube->SetDir(camera_.GetForward());

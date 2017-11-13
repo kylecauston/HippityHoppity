@@ -2,7 +2,7 @@
 
 namespace game {
 
-Laser::Laser(const std::string name, const Resource *geometry, const Resource *material) : SceneNode(name, geometry, material) {
+Laser::Laser(const std::string name, const Resource *geometry, const Resource *material, const Resource *tex) : SceneNode(name, geometry, material, tex) {
 }
 
 
