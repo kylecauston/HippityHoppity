@@ -15,43 +15,33 @@ namespace game {
 
     // Class that manages all the objects in a scene
     class SceneGraph {
+	private:
+		// Background color
+		glm::vec3 background_color_;
 
-        private:
-            // Background color
-            glm::vec3 background_color_;
+		// Root of the hierarchy
+		SceneNode * root_;
 
-        public:
+	public:
+		SceneGraph(void);
+		~SceneGraph();
 
-			// Scene nodes to render
-			std::vector<SceneNode *> node_;
+		// Background color
+		void SetBackgroundColor(glm::vec3 color);
+		glm::vec3 GetBackgroundColor(void) const;
 
-            typedef std::vector<SceneNode *>::const_iterator const_iterator;
+		// Set root of the hierarchy
+		void SetRoot(SceneNode *node);
+		// Find a scene node with a specific name
+		SceneNode *GetNode(std::string node_name) const;
 
-            SceneGraph(void);
-            ~SceneGraph();
+		// Draw the entire scene
+		void Draw(Camera *camera);
 
-            // Background color
-            void SetBackgroundColor(glm::vec3 color);
-            glm::vec3 GetBackgroundColor(void) const;
-            
-            // Create a scene node from two resources
-            SceneNode *CreateNode(std::string node_name, Resource *geometry, Resource *material);
-			void RemoveLast(std::string node_name);
-            // Add an already-created node
-            void AddNode(SceneNode *node);
-            // Find a scene node with a specific name
-            SceneNode *GetNode(std::string node_name) const;
-            // Get node const iterator
-            std::vector<SceneNode *>::const_iterator begin() const;
-            std::vector<SceneNode *>::const_iterator end() const;
+		// Update entire scene
+		void Update(float deltaTime);
 
-            // Draw the entire scene
-            void Draw(Camera *camera);
-
-            // Update entire scene
-            void Update(void);
-
-    }; // class SceneGraph
+	}; // class SceneGraph
 
 } // namespace game
 

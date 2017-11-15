@@ -13,6 +13,7 @@
 #include "asteroid.h"
 #include "laser.h"
 #include "helicopter.h"
+#include "enemy.h"
 
 namespace game {
 

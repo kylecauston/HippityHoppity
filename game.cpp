@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include <algorithm>
+
 #include "game.h"
 #include "bin/path_config.h"
 
@@ -17,6 +19,9 @@ const std::string window_title_g = "Demo";
 const unsigned int window_width_g = 800;
 const unsigned int window_height_g = 600;
 const bool window_full_screen_g = false;
+
+bool temp = false;
+glm::vec3 vel(0, 0, 0);
 
 // Viewport and camera settings
 float camera_near_clip_distance_g = 0.01;
@@ -156,31 +161,53 @@ void Game::SetupScene(void){
 	}
 
 	SceneNode* ground = new SceneNode("Ground", geom, mat);
-	scene_.AddNode(ground);
+	scene_.SetRoot(ground);
 	
 	//ground->SetScale(glm::vec3(0.5, 1.0, 0.5));
 	ground->SetPosition(glm::vec3(0, -100, 200));
 
-    CreateAsteroidField(200);
+    //CreateAsteroidField(200);
+
+	Resource *cube = resman_.GetResource("CubePointSet");
+	SceneNode *target = new SceneNode("Target", cube, mat);
+	target->SetPosition(50, 90, 0);
+	//target->SetScale(10, 10, 10);
+	ground->AddChild(target);
+
+	Enemy* baddie = new Enemy("Enemy", target, cube, mat);
+	baddie->SetPosition(50, 50, 0);
+	baddie->SetScale(2, 30, 2);
+	ground->AddChild(baddie);
 
 	prgm = resman_.GetResource("ObjectMaterial")->GetResource();
 }
 
 
 void Game::MainLoop(void){
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+
     // Loop while the user did not close the window
     while (!glfwWindowShouldClose(window_)){
         // Animate the scene
         if (animating_){
             static double last_time = 0;
             double current_time = glfwGetTime();
-            if ((current_time - last_time) > 0.05){
-                scene_.Update();
+			double deltaTime = current_time - last_time;
+            if (deltaTime > 0.05){
+                scene_.Update(deltaTime);
 				//update our camera to keep momentum going with thrusters
 				camera_.Update();
-				heli_.Update(current_time - last_time);
+				heli_.Update(deltaTime);
                 last_time = current_time;
+
+				SceneNode* targ = scene_.GetNode("Target");
+
+				if (temp)
+				{
+						targ->Translate(vel);
+					
+				}
             }
         }
 
@@ -203,6 +230,53 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
     // Get user data with a pointer to the game class
     void* ptr = glfwGetWindowUserPointer(window);
     Game *game = (Game *) ptr;
+
+
+	if (key == GLFW_KEY_KP_9 && action == GLFW_PRESS) {
+		Enemy* enemy = ((Enemy*)(game->scene_.GetNode("Enemy")));
+
+		enemy->rotateSpeed = std::max(0.0f, std::min(enemy->rotateSpeed+0.1f, 1.0f));
+
+		std::cout << enemy->rotateSpeed << std::endl;
+	}
+
+	if (key == GLFW_KEY_KP_7 && action == GLFW_PRESS) {
+		Enemy* enemy = ((Enemy*)(game->scene_.GetNode("Enemy")));
+
+		enemy->rotateSpeed = std::max(0.0f, std::min(enemy->rotateSpeed-0.1f, 1.0f));
+		std::cout << enemy->rotateSpeed << std::endl;
+	}
+
+
+	if (key == GLFW_KEY_Y && action == GLFW_PRESS) {
+		game->scene_.GetNode("Target")->SetPosition(20, 0, 500);
+	}
+	if (key == GLFW_KEY_KP_6 && action == GLFW_PRESS) {
+		vel = glm::vec3(1, 0, 0);
+	}
+	if (key == GLFW_KEY_KP_4 && action == GLFW_PRESS) {
+		vel = glm::vec3(-1, 0, 0);
+	}
+	if (key == GLFW_KEY_KP_8 && action == GLFW_PRESS) {
+		vel = glm::vec3(0, 0, -1);
+	}
+	if (key == GLFW_KEY_KP_2 && action == GLFW_PRESS) {
+		vel = glm::vec3(0, 0, 1);
+	}
+	if (key == GLFW_KEY_KP_5 && action == GLFW_PRESS) {
+		vel = glm::vec3(0, 0, 0);
+	}
+
+	if (key == GLFW_KEY_T && action == GLFW_PRESS) {
+		temp = !temp;
+	}
+
+	if (key == GLFW_KEY_V && action == GLFW_PRESS) {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	}
+	if (key == GLFW_KEY_B && action == GLFW_PRESS) {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
 
     // Quit game if 'q' is pressed
     if (key == GLFW_KEY_Q && action == GLFW_PRESS){
@@ -305,7 +379,7 @@ Asteroid *Game::CreateAsteroidInstance(std::string entity_name, std::string obje
 
     // Create asteroid instance
     Asteroid *ast = new Asteroid(entity_name, geom, mat, tex);
-    scene_.AddNode(ast);
+   // scene_.AddNode(ast);
     return ast;
 }
 
@@ -332,7 +406,7 @@ Laser *Game::LaserCube(std::string entity_name, std::string object_name, std::st
 
 	// Create asteroid instance
 	Laser *cube = new Laser(entity_name, geom, mat, tex);
-	scene_.AddNode(cube);
+	//scene_.AddNode(cube);
 	return cube;
 }
 
@@ -360,7 +434,7 @@ void Game::CreateAsteroidField(int num_asteroids){
 }
 
 void Game::FireLaser() {
-	scene_.RemoveLast("Laser1"); //only one laser can exist at once
+	/*scene_.RemoveLast("Laser1"); //only one laser can exist at once
 	//Laser *cube = LaserCube("Laser1", "CubePointSet", "ObjectMaterial");
 	Laser *cube = LaserCube("Laser1", "CubePointSet", "ShinyTextureMaterial", "Cloud");
 	cube->SetPosition(camera_.GetPosition()); //fires outward from the player's position
@@ -372,10 +446,10 @@ void Game::FireLaser() {
 	std::string collide = RaySphere(camera_.GetForward(), camera_.GetPosition());
 	if (collide != "none") {
 		scene_.RemoveLast(collide); //blow up the asteroid we collided with
-	}
+	}*/
 }
 
-std::string Game::RaySphere(glm::vec3 raydir, glm::vec3 raypos) {
+std::string Game::RaySphere(glm::vec3 raydir, glm::vec3 raypos) {/*
 	for (int i = 0; i < scene_.node_.size()-1; i++) { //check against all asteroids
 		glm::vec3 d = scene_.node_[i]->GetPosition() - raypos;
 		float projectD = glm::dot(d, raydir);
@@ -389,7 +463,7 @@ std::string Game::RaySphere(glm::vec3 raydir, glm::vec3 raypos) {
 		if (s1 >= 0 || s2 >= 0) { //we found one, return the name
 			return scene_.node_[i]->GetName();
 		}
-	}
+	}*/
 	return "none"; //didn't find anything
 }
 

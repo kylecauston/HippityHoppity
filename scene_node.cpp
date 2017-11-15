@@ -7,237 +7,286 @@
 
 #include "scene_node.h"
 
+
 namespace game {
 
-SceneNode::SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *tex){
+	glm::vec3 SceneNode::default_forward = glm::vec3(0.0, 0.0, 1.0);
 
-    // Set name of scene node
-    name_ = name;
+	SceneNode::SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *tex) {
 
-    // Set geometry
-    if (geometry->GetType() == PointSet){
-        mode_ = GL_TRIANGLES; //GL_POINTS ?
-		shape = 1; //keeping track of when i am drawing cubes instead of spheres
-    } else if (geometry->GetType() == Mesh){
-        mode_ = GL_TRIANGLES;
-    } else {
-        throw(std::invalid_argument(std::string("Invalid type of geometry")));
-    }
+		// Set name of scene node
+		name_ = name;
 
-    array_buffer_ = geometry->GetArrayBuffer();
-    element_array_buffer_ = geometry->GetElementArrayBuffer();
-    size_ = geometry->GetSize();
+		if (geometry) {
+			// Set geometry
+			if (geometry->GetType() == PointSet) {
+				mode_ = GL_TRIANGLES; //GL_POINTS ??
+				shape = 1; //keeping track of when i am drawing cubes instead of spheres
+			}
+			else if (geometry->GetType() == Mesh) {
+				mode_ = GL_TRIANGLES;
+			}
+			else {
+				throw(std::invalid_argument(std::string("Invalid type of geometry")));
+			}
 
-    // Set material (shader program)
-    if (material->GetType() != Material){
-        throw(std::invalid_argument(std::string("Invalid type of material")));
-    }
+			array_buffer_ = geometry->GetArrayBuffer();
+			element_array_buffer_ = geometry->GetElementArrayBuffer();
+			size_ = geometry->GetSize();
+		}
+		else {
+			array_buffer_ = 0;
+		}
 
-    material_ = material->GetResource();
+		// Set material (shader program)
+		if (material) {
+			if (material->GetType() != Material) {
+				throw(std::invalid_argument(std::string("Invalid type of material")));
+			}
 
-	// Set texture
-	if (tex) {
-		texture_ = tex->GetResource();
+			material_ = material->GetResource();
+		}
+		else {
+			material_ = 0;
+		}
+
+		if (tex) {
+			texture_ = tex->GetResource();
+		}
+		else {
+			texture_ = 0;
+		}
+
+		// Other attributes
+		scale_ = glm::vec3(1.0, 1.0, 1.0);
+
+		// Hierarchy
+		parent_ = NULL;
 	}
-	else {
-		texture_ = 0;
+
+
+	SceneNode::~SceneNode() {
 	}
 
-    // Other attributes
-    scale_ = glm::vec3(1.0, 1.0, 1.0);
-}
+
+	const std::string SceneNode::GetName(void) const {
+
+		return name_;
+	}
 
 
-SceneNode::~SceneNode(){
-}
+	glm::vec3 SceneNode::GetPosition(void) const {
+
+		return position_;
+	}
 
 
-const std::string SceneNode::GetName(void) const {
+	glm::quat SceneNode::GetOrientation(void) const {
 
-    return name_;
-}
-
-
-glm::vec3 SceneNode::GetPosition(void) const {
-
-    return position_;
-}
+		return orientation_;
+	}
 
 
-glm::quat SceneNode::GetOrientation(void) const {
+	glm::vec3 SceneNode::GetScale(void) const {
 
-    return orientation_;
-}
-
-
-glm::vec3 SceneNode::GetScale(void) const {
-
-    return scale_;
-}
+		return scale_;
+	}
 
 
-void SceneNode::SetPosition(glm::vec3 position){
-    position_ = position;
-}
+	void SceneNode::SetPosition(glm::vec3 position) {
 
-void SceneNode::SetPosition(float x, float y, float z) {
-	this->SetPosition(glm::vec3(x, y, z));
-}
+		position_ = position;
+	}
 
-void SceneNode::SetOrientation(glm::quat orientation){
-    orientation_ = orientation;
-}
+	void SceneNode::SetPosition(float x, float y, float z) {
+
+		SetPosition(glm::vec3(x, y, z));
+	}
 
 
-void SceneNode::SetScale(glm::vec3 scale){
-    scale_ = scale;
-}
+	void SceneNode::SetOrientation(glm::quat orientation) {
 
-void SceneNode::SetScale(float x, float y, float z) {
-	this->SetScale(glm::vec3(x, y, z));
-}
+		orientation_ = orientation;
+	}
 
 
-void SceneNode::Translate(glm::vec3 trans){
+	void SceneNode::SetScale(glm::vec3 scale) {
 
-    position_ += trans;
-}
-
-
-void SceneNode::Rotate(glm::quat rot){
-
-    orientation_ *= rot;
-}
+		scale_ = scale;
+	}
 
 
-void SceneNode::Scale(glm::vec3 scale){
+	void SceneNode::SetScale(float x, float y, float z) {
 
-    scale_ *= scale;
-}
-
-
-GLenum SceneNode::GetMode(void) const {
-
-    return mode_;
-}
+		SetScale(glm::vec3(x, y, z));
+	}
 
 
-GLuint SceneNode::GetArrayBuffer(void) const {
+	void SceneNode::Translate(glm::vec3 trans) {
 
-    return array_buffer_;
-}
+		position_ += trans;
+	}
 
-
-GLuint SceneNode::GetElementArrayBuffer(void) const {
-
-    return element_array_buffer_;
-}
+	void SceneNode::Translate(float x, float y, float z) {
+		Translate(glm::vec3(x, y, z));
+	}
 
 
-GLsizei SceneNode::GetSize(void) const {
+	void SceneNode::Rotate(glm::quat rot) {
 
-    return size_;
-}
-
-
-GLuint SceneNode::GetMaterial(void) const {
-
-    return material_;
-}
+		orientation_ *= rot;
+	}
 
 
-void SceneNode::Draw(Camera *camera){
+	void SceneNode::Scale(glm::vec3 scale) {
 
-    // Select proper material (shader program)
-    glUseProgram(material_);
+		scale_ *= scale;
+	}
 
-    // Set geometry to draw
-    glBindBuffer(GL_ARRAY_BUFFER, array_buffer_);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_array_buffer_);
+	void SceneNode::Scale(float x, float y, float z) {
+		Scale(glm::vec3(x, y, z));
+	}
 
-    // Set globals for camera
-    camera->SetupShader(material_);
+	GLenum SceneNode::GetMode(void) const {
 
-    // Set world matrix and other shader input variables
-    SetupShader(material_);
+		return mode_;
+	}
 
-    // Draw geometry
-    if (shape == 1){ //mode_ == GL_POINTS
-		//this is the case for drawing cubes rather than spheres
-		GLint vertex_att = glGetAttribLocation(material_, "vertex");
-		glVertexAttribPointer(vertex_att, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), 0);
+
+	GLuint SceneNode::GetArrayBuffer(void) const {
+
+		return array_buffer_;
+	}
+
+
+	GLuint SceneNode::GetElementArrayBuffer(void) const {
+
+		return element_array_buffer_;
+	}
+
+
+	GLsizei SceneNode::GetSize(void) const {
+
+		return size_;
+	}
+
+
+	GLuint SceneNode::GetMaterial(void) const {
+
+		return material_;
+	}
+
+
+	glm::mat4 SceneNode::Draw(Camera *camera, glm::mat4 parent_transf) {
+
+		if ((array_buffer_ > 0) && (material_ > 0)) {
+			// Select proper material (shader program)
+			glUseProgram(material_);
+
+			// Set geometry to draw
+			glBindBuffer(GL_ARRAY_BUFFER, array_buffer_);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_array_buffer_);
+
+			// Set globals for camera
+			camera->SetupShader(material_);
+
+			// Set world matrix and other shader input variables
+			glm::mat4 transf = SetupShader(material_, parent_transf);
+
+			// Draw geometry
+			if (shape == 1) { //mode_ == GL_POINTS
+								  //this is the case for drawing cubes rather than spheres
+					GLint vertex_att = glGetAttribLocation(material_, "vertex");
+					glVertexAttribPointer(vertex_att, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), 0);
+					glEnableVertexAttribArray(vertex_att);
+
+					GLint normal_att = glGetAttribLocation(material_, "normal");
+					glVertexAttribPointer(normal_att, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (void *)(3 * sizeof(GLfloat)));
+					glEnableVertexAttribArray(normal_att);
+
+					GLint color_att = glGetAttribLocation(material_, "color");
+					glVertexAttribPointer(color_att, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (void *)(6 * sizeof(GLfloat)));
+					glEnableVertexAttribArray(color_att);
+
+					glDrawArrays(mode_, 0, size_);
+
+			}
+			else {
+				glDrawElements(mode_, size_, GL_UNSIGNED_INT, 0);
+			}
+
+			return transf;
+		}
+		else {
+			glm::mat4 rotation = glm::mat4_cast(orientation_);
+			glm::mat4 translation = glm::translate(glm::mat4(1.0), position_);
+			glm::mat4 transf = parent_transf * translation * rotation;
+			return transf;
+		}
+	}
+
+
+	void SceneNode::Update(float deltaTime) {
+
+		// Do nothing for this generic type of scene node
+	}
+
+
+	glm::mat4 SceneNode::SetupShader(GLuint program, glm::mat4 parent_transf) {
+
+		// Set attributes for shaders
+		GLint vertex_att = glGetAttribLocation(program, "vertex");
+		glVertexAttribPointer(vertex_att, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(GLfloat), 0);
 		glEnableVertexAttribArray(vertex_att);
 
-		GLint normal_att = glGetAttribLocation(material_, "normal");
-		glVertexAttribPointer(normal_att, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (void *)(3 * sizeof(GLfloat)));
+		GLint normal_att = glGetAttribLocation(program, "normal");
+		glVertexAttribPointer(normal_att, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(GLfloat), (void *)(3 * sizeof(GLfloat)));
 		glEnableVertexAttribArray(normal_att);
 
-		GLint color_att = glGetAttribLocation(material_, "color");
-		glVertexAttribPointer(color_att, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (void *)(6 * sizeof(GLfloat)));
+		GLint color_att = glGetAttribLocation(program, "color");
+		glVertexAttribPointer(color_att, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(GLfloat), (void *)(6 * sizeof(GLfloat)));
 		glEnableVertexAttribArray(color_att);
 
-        glDrawArrays(mode_, 0, size_);
-    } else { //draw spheres
-        glDrawElements(mode_, size_, GL_UNSIGNED_INT, 0);
-    }
-}
+		GLint tex_att = glGetAttribLocation(program, "uv");
+		glVertexAttribPointer(tex_att, 2, GL_FLOAT, GL_FALSE, 11 * sizeof(GLfloat), (void *)(9 * sizeof(GLfloat)));
+		glEnableVertexAttribArray(tex_att);
 
+		// World transformation
+		glm::mat4 scaling = glm::scale(glm::mat4(1.0), scale_);
+		glm::mat4 rotation = glm::mat4_cast(orientation_);
+		glm::mat4 translation = glm::translate(glm::mat4(1.0), position_);
+		glm::mat4 transf = parent_transf * translation * rotation;
+		glm::mat4 local_transf = transf * scaling;
 
-void SceneNode::Update(void){
+		GLint world_mat = glGetUniformLocation(program, "world_mat");
+		glUniformMatrix4fv(world_mat, 1, GL_FALSE, glm::value_ptr(local_transf));
 
-    // Do nothing for this generic type of scene node
-}
+		// Timer
+		GLint timer_var = glGetUniformLocation(program, "timer");
+		double current_time = glfwGetTime();
+		glUniform1f(timer_var, (float)current_time);
 
-
-void SceneNode::SetupShader(GLuint program){
-
-    // Set attributes for shaders
-    GLint vertex_att = glGetAttribLocation(program, "vertex");
-    glVertexAttribPointer(vertex_att, 3, GL_FLOAT, GL_FALSE, 11*sizeof(GLfloat), 0);
-    glEnableVertexAttribArray(vertex_att);
-
-    GLint normal_att = glGetAttribLocation(program, "normal");
-    glVertexAttribPointer(normal_att, 3, GL_FLOAT, GL_FALSE, 11*sizeof(GLfloat), (void *) (3*sizeof(GLfloat)));
-    glEnableVertexAttribArray(normal_att);
-
-    GLint color_att = glGetAttribLocation(program, "color");
-    glVertexAttribPointer(color_att, 3, GL_FLOAT, GL_FALSE, 11*sizeof(GLfloat), (void *) (6*sizeof(GLfloat)));
-    glEnableVertexAttribArray(color_att);
-
-    GLint tex_att = glGetAttribLocation(program, "uv");
-    glVertexAttribPointer(tex_att, 2, GL_FLOAT, GL_FALSE, 11*sizeof(GLfloat), (void *) (9*sizeof(GLfloat)));
-    glEnableVertexAttribArray(tex_att);
-
-    // World transformation
-    glm::mat4 scaling = glm::scale(glm::mat4(1.0), scale_);
-    glm::mat4 rotation = glm::mat4_cast(orientation_);
-    glm::mat4 translation = glm::translate(glm::mat4(1.0), position_);
-    glm::mat4 transf = translation * rotation * scaling;
-
-    GLint world_mat = glGetUniformLocation(program, "world_mat");
-    glUniformMatrix4fv(world_mat, 1, GL_FALSE, glm::value_ptr(transf));
-
-	// Normal matrix
-	glm::mat4 normal_matrix = glm::transpose(glm::inverse(transf));
-	GLint normal_mat = glGetUniformLocation(program, "normal_mat");
-	glUniformMatrix4fv(normal_mat, 1, GL_FALSE, glm::value_ptr(normal_matrix));
-
-	// Texture
-	if (texture_) {
-		GLint tex = glGetUniformLocation(program, "texture_map");
-		glUniform1i(tex, 0); // Assign the first texture to the map
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture_); // First texture we bind
-												// Define texture interpolation
-		glGenerateMipmap(GL_TEXTURE_2D);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		// Return transformation of node combined with parent, without scaling
+		return transf;
 	}
 
-    // Timer
-    GLint timer_var = glGetUniformLocation(program, "timer");
-    double current_time = glfwGetTime();
-    glUniform1f(timer_var, (float) current_time);
-}
+
+	void SceneNode::AddChild(SceneNode *node) {
+
+		children_.push_back(node);
+		node->parent_ = this;
+	}
+
+
+	std::vector<SceneNode *>::const_iterator SceneNode::children_begin() const {
+
+		return children_.begin();
+	}
+
+
+	std::vector<SceneNode *>::const_iterator SceneNode::children_end() const {
+
+		return children_.end();
+	}
 
 } // namespace game;
