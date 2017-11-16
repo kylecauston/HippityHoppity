@@ -12,31 +12,47 @@ namespace game {
 	void Enemy::Update(float deltaTime) {
 		// get the plane vector towards target
 		glm::vec3 toTarget = target->GetPosition() - GetPosition();
+		// 2D to target vector, ignoring height
+		glm::vec3 toTarget_flat = glm::vec3(toTarget.x, 0, toTarget.z);
 
-		if (glm::length(glm::vec3(toTarget.x, 0, toTarget.z)) > deltaTime*speed) {
+		if (glm::length(toTarget_flat) > deltaTime*speed) {
 
 			// we drop the y value if the enemy can't fly, and then make 
 			// the vector into a movement vector (the actual units it will move)
-			glm::vec3 movement = (deltaTime*speed) * (glm::normalize(glm::vec3(toTarget.x, 0, toTarget.z)));
+			glm::vec3 movement = (deltaTime*speed) * (glm::normalize(toTarget));
 			
-			//Translate(movement);
+			Translate(movement);
 		}
 
+		toTarget = target->GetPosition() - GetPosition();
+		toTarget_flat = glm::vec3(toTarget.x, 0, toTarget.z);
 
-		// rotate in a similar fashion
-		// use Spherical Linear intERPolation to slowly rotate towards target
-		// for this we need:
 
-		//	Current Orientation - where are we currently looking 
-		glm::quat curOrientation = GetOrientation();
+		if (glm::length(toTarget_flat) > 1) {
+			// rotate on the y axis (turn towards where the target is in 2D space)
+			// make a triangle from target and self pos, take angle, rotate
+			float angle = asin(toTarget.x / sqrt(pow(toTarget.x, 2) + pow(toTarget.z, 2)));
+			if (toTarget.z < 0)
+			{
+				angle = glm::pi<float>() - angle;
+			}
 
-		//	Desired Orientation - where do we want to be looking
-		//		This is the orientation we have if we're looking at the target.
-		glm::vec3 inFront = curOrientation*glm::vec3(0,1,0)*-curOrientation;
-		glm::quat desiredOrientation = RotationBetweenVectors(inFront, toTarget);
-		glm::quat rot = glm::slerp(curOrientation, desiredOrientation, rotateSpeed);
-		
-		this->SetOrientation(rot);
+			glm::quat hor_rotation = glm::angleAxis(angle, glm::vec3(0.0, 1.0, 0.0));
+
+			// now rotate upwards to look at target
+
+			// get the angle to aim upwards (no more than 90deg)
+			float vert_angle = asin(toTarget.y / glm::length(glm::vec3(toTarget.x,
+				toTarget.y,
+				toTarget.z)));
+
+			// find the axis to rotate on, by taking cross(forward, UP)
+			glm::vec3 forward = hor_rotation * SceneNode::default_forward * -hor_rotation;
+			glm::quat vert_rotation = glm::angleAxis(vert_angle, glm::cross(forward, glm::vec3(0.0, 1.0, 0.0)));
+			glm::quat rotation = glm::slerp(GetOrientation(), hor_rotation * vert_rotation, rotateSpeed);
+			SetOrientation(rotation);
+		}
+
 		// if in range, attack
 
 	}

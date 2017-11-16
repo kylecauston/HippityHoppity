@@ -66,9 +66,10 @@ namespace game {
 		std::vector<SceneNode *>::const_iterator children_begin() const;
 		std::vector<SceneNode *>::const_iterator children_end() const;
 
-	private:
+	protected:
 		static glm::vec3 default_forward;
 
+	private:
 		std::string name_; // Name of the scene node
 		GLuint array_buffer_; // References to geometry: vertex and array buffers
 		GLuint element_array_buffer_;
@@ -81,7 +82,7 @@ namespace game {
 		glm::vec3 scale_; // Scale of node
 		int shape = 0;
 
-						  // Hierarchy
+		// Hierarchy
 		SceneNode *parent_;
 		std::vector<SceneNode *> children_;
 

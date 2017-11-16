@@ -170,13 +170,13 @@ void Game::SetupScene(void){
 
 	Resource *cube = resman_.GetResource("CubePointSet");
 	SceneNode *target = new SceneNode("Target", cube, mat);
-	target->SetPosition(50, 90, 0);
+	target->SetPosition(10, 90, 400);
 	//target->SetScale(10, 10, 10);
 	ground->AddChild(target);
 
 	Enemy* baddie = new Enemy("Enemy", target, cube, mat);
-	baddie->SetPosition(50, 50, 0);
-	baddie->SetScale(2, 30, 2);
+	baddie->SetPosition(10, 80, 400);
+	baddie->SetScale(2, 2, 30);
 	ground->AddChild(baddie);
 
 	prgm = resman_.GetResource("ObjectMaterial")->GetResource();
@@ -249,7 +249,14 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
 
 
 	if (key == GLFW_KEY_Y && action == GLFW_PRESS) {
-		game->scene_.GetNode("Target")->SetPosition(20, 0, 500);
+		//target->SetPosition(50, 90, 0);
+		game->scene_.GetNode("Target")->SetPosition(10, 90, 400);
+	}
+	if (key == GLFW_KEY_KP_1 && action == GLFW_PRESS) {
+		vel = glm::vec3(0, 1, 0);
+	}
+	if (key == GLFW_KEY_KP_3 && action == GLFW_PRESS) {
+		vel = glm::vec3(0, -1, 0);
 	}
 	if (key == GLFW_KEY_KP_6 && action == GLFW_PRESS) {
 		vel = glm::vec3(1, 0, 0);
