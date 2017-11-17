@@ -42,15 +42,16 @@ namespace game {
 			// now rotate upwards to look at target
 
 			// get the angle to aim upwards (no more than 90deg)
-			float vert_angle = asin(toTarget.y / glm::length(glm::vec3(toTarget.x,
-				toTarget.y,
-				toTarget.z)));
+			float vert_angle = asin(toTarget.y / glm::length(toTarget));
 
 			// find the axis to rotate on, by taking cross(forward, UP)
 			glm::vec3 forward = hor_rotation * SceneNode::default_forward * -hor_rotation;
 			glm::quat vert_rotation = glm::angleAxis(vert_angle, glm::cross(forward, glm::vec3(0.0, 1.0, 0.0)));
 			glm::quat rotation = glm::slerp(GetOrientation(), hor_rotation * vert_rotation, rotateSpeed);
 			SetOrientation(rotation);
+
+			// may need to subtract any parent rotations somehow 
+			//   or simply find a way to set strict rotations that aren't cumulative
 		}
 
 		// if in range, attack
@@ -59,28 +60,6 @@ namespace game {
 
 	void Enemy::Attack() {
 		glm::quat aiming = GetOrientation();
-	}
-
-	//https://github.com/opengl-tutorials/ogl/tree/master/common
-	glm::quat Enemy::RotationBetweenVectors(glm::vec3 start, glm::vec3 dest) {
-		start = glm::normalize(start);
-		dest = glm::normalize(dest);
-
-		float cosTheta = glm::dot(start, dest);
-
-		glm::vec3 rotationAxis;
-		rotationAxis = glm::cross(start, dest);
-
-		float s = sqrt((1 + cosTheta) * 2);
-		float invs = 1 / s;
-
-		return glm::quat(
-			s * 0.5f,
-			rotationAxis.x * invs,
-			rotationAxis.y * invs,
-			rotationAxis.z * invs
-		);
-
 	}
 
 } // namespace game

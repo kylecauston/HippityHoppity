@@ -5,11 +5,11 @@ project(GameTest)
 
 # Specify project files: header files and source files
 set(HDRS
-    asteroid.h camera.h game.h resource.h resource_manager.h scene_graph.h scene_node.h helicopter.h laser.h
+    asteroid.h camera.h game.h resource.h resource_manager.h scene_graph.h scene_node.h helicopter.h laser.h enemy.h
 )
  
 set(SRCS
-    asteroid.cpp camera.cpp game.cpp main.cpp resource.cpp resource_manager.cpp scene_graph.cpp scene_node.cpp material_vp.glsl material_fp.glsl helicopter.cpp laser.cpp shiny_texture_fp.glsl shiny_texture_vp.glsl
+    asteroid.cpp camera.cpp game.cpp main.cpp resource.cpp resource_manager.cpp scene_graph.cpp scene_node.cpp enemy.cpp material_vp.glsl material_fp.glsl helicopter.cpp laser.cpp shiny_texture_fp.glsl shiny_texture_vp.glsl
 
 )
 
