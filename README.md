@@ -1,22 +1,25 @@
 # HippityHoppity
-COMP3501 Final Project Game
+COMP3501 Final Project - Hippity Hoppity
 
-**Temporary Shit Controls**
+**NOTES**
+added my shit laser back in, it technically works (you can "kill" the enemy and target but you have to jiggle the aim around a bit)
 
-"W" to stop all momentum (a brake)
+**CONTROLS**
+UP/DOWN/LEFT/RIGHT - turn the helicopter
+A/Z - move forward and backward
+W - stop movement of helicopter
+J/L/I/K - strafing movement
+S/X - spin the helicopter
+E - fire a laser that collides with roughly center of screen
 
-"E" to fire a laser
+Space - pause/play animation
+ESC - close the window
+V/B - change polygon display mode
 
-"Q" closes the window
-
-"Space" pauses the animation
-
-"UP/LEFT/DOWN/RIGHT" arrow keys move the camera around
-
-"A" moves the helicopter forwards (Z axis)
-
-"Z" moves the helicopter backwards
-
-"S/X" spins
-
-"J/L/I/K" moves along the X and Y axis
+7/9 - change rotation speed of enemy
+Y - reset position of target
+4/6 - x axis movement of target
+1/3 - y axis movement of target
+2/8 - z axis movement of target
+5 - stop movement of target
+T - ??temp??
