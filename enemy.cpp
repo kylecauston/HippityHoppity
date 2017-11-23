@@ -1,13 +1,11 @@
 #include "enemy.h"
 
 namespace game {
-
 	Enemy::Enemy(const std::string name, const SceneNode* targ, const Resource *geometry, const Resource *material, const Resource *tex) : SceneNode(name, geometry, material, tex) {
 		target = targ;
 	}
 
-	Enemy::~Enemy() {
-	}
+	Enemy::~Enemy() {}
 
 	void Enemy::Update(float deltaTime) {
 		// get the plane vector towards target
@@ -20,7 +18,7 @@ namespace game {
 			// we drop the y value if the enemy can't fly, and then make 
 			// the vector into a movement vector (the actual units it will move)
 			glm::vec3 movement = (deltaTime*speed) * (glm::normalize(toTarget));
-			
+
 			Translate(movement);
 		}
 
@@ -55,7 +53,6 @@ namespace game {
 		}
 
 		// if in range, attack
-
 	}
 
 	void Enemy::Attack() {

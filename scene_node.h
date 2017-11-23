@@ -1,6 +1,5 @@
 #ifndef SCENE_NODE_H_
 #define SCENE_NODE_H_
-
 #include <string>
 #include <vector>
 #define GLEW_STATIC
@@ -9,15 +8,12 @@
 #include <glm/glm.hpp>
 #define GLM_FORCE_RADIANS
 #include <glm/gtc/quaternion.hpp>
-
 #include "resource.h"
 #include "camera.h"
 
 namespace game {
-
 	// Class that manages one object in a scene 
 	class SceneNode {
-
 	public:
 		// Create scene node from given resources
 		SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *tex = NULL);
@@ -48,7 +44,6 @@ namespace game {
 		void Scale(float x, float y, float z);
 
 		// Draw the node according to scene parameters in 'camera'
-		// variable
 		virtual glm::mat4 Draw(Camera *camera, glm::mat4 parent_transf);
 
 		// Update the node
@@ -65,6 +60,7 @@ namespace game {
 		void AddChild(SceneNode *node);
 		std::vector<SceneNode *>::const_iterator children_begin() const;
 		std::vector<SceneNode *>::const_iterator children_end() const;
+		std::vector<SceneNode *> children_;
 
 	protected:
 		static glm::vec3 default_forward;
@@ -80,11 +76,9 @@ namespace game {
 		glm::vec3 position_; // Position of node
 		glm::quat orientation_; // Orientation of node
 		glm::vec3 scale_; // Scale of node
-		int shape = 0;
 
 		// Hierarchy
 		SceneNode *parent_;
-		std::vector<SceneNode *> children_;
 
 		// Set matrices that transform the node in a shader program
 		// Return transformation of current node combined with

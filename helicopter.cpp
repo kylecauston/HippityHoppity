@@ -4,72 +4,48 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
-
 #include "helicopter.h"
 
 namespace game {
+	Helicopter::Helicopter(void) {}
 
-	Helicopter::Helicopter(void) {
-
-	}
-
-
-	Helicopter::~Helicopter() {
-	}
-
+	Helicopter::~Helicopter() {}
 
 	glm::vec3 Helicopter::GetPosition(void) const {
-
 		return position_;
 	}
 
-
 	glm::quat Helicopter::GetOrientation(void) const {
-
 		return orientation_;
 	}
 
-
 	void Helicopter::SetPosition(glm::vec3 position) {
-
 		position_ = position;
 	}
 
-
 	void Helicopter::SetOrientation(glm::quat orientation) {
-
 		orientation_ = orientation;
 	}
 
-
 	void Helicopter::Translate(glm::vec3 trans) {
-
 		position_ += trans;
 	}
 
-
 	void Helicopter::Rotate(glm::quat rot) {
-
 		orientation_ = rot * orientation_;
 	}
 
-
 	glm::vec3 Helicopter::GetForward(void) const {
-
 		glm::vec3 current_forward = orientation_ * forward_;
 		return -current_forward; // Return -forward since the camera coordinate system points in the opposite direction
 	}
 
-
 	glm::vec3 Helicopter::GetSide(void) const {
-
 		glm::vec3 current_side = orientation_ * side_;
 		return current_side;
 	}
 
-
 	glm::vec3 Helicopter::GetUp(void) const {
-
 		glm::vec3 current_forward = orientation_ * forward_;
 		glm::vec3 current_side = orientation_ * side_;
 		glm::vec3 current_up = glm::cross(current_forward, current_side);
@@ -77,23 +53,17 @@ namespace game {
 		return current_up;
 	}
 
-
 	void Helicopter::Pitch(float angle) {
-
 		glm::quat rotation = glm::angleAxis(angle, GetSide());
 		orientation_ = rotation * orientation_;
 	}
 
-
 	void Helicopter::Yaw(float angle) {
-
 		glm::quat rotation = glm::angleAxis(angle, GetUp());
 		orientation_ = rotation * orientation_;
 	}
 
-
 	void Helicopter::Roll(float angle) {
-
 		glm::quat rotation = glm::angleAxis(angle, GetForward());
 		orientation_ = rotation * orientation_;
 	}
@@ -103,19 +73,16 @@ namespace game {
 		this->Translate(this->GetSide()*vel_x);
 		this->Translate(this->GetUp()*vel_y);
 
-		// Check how much time elapsed since the last update
+		// spin the helicopter's blades over time
 		if (timer > 0.001) { // 1 miliseconds interval
 			glm::quat topRotation = glm::angleAxis(2.0f * glm::pi<float>() / 180.0f, glm::vec3(0.0, 1.0, 0.0));
 			glm::quat backRotation = glm::angleAxis(2.0f * glm::pi<float>() / 180.0f, glm::vec3(1.0, 0.0, 0.0));
 			topOrientation *= topRotation;
 			backOrientation *= backRotation;
 		}
-
 	}
 
-
 	void Helicopter::SetView(glm::vec3 position, glm::vec3 look_at, glm::vec3 up) {
-
 		// Store initial forward and side vectors
 		// See slide in "Camera control" for details
 		forward_ = look_at - position;
@@ -128,36 +95,19 @@ namespace game {
 		orientation_ = glm::quat();
 	}
 
-
 	void Helicopter::SetProjection(GLfloat fov, GLfloat Near, GLfloat Far, GLfloat w, GLfloat h) {
-
 		// Set projection based on field-of-view
 		float top = tan((fov / 2.0)*(glm::pi<float>() / 180.0))*Near;
 		float right = top * w / h;
 		projection_matrix_ = glm::frustum(-right, right, -top, top, Near, Far);
 	}
 
-
 	void Helicopter::SetupShader(GLuint program) {
-
 		// Update view matrix
 		SetupViewMatrix();
-
-		// Set view matrix in shader
-		//GLint view_mat = glGetUniformLocation(program, "view_mat");
-		//glUniformMatrix4fv(view_mat, 1, GL_FALSE, glm::value_ptr(view_matrix_));
-
-		// Set projection matrix in shader
-		//GLint projection_mat = glGetUniformLocation(program, "projection_mat");
-		//glUniformMatrix4fv(projection_mat, 1, GL_FALSE, glm::value_ptr(projection_matrix_));
-
 	}
 
-
 	void Helicopter::SetupViewMatrix(void) {
-
-		//view_matrix_ = glm::lookAt(position, look_at, up);
-
 		// Get current vectors of coordinate system
 		// [side, up, forward]
 		// See slide in "Camera control" for details
@@ -241,21 +191,17 @@ namespace game {
 			0.5, -0.5, -0.5,    0.0, -1.0,  0.0,    0.5, 0.5, 0.5,
 			0.5, -0.5,  0.5,    0.0, -1.0,  0.0,    0.5, 0.5, 0.5,
 		};
-
 		// Create OpenGL buffer for vertices
 		//GLuint qbo;
 		glGenBuffers(1, &cubeVertexBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, cubeVertexBuffer);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
 
-
 		// Return number of elements in array buffer
 		return sizeof(vertex) / (sizeof(GLfloat) * 9);
 	}
+
 	int Helicopter::CreateCylinder(float cylinder_height, float circle_radius, int num_circle_samples) {
-
-		// Create a cylinder
-
 		// Number of vertices and faces to be created
 		const GLuint vertex_num = num_circle_samples * 2 + 2; // both circles, center of each endcap
 		const GLuint face_num = num_circle_samples * 4;
@@ -264,7 +210,7 @@ namespace game {
 		const int vertex_att = 11;  // 11 attributes per vertex: 3D position (3), 3D normal (3), RGB color (3), 2D texture coordinates (2)
 		const int face_att = 3; // Vertex indices (3)
 
-								// Data buffers for the cylinder
+		// Data buffers for the cylinder
 		GLfloat *vertex = NULL;
 		GLuint *face = NULL;
 
@@ -321,12 +267,11 @@ namespace game {
 		for (int i = 0; i < num_circle_samples; i++) {
 			theta = 2.0*glm::pi<GLfloat>() * i / num_circle_samples; // where around the endcap circle you are
 
-																	 // top set of vertices
+			// top set of vertices
 			vertex_normal = glm::vec3(0, 0, 1);
 			vertex_position = glm::vec3((cos(theta)*circle_radius),
 				cylinder_height / 2,
 				(sin(theta)*circle_radius));
-			//vertex_color = glm::vec3(theta / glm::pi<GLfloat>(), (1.0 - theta / glm::pi<GLfloat>()), 0.0);
 			vertex_color = glm::vec3(0.0, 0.0, 1.0);
 
 			// Add vectors to the data buffer
@@ -338,13 +283,11 @@ namespace game {
 			vertex[(i + 2)*vertex_att + 9] = vertex_coord[0];
 			vertex[(i + 2)*vertex_att + 10] = vertex_coord[1];
 
-
 			// bottom set of vertices
 			vertex_normal = glm::vec3(0, 0, -1);
 			vertex_position = glm::vec3((cos(theta)*circle_radius),
 				-cylinder_height / 2,
 				(sin(theta)*circle_radius));
-			//vertex_color = glm::vec3(0.0, theta/glm::pi<GLfloat>(), (1.0 - theta / glm::pi<GLfloat>()));
 			vertex_color = glm::vec3(0.0, 0.0, 1.0);
 
 			// Add vectors to the data buffer
@@ -356,7 +299,6 @@ namespace game {
 			vertex[(i + 2 + num_circle_samples)*vertex_att + 9] = vertex_coord[0];
 			vertex[(i + 2 + num_circle_samples)*vertex_att + 10] = vertex_coord[1];
 		}
-
 
 		// create triangles
 		for (int i = 0; i < num_circle_samples - 1; i++) {
@@ -381,7 +323,6 @@ namespace game {
 		}
 
 		// add the remaining sides - missed by the loop
-
 		// top cap triangle between start of circle and end
 		glm::vec3 t1(0, 2, num_circle_samples + 1);
 
@@ -401,10 +342,7 @@ namespace game {
 			face[(num_circle_samples - 1) * face_att * 4 + k + face_att * 3] = (GLuint)t4[k];
 		}
 
-
 		// Create OpenGL buffers and copy data
-		//GLuint vbo, ebo;
-
 		// Create buffer for vertices
 		glGenBuffers(1, &cylVertexBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, cylVertexBuffer);
@@ -422,6 +360,7 @@ namespace game {
 		// Return number of elements in array buffer
 		return face_num * face_att;
 	}
+
 	void Helicopter::switchBuffer(GLuint vertexBuffer, GLuint faceBuffer, GLuint shader, int atts) {
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 		GLint vertex_att = glGetAttribLocation(shader, "vertex");
@@ -443,19 +382,18 @@ namespace game {
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, faceBuffer);
 		}
 	}
-	void Helicopter::DrawHelicopter(GLuint program, Camera *camera) {
 
-		if (first) {
+	void Helicopter::DrawHelicopter(GLuint program, Camera *camera) {
+		if (first) { //only generate the meshes on the first run
 			cyl_size = CreateCylinder();
 			size = CreateCube();
 			first = false;
 		}
 
-		glUseProgram(program);
+		glUseProgram(program); //we steal this program from another resource
 		switchBuffer(cubeVertexBuffer, cubeFaceBuffer, program, 9);
 		camera->SetupShader(program);
 		SetupShader(program);
-
 
 		GLint world_mat = glGetUniformLocation(program, "world_mat");
 
@@ -471,19 +409,16 @@ namespace game {
 
 		glm::mat4 local;
 		// ISROT or TORSI since reverse
-
 		// body
 		local = base * glm::scale(glm::mat4(1.0), glm::vec3(2.0, 2.0, 6.0));
 		glUniformMatrix4fv(world_mat, 1, GL_FALSE, glm::value_ptr(local));
 		switchBuffer(cubeVertexBuffer, cubeFaceBuffer, program, 9);
 		glDrawArrays(GL_TRIANGLES, 0, size);
-		//glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_INT, 0);
 
 		// cockpit
 		local = base * glm::translate(glm::mat4(1.0), glm::vec3(0, -0.5, 3.5)) * glm::scale(glm::mat4(1.0), glm::vec3(2.0, 1.0, 1.0));
 		glUniformMatrix4fv(world_mat, 1, GL_FALSE, glm::value_ptr(local));
 		glDrawArrays(GL_TRIANGLES, 0, size);
-		//glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_INT, 0);
 
 		glm::mat4 parent;
 
@@ -509,22 +444,6 @@ namespace game {
 		local = parent * glm::translate(glm::mat4(1.0), glm::vec3(0.5, 0, -1.5)) * glm::mat4_cast(backOrientation) * glm::scale(glm::mat4(1.0), glm::vec3(0.1, 3.0, 0.1));
 		glUniformMatrix4fv(world_mat, 1, GL_FALSE, glm::value_ptr(local));
 		glDrawElements(GL_TRIANGLES, cyl_size, GL_UNSIGNED_INT, 0);
-
-		/*
-		// World transformation
-		glm::mat4 scaling = glm::scale(glm::mat4(1.0), scale_);
-		glm::mat4 rotation = glm::mat4_cast(orientation_);
-		glm::mat4 translation = glm::translate(glm::mat4(1.0), position_);
-		glm::mat4 transf = translation * rotation * scaling;
-
-		GLint world_mat = glGetUniformLocation(program, "world_mat");
-		glUniformMatrix4fv(world_mat, 1, GL_FALSE, glm::value_ptr(transf));
-
-		// Timer
-		GLint timer_var = glGetUniformLocation(program, "timer");
-		double current_time = glfwGetTime();
-		glUniform1f(timer_var, (float) current_time);
-		*/
 	}
 
 } // namespace game

@@ -1,6 +1,5 @@
 #ifndef HELICOPTER_H_
 #define HELICOPTER_H_
-
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -9,13 +8,9 @@
 #include "camera.h"
 
 namespace game {
-
 	// Abstraction of a camera
 	class Helicopter {
-
 	public:
-		//GLuint ResourceManager::prgm;
-
 		Helicopter(void);
 		~Helicopter();
 
@@ -55,9 +50,8 @@ namespace game {
 		// Set all camera-related variables in shader program
 		void SetupShader(GLuint program);
 
-
 		//this is where the shit hits the fan
-		bool first = true;
+		bool first = true; //ensures we only generate the mesh for the heli once
 		GLuint cubeVertexBuffer;
 		GLuint cubeFaceBuffer;
 
@@ -83,9 +77,7 @@ namespace game {
 		glm::vec3 side_; // Initial side vector
 		glm::mat4 view_matrix_; // View matrix
 		glm::mat4 projection_matrix_; // Projection matrix
-
-									  // Create view matrix from current camera parameters
-		void SetupViewMatrix(void);
+		void SetupViewMatrix(void); // Create view matrix from current camera parameters
 
 	}; // class Camera
 

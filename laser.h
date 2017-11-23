@@ -1,6 +1,5 @@
 #ifndef LASER_H_
 #define LASER_H_
-
 #include <string>
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -8,14 +7,11 @@
 #include <glm/glm.hpp>
 #define GLM_FORCE_RADIANS
 #include <glm/gtc/quaternion.hpp>
-
 #include "resource.h"
 #include "scene_node.h"
 
 namespace game {
-
 	class Laser : public SceneNode {
-
 	public:
 		Laser(const std::string name, const Resource *geometry, const Resource *material, const Resource *tex = NULL);
 
@@ -26,7 +22,7 @@ namespace game {
 		void SetDir(glm::vec3 dir);
 
 		// Update geometry configuration
-		void Update(void);
+		void Update(float delta_time);
 
 	private:
 		glm::vec3 direction;

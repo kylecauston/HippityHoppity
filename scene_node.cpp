@@ -4,24 +4,19 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <time.h>
-
 #include "scene_node.h"
 
-
 namespace game {
-
 	glm::vec3 SceneNode::default_forward = glm::vec3(0.0, 0.0, 1.0);
 
 	SceneNode::SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *tex) {
-
 		// Set name of scene node
 		name_ = name;
 
 		if (geometry) {
 			// Set geometry
 			if (geometry->GetType() == PointSet) {
-				mode_ = GL_TRIANGLES; //GL_POINTS ??
-				shape = 1; //keeping track of when i am drawing cubes instead of spheres
+				mode_ = GL_POINTS;
 			}
 			else if (geometry->GetType() == Mesh) {
 				mode_ = GL_TRIANGLES;
@@ -29,7 +24,6 @@ namespace game {
 			else {
 				throw(std::invalid_argument(std::string("Invalid type of geometry")));
 			}
-
 			array_buffer_ = geometry->GetArrayBuffer();
 			element_array_buffer_ = geometry->GetElementArrayBuffer();
 			size_ = geometry->GetSize();
@@ -43,7 +37,6 @@ namespace game {
 			if (material->GetType() != Material) {
 				throw(std::invalid_argument(std::string("Invalid type of material")));
 			}
-
 			material_ = material->GetResource();
 		}
 		else {
@@ -64,66 +57,45 @@ namespace game {
 		parent_ = NULL;
 	}
 
-
-	SceneNode::~SceneNode() {
-	}
-
+	SceneNode::~SceneNode() {}
 
 	const std::string SceneNode::GetName(void) const {
-
 		return name_;
 	}
 
-
 	glm::vec3 SceneNode::GetPosition(void) const {
-
 		return position_;
 	}
 
-
 	glm::quat SceneNode::GetOrientation(void) const {
-
 		return orientation_;
 	}
 
-
 	glm::vec3 SceneNode::GetScale(void) const {
-
 		return scale_;
 	}
 
-
 	void SceneNode::SetPosition(glm::vec3 position) {
-
 		position_ = position;
 	}
 
 	void SceneNode::SetPosition(float x, float y, float z) {
-
 		SetPosition(glm::vec3(x, y, z));
 	}
 
-
 	void SceneNode::SetOrientation(glm::quat orientation) {
-
 		orientation_ = orientation;
 	}
 
-
 	void SceneNode::SetScale(glm::vec3 scale) {
-
 		scale_ = scale;
 	}
 
-
 	void SceneNode::SetScale(float x, float y, float z) {
-
 		SetScale(glm::vec3(x, y, z));
 	}
 
-
 	void SceneNode::Translate(glm::vec3 trans) {
-
 		position_ += trans;
 	}
 
@@ -131,15 +103,11 @@ namespace game {
 		Translate(glm::vec3(x, y, z));
 	}
 
-
 	void SceneNode::Rotate(glm::quat rot) {
-
 		orientation_ *= rot;
 	}
 
-
 	void SceneNode::Scale(glm::vec3 scale) {
-
 		scale_ *= scale;
 	}
 
@@ -148,36 +116,29 @@ namespace game {
 	}
 
 	GLenum SceneNode::GetMode(void) const {
-
 		return mode_;
 	}
 
-
 	GLuint SceneNode::GetArrayBuffer(void) const {
-
 		return array_buffer_;
 	}
 
-
 	GLuint SceneNode::GetElementArrayBuffer(void) const {
-
 		return element_array_buffer_;
 	}
 
-
 	GLsizei SceneNode::GetSize(void) const {
-
 		return size_;
 	}
 
-
 	GLuint SceneNode::GetMaterial(void) const {
-
 		return material_;
 	}
 
-
 	glm::mat4 SceneNode::Draw(Camera *camera, glm::mat4 parent_transf) {
+		if (name_ == "Laser1") { //laser drawn in front of the helicopter for now
+			parent_transf = glm::mat4(1.0);
+		}
 
 		if ((array_buffer_ > 0) && (material_ > 0)) {
 			// Select proper material (shader program)
@@ -194,22 +155,8 @@ namespace game {
 			glm::mat4 transf = SetupShader(material_, parent_transf);
 
 			// Draw geometry
-			if (shape == 1) { //mode_ == GL_POINTS
-								  //this is the case for drawing cubes rather than spheres
-					GLint vertex_att = glGetAttribLocation(material_, "vertex");
-					glVertexAttribPointer(vertex_att, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), 0);
-					glEnableVertexAttribArray(vertex_att);
-
-					GLint normal_att = glGetAttribLocation(material_, "normal");
-					glVertexAttribPointer(normal_att, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (void *)(3 * sizeof(GLfloat)));
-					glEnableVertexAttribArray(normal_att);
-
-					GLint color_att = glGetAttribLocation(material_, "color");
-					glVertexAttribPointer(color_att, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (void *)(6 * sizeof(GLfloat)));
-					glEnableVertexAttribArray(color_att);
-
-					glDrawArrays(mode_, 0, size_);
-
+			if (mode_ == GL_POINTS) {
+				glDrawArrays(mode_, 0, size_);
 			}
 			else {
 				glDrawElements(mode_, size_, GL_UNSIGNED_INT, 0);
@@ -225,15 +172,11 @@ namespace game {
 		}
 	}
 
-
 	void SceneNode::Update(float deltaTime) {
-
 		// Do nothing for this generic type of scene node
 	}
 
-
 	glm::mat4 SceneNode::SetupShader(GLuint program, glm::mat4 parent_transf) {
-
 		// Set attributes for shaders
 		GLint vertex_att = glGetAttribLocation(program, "vertex");
 		glVertexAttribPointer(vertex_att, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(GLfloat), 0);
@@ -270,22 +213,16 @@ namespace game {
 		return transf;
 	}
 
-
 	void SceneNode::AddChild(SceneNode *node) {
-
 		children_.push_back(node);
 		node->parent_ = this;
 	}
 
-
 	std::vector<SceneNode *>::const_iterator SceneNode::children_begin() const {
-
 		return children_.begin();
 	}
 
-
 	std::vector<SceneNode *>::const_iterator SceneNode::children_end() const {
-
 		return children_.end();
 	}
 

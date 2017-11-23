@@ -1,28 +1,25 @@
 #ifndef SCENE_GRAPH_H_
 #define SCENE_GRAPH_H_
-
 #include <string>
 #include <vector>
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-
 #include "scene_node.h"
 #include "resource.h"
 #include "camera.h"
 
 namespace game {
-
-    // Class that manages all the objects in a scene
-    class SceneGraph {
+	// Class that manages all the objects in a scene
+	class SceneGraph {
 	private:
 		// Background color
 		glm::vec3 background_color_;
 
+	public:
 		// Root of the hierarchy
 		SceneNode * root_;
 
-	public:
 		SceneGraph(void);
 		~SceneGraph();
 
@@ -34,12 +31,15 @@ namespace game {
 		void SetRoot(SceneNode *node);
 		// Find a scene node with a specific name
 		SceneNode *GetNode(std::string node_name) const;
+		SceneNode *FindName(std::string node_name) const;
 
 		// Draw the entire scene
 		void Draw(Camera *camera);
 
 		// Update entire scene
 		void Update(float deltaTime);
+
+		void Remove(std::string node_name); //remove a node with a given name
 
 	}; // class SceneGraph
 

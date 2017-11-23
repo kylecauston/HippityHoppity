@@ -25,7 +25,7 @@ std::vector<glm::vec3> Hitbox::getPoints() {
 				// from center to each point
 				v = glm::vec3(x, y, z);
 				v = glm::normalize(v);
-				
+
 				// then rotate the vector by the rotation
 				v = *rotation * v * -*rotation;
 
@@ -39,6 +39,7 @@ std::vector<glm::vec3> Hitbox::getPoints() {
 			}
 		}
 	}
+	return points; //added this so it can compile, dunno what you wanted to return
 }
 
 void Hitbox::setPosition(glm::vec3* p) {
