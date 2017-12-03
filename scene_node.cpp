@@ -9,7 +9,7 @@
 namespace game {
 	glm::vec3 SceneNode::default_forward = glm::vec3(0.0, 0.0, 1.0);
 
-	SceneNode::SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *tex) {
+	SceneNode::SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *tex, bool collision) {
 		// Set name of scene node
 		name_ = name;
 
@@ -27,6 +27,8 @@ namespace game {
 			array_buffer_ = geometry->GetArrayBuffer();
 			element_array_buffer_ = geometry->GetElementArrayBuffer();
 			size_ = geometry->GetSize();
+
+			hb = geometry->GetHitbox();
 		}
 		else {
 			array_buffer_ = 0;
@@ -55,6 +57,8 @@ namespace game {
 
 		// Hierarchy
 		parent_ = NULL;
+
+		collidable = collision;
 	}
 
 	SceneNode::~SceneNode() {}
@@ -75,6 +79,10 @@ namespace game {
 		return scale_;
 	}
 
+	bool SceneNode::isCollidable(void) const {
+		return collidable;
+	}
+
 	void SceneNode::SetPosition(glm::vec3 position) {
 		position_ = position;
 	}
@@ -89,6 +97,7 @@ namespace game {
 
 	void SceneNode::SetScale(glm::vec3 scale) {
 		scale_ = scale;
+		hb.setScale(scale);
 	}
 
 	void SceneNode::SetScale(float x, float y, float z) {
@@ -108,7 +117,7 @@ namespace game {
 	}
 
 	void SceneNode::Scale(glm::vec3 scale) {
-		scale_ *= scale;
+		SetScale(scale_ * scale);
 	}
 
 	void SceneNode::Scale(float x, float y, float z) {
@@ -174,6 +183,10 @@ namespace game {
 
 	void SceneNode::Update(float deltaTime) {
 		// Do nothing for this generic type of scene node
+	}
+
+	void SceneNode::onCollide(Collidable* other) {
+		// do nothing for generic type
 	}
 
 	glm::mat4 SceneNode::SetupShader(GLuint program, glm::mat4 parent_transf) {

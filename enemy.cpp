@@ -1,7 +1,7 @@
 #include "enemy.h"
 
 namespace game {
-	Enemy::Enemy(const std::string name, const SceneNode* targ, const Resource *geometry, const Resource *material, const Resource *tex) : SceneNode(name, geometry, material, tex) {
+	Enemy::Enemy(const std::string name, const SceneNode* targ, const Resource *geometry, const Resource *material, const Resource *tex) : SceneNode(name, geometry, material, tex, true) {
 		target = targ;
 	}
 
@@ -19,7 +19,7 @@ namespace game {
 			// the vector into a movement vector (the actual units it will move)
 			glm::vec3 movement = (deltaTime*speed) * (glm::normalize(toTarget));
 
-			Translate(movement);
+			//Translate(movement);
 		}
 
 		toTarget = target->GetPosition() - GetPosition();
@@ -57,6 +57,11 @@ namespace game {
 
 	void Enemy::Attack() {
 		glm::quat aiming = GetOrientation();
+	}
+
+	void Enemy::collide(Collidable* other)
+	{
+
 	}
 
 } // namespace game

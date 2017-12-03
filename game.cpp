@@ -153,15 +153,47 @@ namespace game {
 
 		//generate a test enemy and target for him to chase
 		Resource *cube = resman_.GetResource("CubePointSet");
-		SceneNode *target = new SceneNode("Target", cube, mat);
+		SceneNode *target = new SceneNode("Target", cube, mat, NULL, true);
 		target->SetPosition(10, 90, 400);
-		//target->SetScale(10, 10, 10);
+		target->SetScale(1, 1, 1);
 		ground->AddChild(target);
 
-		Enemy* baddie = new Enemy("Enemy", target, cube, mat);
+		Enemy* baddie = new Enemy("Enemy1", target, cube, mat);
 		baddie->SetPosition(10, 80, 400);
-		baddie->SetScale(2, 2, 30);
+		baddie->SetScale(4, 4, 30);
+
+		SceneNode* arm = new SceneNode("Enemy1_arm", cube, mat, NULL, true);
+		arm->SetPosition(4, 0, 0);
+		arm->SetScale(2, 20, 2);
+		baddie->AddChild(arm);
+
+		SceneNode* hand = new SceneNode("Enemy1_arm_hand", cube, mat, NULL, true);
+		hand->SetPosition(2, 0, 0);
+		hand->SetScale(1, 1, 10);
+		arm->AddChild(hand);
+
+		arm = new SceneNode("Enemy1_arm2", cube, mat, NULL, true);
+		arm->SetPosition(-4, 0, 0);
+		arm->SetScale(2, 20, 2);
+		baddie->AddChild(arm);
+
+		hand = new SceneNode("Enemy1_arm2_hand", cube, mat, NULL, true);
+		hand->SetPosition(-2, 0, 0);
+		hand->SetScale(1, 1, 10);
+		arm->AddChild(hand);
+
 		ground->AddChild(baddie);
+
+		 baddie = new Enemy("Enemy2", target, cube, mat);
+		baddie->SetPosition(40, 80, 400);
+		baddie->SetScale(4, 4, 30);
+		//ground->AddChild(baddie);
+
+		Resource *sphere = resman_.GetResource("SimpleSphereMesh");
+		baddie = new Enemy("Enemy3", target, sphere, mat);
+		baddie->SetPosition(0, 80, 400);
+		baddie->SetScale(10, 10,10);
+		//ground->AddChild(baddie);
 
 		//this is stored to cheesily draw the helicopter later
 		prgm = resman_.GetResource("ObjectMaterial")->GetResource();
@@ -175,6 +207,7 @@ namespace game {
 	void Game::MainLoop(void) {
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
+		glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
 
 		// Loop while the user did not close the window
 		while (!glfwWindowShouldClose(window_)) {
@@ -196,14 +229,16 @@ namespace game {
 
 						SceneNode* targ = scene_.GetNode("Target");
 						if (temp) {
-							targ->Translate(vel);
+							//targ->Translate(vel);
 						}
 					}
 				} //end if animating_
 
 				// Draw the scene
 				scene_.Draw(&camera_);
-				heli_.DrawHelicopter(prgm, &camera_); //helicopter is just drawn as UI for now
+				//heli_.DrawHelicopter(prgm, &camera_); //helicopter is just drawn as UI for now
+
+				scene_.CheckCollisions();
 			}
 
 			glfwSwapBuffers(window_); // Push buffer drawn in the background onto the display
@@ -223,12 +258,12 @@ namespace game {
 		}
 		else if (game->game_state == GAME) { //keybinds for gameplay
 			if (key == GLFW_KEY_KP_9 && action == GLFW_PRESS) {
-				Enemy* enemy = ((Enemy*)(game->scene_.GetNode("Enemy")));
+				Enemy* enemy = ((Enemy*)(game->scene_.GetNode("Enemy1")));
 				enemy->rotateSpeed = std::max(0.0f, std::min(enemy->rotateSpeed + 0.1f, 1.0f));
 				std::cout << enemy->rotateSpeed << std::endl;
 			}
 			if (key == GLFW_KEY_KP_7 && action == GLFW_PRESS) {
-				Enemy* enemy = ((Enemy*)(game->scene_.GetNode("Enemy")));
+				Enemy* enemy = ((Enemy*)(game->scene_.GetNode("Enemy1")));
 				enemy->rotateSpeed = std::max(0.0f, std::min(enemy->rotateSpeed - 0.1f, 1.0f));
 				std::cout << enemy->rotateSpeed << std::endl;
 			}
@@ -236,21 +271,27 @@ namespace game {
 				game->scene_.GetNode("Target")->SetPosition(10, 90, 400);
 			}
 			if (key == GLFW_KEY_KP_1 && action == GLFW_PRESS) {
+				game->scene_.GetNode("Target")->Translate(0, 0.1, 0);
 				vel = glm::vec3(0, 1, 0);
 			}
 			if (key == GLFW_KEY_KP_3 && action == GLFW_PRESS) {
+				game->scene_.GetNode("Target")->Translate(0, -1, 0);
 				vel = glm::vec3(0, -1, 0);
 			}
 			if (key == GLFW_KEY_KP_6 && action == GLFW_PRESS) {
+				game->scene_.GetNode("Target")->Translate(1, 0, 0);
 				vel = glm::vec3(1, 0, 0);
 			}
 			if (key == GLFW_KEY_KP_4 && action == GLFW_PRESS) {
+				game->scene_.GetNode("Target")->Translate(-1, 0, 0);
 				vel = glm::vec3(-1, 0, 0);
 			}
 			if (key == GLFW_KEY_KP_8 && action == GLFW_PRESS) {
+				game->scene_.GetNode("Target")->Translate(0, 0, -1);
 				vel = glm::vec3(0, 0, -1);
 			}
 			if (key == GLFW_KEY_KP_2 && action == GLFW_PRESS) {
+				game->scene_.GetNode("Target")->Translate(0, 0, 1);
 				vel = glm::vec3(0, 0, 1);
 			}
 			if (key == GLFW_KEY_KP_5 && action == GLFW_PRESS) {

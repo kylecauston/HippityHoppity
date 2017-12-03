@@ -9,12 +9,13 @@ namespace game {
 		size_ = size;
 	}
 
-	Resource::Resource(ResourceType type, std::string name, GLuint array_buffer, GLuint element_array_buffer, GLsizei size) {
+	Resource::Resource(ResourceType type, std::string name, GLuint array_buffer, GLuint element_array_buffer, GLsizei size, Hitbox _hb) {
 		type_ = type;
 		name_ = name;
 		array_buffer_ = array_buffer;
 		element_array_buffer_ = element_array_buffer;
 		size_ = size;
+		hb = _hb;
 	}
 
 	Resource::~Resource() {}
@@ -41,6 +42,10 @@ namespace game {
 
 	GLsizei Resource::GetSize(void) const {
 		return size_;
+	}
+
+	Hitbox Resource::GetHitbox(void) const {
+		return hb;
 	}
 
 } // namespace game

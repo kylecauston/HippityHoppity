@@ -25,10 +25,10 @@ namespace game {
 		resource_.push_back(res);
 	}
 
-	void ResourceManager::AddResource(ResourceType type, const std::string name, GLuint array_buffer, GLuint element_array_buffer, GLsizei size) {
+	void ResourceManager::AddResource(ResourceType type, const std::string name, GLuint array_buffer, GLuint element_array_buffer, GLsizei size, Hitbox _hb) {
 		Resource *res;
 
-		res = new Resource(type, name, array_buffer, element_array_buffer, size);
+		res = new Resource(type, name, array_buffer, element_array_buffer, size, _hb);
 
 		resource_.push_back(res);
 	}
@@ -148,6 +148,40 @@ namespace game {
 		return content;
 	}
 
+	Hitbox ResourceManager::genHitbox(std::vector<glm::vec3> points)
+	{
+		// need to take the maximum and minimum values of the model, and return that box
+
+		// right/left = +/- x
+		// up/down = +/- y 
+		// close/far = +/- z
+		float right = NAN, left = NAN, up = NAN, down = NAN, close = NAN, Far = NAN;
+		for (glm::vec3 p : points) {
+			right = fmax(right, p.x);
+			left = fmin(left, p.x);
+
+			up = fmax(up, p.y);
+			down = fmin(down, p.y);
+
+			close = fmax(close, p.z);
+			Far = fmin(Far, p.z);
+		}
+
+		std::vector<glm::vec3> hb_points = std::vector<glm::vec3>();
+		hb_points.push_back(glm::vec3(left, down, Far));
+		hb_points.push_back(glm::vec3(left, down, close));
+		hb_points.push_back(glm::vec3(left, up, Far));
+		hb_points.push_back(glm::vec3(left, up, close));
+		hb_points.push_back(glm::vec3(right, down, Far));
+		hb_points.push_back(glm::vec3(right, down, close));
+		hb_points.push_back(glm::vec3(right, up, Far));
+		hb_points.push_back(glm::vec3(right, up, close));
+		Hitbox hb = Hitbox(hb_points);
+
+
+		return hb;
+	}
+
 	void ResourceManager::CreateTorus(std::string object_name, float loop_radius, float circle_radius, int num_loop_samples, int num_circle_samples) {
 		// Number of vertices and faces to be created
 		// Check the construction algorithm below to understand the numbers
@@ -180,6 +214,9 @@ namespace game {
 		glm::vec3 vertex_color;
 		glm::vec2 vertex_coord;
 
+		// for generating hitbox
+		std::vector<glm::vec3> all_positions = std::vector<glm::vec3>();
+
 		for (int i = 0; i < num_loop_samples; i++) { // large loop
 
 			theta = 2.0*glm::pi<GLfloat>()*i / num_loop_samples; // loop sample (angle theta)
@@ -197,6 +234,8 @@ namespace game {
 					(float)j / (float)num_circle_samples);
 				vertex_coord = glm::vec2(theta / 2.0*glm::pi<GLfloat>(),
 					phi / 2.0*glm::pi<GLfloat>());
+
+				all_positions.push_back(vertex_position);
 
 				// Add vectors to the data buffer
 				for (int k = 0; k < 3; k++) {
@@ -242,7 +281,7 @@ namespace game {
 		delete[] face;
 
 		// Create resource
-		AddResource(Mesh, object_name, vbo, ebo, face_num * face_att);
+		AddResource(Mesh, object_name, vbo, ebo, face_num * face_att, genHitbox(all_positions));
 	}
 
 	void ResourceManager::CreateSphere(std::string object_name, float radius, int num_samples_theta, int num_samples_phi) {
@@ -275,6 +314,8 @@ namespace game {
 		glm::vec3 vertex_color;
 		glm::vec2 vertex_coord;
 
+		std::vector<glm::vec3> positions = std::vector<glm::vec3>(); // for generating hitbox
+
 		for (int i = 0; i < num_samples_theta; i++) {
 			theta = 2.0*glm::pi<GLfloat>()*i / (num_samples_theta - 1); // angle theta
 			for (int j = 0; j < num_samples_phi; j++) {
@@ -288,7 +329,10 @@ namespace game {
 					vertex_normal.y*radius,
 					vertex_normal.z*radius),
 					vertex_color = glm::vec3(((float)i) / ((float)num_samples_theta), 1.0 - ((float)j) / ((float)num_samples_phi), ((float)j) / ((float)num_samples_phi));
+		
 				vertex_coord = glm::vec2(((float)i) / ((float)num_samples_theta), 1.0 - ((float)j) / ((float)num_samples_phi));
+
+				positions.push_back(vertex_position);
 
 				// Add vectors to the data buffer
 				for (int k = 0; k < 3; k++) {
@@ -334,7 +378,7 @@ namespace game {
 		delete[] face;
 
 		// Create resource
-		AddResource(Mesh, object_name, vbo, ebo, face_num * face_att);
+		AddResource(Mesh, object_name, vbo, ebo, face_num * face_att, genHitbox(positions));
 	}
 
 	void ResourceManager::CreateCube(std::string object_name) {
@@ -378,6 +422,16 @@ namespace game {
 			0.5, -0.5,  0.5,    0.0, -1.0,  0.0,    0.1, 0.55, 0.1,    0.0, 1.0,
 		};
 
+		std::vector<glm::vec3> positions = std::vector<glm::vec3>();
+		positions.push_back(glm::vec3(-0.5, -0.5, -0.5));
+		positions.push_back(glm::vec3(-0.5, -0.5, 0.5));
+		positions.push_back(glm::vec3(-0.5, 0.5, -0.5));
+		positions.push_back(glm::vec3(-0.5, 0.5, 0.5));
+		positions.push_back(glm::vec3(0.5, -0.5, -0.5));
+		positions.push_back(glm::vec3(0.5, -0.5, 0.5));
+		positions.push_back(glm::vec3(0.5, 0.5, -0.5));
+		positions.push_back(glm::vec3(0.5, 0.5, 0.5));
+
 		// Triangles
 		GLuint face[] = {
 			// First cube face, with two triangles
@@ -411,7 +465,7 @@ namespace game {
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(face), face, GL_STATIC_DRAW);
 
 		// Create resource
-		AddResource(Mesh, object_name, vbo, ebo, sizeof(face) / sizeof(GLfloat));
+		AddResource(Mesh, object_name, vbo, ebo, sizeof(face) / sizeof(GLfloat), genHitbox(positions));
 	}
 
 	void ResourceManager::CreateGround(std::string object_name) {
@@ -549,7 +603,7 @@ namespace game {
 		delete[] face;
 
 		// Create resource
-		AddResource(Mesh, object_name, vbo, ebo, face_num * face_att);
+		AddResource(Mesh, object_name, vbo, ebo, face_num * face_att, Hitbox());
 	}
 
 } // namespace game;

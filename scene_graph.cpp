@@ -70,6 +70,11 @@ namespace game {
 			transf.pop();
 			// Draw node based on parent transformation
 			glm::mat4 current_transf = current->Draw(camera, parent_transf);
+			
+			// if the current node has collision, update it's collidables
+			if(current->isCollidable())
+				current->updateCollidable(current_transf);
+
 			// Push children of the node to the stack, along with the node's
 			// transformation
 			for (std::vector<SceneNode *>::const_iterator it = current->children_begin();
@@ -108,6 +113,28 @@ namespace game {
 		std::vector<SceneNode*>::iterator position = std::find(root_->children_.begin(), root_->children_.end(), FindName(node_name));
 		if (position != root_->children_.end()) {
 			root_->children_.erase(position);
+		}
+	}
+
+	void SceneGraph::CheckCollisions() {
+		std::cout << std::endl << "START" << std::endl;
+
+		for (std::vector<SceneNode *>::const_iterator n1 = root_->children_begin();
+			n1 != root_->children_end()-1; n1++) {
+		
+			// if this node isn't collidable, we don't need to check it's collisions
+			if (!(*n1)->isCollidable())	continue;
+
+			for (std::vector<SceneNode *>::const_iterator n2 = n1+1;
+				n2 != root_->children_end(); n2++) {
+
+				// if this node isn't collidable, don't check collisions
+				if (!(*n2)->isCollidable()) continue;
+				
+				if (CollisionManager::checkHierarchicalCollision(*n1, *n2)) {
+					std::cout << "Collision between " << (*n1)->GetName() << " and " << (*n2)->GetName() << std::endl;
+				}
+			}
 		}
 	}
 

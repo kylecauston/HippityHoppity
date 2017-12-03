@@ -8,6 +8,7 @@
 #include "scene_node.h"
 #include "resource.h"
 #include "camera.h"
+#include "collision_manager.h"
 
 namespace game {
 	// Class that manages all the objects in a scene
@@ -38,6 +39,9 @@ namespace game {
 
 		// Update entire scene
 		void Update(float deltaTime);
+
+		// run collisions on the children of node (the separate entities)
+		void CheckCollisions();
 
 		void Remove(std::string node_name); //remove a node with a given name
 

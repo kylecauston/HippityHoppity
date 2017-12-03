@@ -4,6 +4,7 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include "hitbox.h"
 
 namespace game {
 	// Possible resource types
@@ -24,10 +25,11 @@ namespace game {
 			};
 		};
 		GLsizei size_; // Number of primitives in geometry
+		Hitbox hb;
 
 	public:
 		Resource(ResourceType type, std::string name, GLuint resource, GLsizei size);
-		Resource(ResourceType type, std::string name, GLuint array_buffer, GLuint element_array_buffer, GLsizei size);
+		Resource(ResourceType type, std::string name, GLuint array_buffer, GLuint element_array_buffer, GLsizei size, Hitbox _hb);
 		~Resource();
 		ResourceType GetType(void) const;
 		const std::string GetName(void) const;
@@ -35,6 +37,7 @@ namespace game {
 		GLuint GetArrayBuffer(void) const;
 		GLuint GetElementArrayBuffer(void) const;
 		GLsizei GetSize(void) const;
+		Hitbox GetHitbox(void) const;
 
 	}; // class Resource
 

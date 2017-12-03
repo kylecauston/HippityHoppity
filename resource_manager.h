@@ -21,7 +21,7 @@ namespace game {
 		~ResourceManager();
 		// Add a resource that was already loaded and allocated to memory
 		void AddResource(ResourceType type, const std::string name, GLuint resource, GLsizei size);
-		void AddResource(ResourceType type, const std::string name, GLuint array_buffer, GLuint element_array_buffer, GLsizei size);
+		void AddResource(ResourceType type, const std::string name, GLuint array_buffer, GLuint element_array_buffer, GLsizei size, Hitbox _hb);
 		// Load a resource from a file, according to the specified type
 		void LoadResource(ResourceType type, const std::string name, const char *filename);
 		// Get the resource with the specified name
@@ -32,6 +32,8 @@ namespace game {
 		void CreateSphere(std::string object_name, float radius = 0.6, int num_samples_theta = 90, int num_samples_phi = 45);
 		void CreateCube(std::string object_name);
 		void CreateGround(std::string object_name); //terrain mesh
+
+		Hitbox genHitbox(std::vector<glm::vec3> points);
 
 	private:
 		// List storing all resources

@@ -10,13 +10,14 @@
 #include <glm/gtc/quaternion.hpp>
 #include "resource.h"
 #include "camera.h"
+#include "collidable.h"
 
 namespace game {
 	// Class that manages one object in a scene 
-	class SceneNode {
+	class SceneNode : public Collidable {
 	public:
 		// Create scene node from given resources
-		SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *tex = NULL);
+		SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *tex = NULL, bool collision = false);
 
 		// Destructor
 		~SceneNode();
@@ -28,6 +29,7 @@ namespace game {
 		glm::vec3 GetPosition(void) const;
 		glm::quat GetOrientation(void) const;
 		glm::vec3 GetScale(void) const;
+		bool isCollidable(void) const;
 
 		// Set node attributes
 		void SetPosition(glm::vec3 position);
@@ -48,6 +50,8 @@ namespace game {
 
 		// Update the node
 		virtual void Update(float deltaTime);
+
+		virtual void onCollide(Collidable* other);
 
 		// OpenGL variables
 		GLenum GetMode(void) const;
@@ -76,6 +80,8 @@ namespace game {
 		glm::vec3 position_; // Position of node
 		glm::quat orientation_; // Orientation of node
 		glm::vec3 scale_; // Scale of node
+
+		bool collidable;
 
 		// Hierarchy
 		SceneNode *parent_;
