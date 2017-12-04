@@ -44,6 +44,7 @@ namespace game {
 		GLuint prgm; //need this to cheesily draw the heli for now
 		int game_state;
 		SceneNode *title; //cube that displays the title screen
+		int turning;
 	
 	private:
 		// GLFW window

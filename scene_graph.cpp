@@ -117,7 +117,7 @@ namespace game {
 	}
 
 	void SceneGraph::CheckCollisions() {
-		std::cout << std::endl << "START" << std::endl;
+		//std::cout << std::endl << "START" << std::endl;
 
 		for (std::vector<SceneNode *>::const_iterator n1 = root_->children_begin();
 			n1 != root_->children_end()-1; n1++) {

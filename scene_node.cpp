@@ -217,6 +217,11 @@ namespace game {
 		GLint world_mat = glGetUniformLocation(program, "world_mat");
 		glUniformMatrix4fv(world_mat, 1, GL_FALSE, glm::value_ptr(local_transf));
 
+		// Normal matrix
+		glm::mat4 normal_matrix = glm::transpose(glm::inverse(transf));
+		GLint normal_mat = glGetUniformLocation(program, "normal_mat");
+		glUniformMatrix4fv(normal_mat, 1, GL_FALSE, glm::value_ptr(normal_matrix));
+
 		// Timer
 		GLint timer_var = glGetUniformLocation(program, "timer");
 		double current_time = glfwGetTime();

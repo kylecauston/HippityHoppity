@@ -146,6 +146,7 @@ namespace game {
 			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
 		}
 
+
 		SceneNode* ground = new SceneNode("Ground", geom, mat);
 		scene_.SetRoot(ground);
 		//ground->SetScale(glm::vec3(0.5, 1.0, 0.5));
@@ -184,7 +185,7 @@ namespace game {
 
 		ground->AddChild(baddie);
 
-		 baddie = new Enemy("Enemy2", target, cube, mat);
+		baddie = new Enemy("Enemy2", target, cube, mat);
 		baddie->SetPosition(40, 80, 400);
 		baddie->SetScale(4, 4, 30);
 		//ground->AddChild(baddie);
@@ -192,11 +193,15 @@ namespace game {
 		Resource *sphere = resman_.GetResource("SimpleSphereMesh");
 		baddie = new Enemy("Enemy3", target, sphere, mat);
 		baddie->SetPosition(0, 80, 400);
-		baddie->SetScale(10, 10,10);
+		baddie->SetScale(10, 10, 10);
 		//ground->AddChild(baddie);
 
 		//this is stored to cheesily draw the helicopter later
 		prgm = resman_.GetResource("ObjectMaterial")->GetResource();
+
+		SceneNode* test_sun = new SceneNode("Sun", sphere, mat); //the glorious lightsource
+		test_sun->SetPosition(160.0, 150.0, 300.0);
+		ground->AddChild(test_sun);
 
 		//draw our title screen text on a square (cause i have no idea how to draw text on the screen)
 		title = Cube(UI, "TitleScreen", "CubePointSet", "ShinyTextureMaterial", "GameTitle");
@@ -207,7 +212,7 @@ namespace game {
 	void Game::MainLoop(void) {
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
-		glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
+		//glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
 
 		// Loop while the user did not close the window
 		while (!glfwWindowShouldClose(window_)) {
@@ -227,6 +232,15 @@ namespace game {
 						heli_.Update(deltaTime);
 						last_time = current_time;
 
+						//handle turning here LUL
+						float rot_factor(1.5 * glm::pi<float>() / 180);
+						if (turning == 1) {
+							camera_.Yaw(rot_factor);
+						}
+						else if (turning == 2) {
+							camera_.Yaw(-rot_factor);
+						}
+
 						SceneNode* targ = scene_.GetNode("Target");
 						if (temp) {
 							//targ->Translate(vel);
@@ -236,7 +250,7 @@ namespace game {
 
 				// Draw the scene
 				scene_.Draw(&camera_);
-				//heli_.DrawHelicopter(prgm, &camera_); //helicopter is just drawn as UI for now
+				heli_.DrawHelicopter(prgm, &camera_); //helicopter is just drawn as UI for now
 
 				scene_.CheckCollisions();
 			}
@@ -257,6 +271,7 @@ namespace game {
 			}
 		}
 		else if (game->game_state == GAME) { //keybinds for gameplay
+			float trans_factor = 3.0;
 			if (key == GLFW_KEY_KP_9 && action == GLFW_PRESS) {
 				Enemy* enemy = ((Enemy*)(game->scene_.GetNode("Enemy1")));
 				enemy->rotateSpeed = std::max(0.0f, std::min(enemy->rotateSpeed + 0.1f, 1.0f));
@@ -309,56 +324,74 @@ namespace game {
 			if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) { // Quit game if 'ESC' is pressed
 				glfwSetWindowShouldClose(window, true);
 			}
-			if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) { // Pause animation if space bar is pressed
-				game->animating_ = (game->animating_ == true) ? false : true;
+
+			//MOVEMENT HERE
+			if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) { // spacebar hovers upwards
+				game->camera_.vel_y = trans_factor;
+			}
+			if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
+				game->camera_.vel_y = 0.0;
+			}
+			if (key == GLFW_KEY_X && action == GLFW_PRESS) { // x hovers downwards
+				game->camera_.vel_y = -trans_factor;
+			}
+			if (key == GLFW_KEY_X && action == GLFW_RELEASE) {
+				game->camera_.vel_y = 0.0;
+			}
+			if (key == GLFW_KEY_S && action == GLFW_PRESS) { // s moves backwards
+				game->camera_.vel_z = -trans_factor;
+			}
+			if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
+				game->camera_.vel_z = 0.0;
+			}
+			if (key == GLFW_KEY_W && action == GLFW_PRESS) { // w moves forwards
+				game->camera_.vel_z = trans_factor;
+			}
+			if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
+				game->camera_.vel_z = 0.0;
+			}
+			if (key == GLFW_KEY_Q && action == GLFW_PRESS) { // Q strafes left
+				game->camera_.vel_x = -trans_factor;
+			}
+			if (key == GLFW_KEY_Q && action == GLFW_RELEASE) {
+				game->camera_.vel_x = 0.0;
+			}
+			if (key == GLFW_KEY_E && action == GLFW_PRESS) { // E strafes right
+				game->camera_.vel_x = trans_factor;
+			}
+			if (key == GLFW_KEY_E && action == GLFW_RELEASE) {
+				game->camera_.vel_x = 0.0;
 			}
 
-			// Controls to fly the helicopter (just awful right now - work in progress)
-			float deviation = 0.5 + ((rand() % 101) / 100); //ranges from 50% to 150% rotation speed
-			float rot_factor(deviation * glm::pi<float>() / 180); //deviates a bit to add realism?
-			float trans_factor = 0.5;
+			//TURNING HERE
+			float rot_factor(1.5 * glm::pi<float>() / 180);
+			if (key == GLFW_KEY_A && action == GLFW_PRESS) { // a turns left
+				//game->camera_.Yaw(rot_factor);
+				game->turning = 1;
+			}
+			if (key == GLFW_KEY_A && action == GLFW_RELEASE) {
+				game->turning = 0;
+			}
+			if (key == GLFW_KEY_D && action == GLFW_PRESS) { // d turns right
+				//game->camera_.Yaw(-rot_factor);
+				game->turning = 2;
+			}
+			if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
+				game->turning = 0;
+			}
 			if (key == GLFW_KEY_UP) {
 				game->camera_.Pitch(rot_factor);
 			}
 			if (key == GLFW_KEY_DOWN) {
 				game->camera_.Pitch(-rot_factor);
 			}
-			if (key == GLFW_KEY_LEFT) {
-				game->camera_.Yaw(rot_factor);
-			}
-			if (key == GLFW_KEY_RIGHT) {
-				game->camera_.Yaw(-rot_factor);
-			}
-			if (key == GLFW_KEY_S) {
-				game->camera_.Roll(-rot_factor);
-			}
-			if (key == GLFW_KEY_X) {
-				game->camera_.Roll(rot_factor);
-			}
-			if (key == GLFW_KEY_A) { //translation movements are based on an accelerating velocity now
-				game->camera_.vel_z += trans_factor;
-			}
-			if (key == GLFW_KEY_Z) {
-				game->camera_.vel_z -= trans_factor;
-			}
-			if (key == GLFW_KEY_J) {
-				game->camera_.vel_x -= trans_factor;
-			}
-			if (key == GLFW_KEY_L) {
-				game->camera_.vel_x += trans_factor;
-			}
-			if (key == GLFW_KEY_I) {
-				game->camera_.vel_y += trans_factor;
-			}
-			if (key == GLFW_KEY_K) {
-				game->camera_.vel_y -= trans_factor;
-			}
-			if (key == GLFW_KEY_W) { //always good to have a brake handy
+
+			if (key == GLFW_KEY_R) { //always good to have a brake handy
 				game->camera_.vel_x = 0;
 				game->camera_.vel_y = 0;
 				game->camera_.vel_z = 0;
 			}
-			if (key == GLFW_KEY_E && action == GLFW_PRESS) { //fire!
+			if (key == GLFW_KEY_F && action == GLFW_PRESS) { //fire!
 				game->FireLaser();
 			}
 		} //end elseif game_state

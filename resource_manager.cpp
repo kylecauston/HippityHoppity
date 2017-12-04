@@ -328,8 +328,8 @@ namespace game {
 				vertex_position = glm::vec3(vertex_normal.x*radius,
 					vertex_normal.y*radius,
 					vertex_normal.z*radius),
-					vertex_color = glm::vec3(((float)i) / ((float)num_samples_theta), 1.0 - ((float)j) / ((float)num_samples_phi), ((float)j) / ((float)num_samples_phi));
-		
+					vertex_color = glm::vec3(0.8, 0.7, 0.1);
+					//((float)i) / ((float)num_samples_theta), 1.0 - ((float)j) / ((float)num_samples_phi), ((float)j) / ((float)num_samples_phi)
 				vertex_coord = glm::vec2(((float)i) / ((float)num_samples_theta), 1.0 - ((float)j) / ((float)num_samples_phi));
 
 				positions.push_back(vertex_position);

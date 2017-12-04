@@ -1,18 +1,15 @@
 # HippityHoppity
 COMP3501 Final Project - Hippity Hoppity
 
-**NOTES**
-added my shit laser back in, it technically works (you can "kill" the enemy and target but you have to jiggle the aim around a bit)
-
 **CONTROLS**
-UP/DOWN/LEFT/RIGHT - turn the helicopter
-A/Z - move forward and backward
-W - stop movement of helicopter
-J/L/I/K - strafing movement
-S/X - spin the helicopter
-E - fire a laser that collides with roughly center of screen
+W/S - move forward and backward
+A/D - turn the helicopter
+Q/E - strafes left and right
+Space/X - hovers up and down
 
-Space - pause/play animation
+R - brakes, stops movement of helicopter
+F - fire a laser that collides with roughly center of screen
+
 ESC - close the window
 V/B - change polygon display mode
 
