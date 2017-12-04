@@ -24,6 +24,9 @@ namespace game {
 
 		// returns the 8 points made by this hitbox
 		std::vector<glm::vec3> getPoints();
+		glm::vec3 getMaxPoint();
+		glm::vec3 getMinPoint();
+
 
 		glm::vec3 getScale();
 		glm::vec3 getPos();

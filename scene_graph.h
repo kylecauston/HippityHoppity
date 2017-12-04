@@ -42,6 +42,7 @@ namespace game {
 
 		// run collisions on the children of node (the separate entities)
 		void CheckCollisions();
+		std::vector<std::string> CheckRayCollisions(Ray r);
 
 		void Remove(std::string node_name); //remove a node with a given name
 

@@ -1,9 +1,33 @@
 #include "collision_manager.h"
 #include <iostream>
+#include <string>
 
 namespace game {
 	bool CollisionManager::isColliding(Collidable* a, Collidable* b) {
+		// check if the AABB's collide, and if they do, then check HB collision
 		return (isColliding(a->aabb, b->aabb) && isColliding(a->hb, b->hb));
+	}
+
+	bool CollisionManager::isColliding(Collidable* a, Ray r) {
+		if (isColliding(a->aabb, r))
+		{
+			std::cout << "[AABB collision]";
+
+			glm::vec2* PoI = NULL;
+			if (isColliding(a->hb, r, &PoI))
+			{
+				std::cout << "[" << PoI->x << ", " << PoI->y << "]" << std::endl;
+				return true;
+
+			}
+			
+			return false;
+			
+		}
+
+		return false;
+
+		//return (isColliding(a->aabb, r) && isColliding(a->hb, r));
 	}
 
 	bool CollisionManager::isColliding(AABB a, AABB b)
@@ -28,21 +52,17 @@ namespace game {
 		// use the axis defined by the edges of the two cubes
 		glm::vec3 aX, aY, aZ, bX, bY, bZ;
 		aX = rotateAxis(glm::vec3(1.0, 0.0, 0.0), a.getTrans());
-		aX = aX / glm::length(aX);
 		aY = rotateAxis(glm::vec3(0.0, 1.0, 0.0), a.getTrans());
-		aY = aY / glm::length(aY);
 		aZ = rotateAxis(glm::vec3(0.0, 0.0, 1.0), a.getTrans());
-		aZ = aZ / glm::length(aZ);
 
 		bX = rotateAxis(glm::vec3(1.0, 0.0, 0.0), b.getTrans());
-		bX = bX / glm::length(bX);
 		bY = rotateAxis(glm::vec3(0.0, 1.0, 0.0), b.getTrans());
-		bY = bY / glm::length(bY);
 		bZ = rotateAxis(glm::vec3(0.0, 0.0, 1.0), b.getTrans());
-		bZ = bZ / glm::length(bZ);
 
+		// all axis to check for separation
 		std::vector<glm::vec3> axis = std::vector<glm::vec3>();
 
+		// edge axis
 		axis.push_back(aX);
 		axis.push_back(aY);
 		axis.push_back(aZ);
@@ -50,6 +70,7 @@ namespace game {
 		axis.push_back(bY);
 		axis.push_back(bZ);
 
+		// face axis (planes of separation)
 		axis.push_back(glm::cross(aX, bX));
 		axis.push_back(glm::cross(aX, bY));
 		axis.push_back(glm::cross(aX, bZ));
@@ -62,6 +83,10 @@ namespace game {
 
 		// if even one axis is separating, then there's no collision
 		for (glm::vec3 ax : axis) {
+			// to define separating axis: 
+			// check if the projection of the distance between the two cubes on to the axis
+			// is greater than
+			// the sum of the projections of the half cube onto the axis
 			if (glm::abs(glm::dot((b.getPos() - a.getPos()), ax)) 
 				>
 				glm::abs(glm::dot((aHalfScale.x * aX), ax)) +
@@ -78,49 +103,146 @@ namespace game {
 		return true;
 	}
 
+	bool CollisionManager::isColliding(AABB a, Ray r) {
+		glm::vec3 a_max = a.getPos() + a.getScale() / 2.0f;
+		glm::vec3 a_min = a.getPos() - a.getScale() / 2.0f;
+
+		float curMax, curMin;
+
+		// calculate where the line intersects with x axis
+		curMax = (a_max.x - r.getOrigin().x) / r.getDirection().x;
+		curMin = (a_min.x - r.getOrigin().x) / r.getDirection().x;
+
+		float temp;
+		if (curMax < curMin) {
+			temp = curMax;
+			curMax = curMin;
+			curMin = temp;
+		}
+
+		float yMax = (a_max.y - r.getOrigin().y) / r.getDirection().y;
+		float yMin = (a_min.y - r.getOrigin().y) / r.getDirection().y;
+
+		if (yMax < yMin) {
+			temp = yMax;
+			yMax = yMin;
+			yMin = temp;
+		}
+
+		// check if the intersection misses on the y axis
+		if ((curMin > yMax) || (curMax < yMin)) 
+			return false;
+		
+		curMax = glm::min(curMax, yMax);
+		curMin = glm::max(curMin, yMin);
+
+		float zMax = (a_max.z - r.getOrigin().z) / r.getDirection().z;
+		float zMin = (a_min.z - r.getOrigin().z) / r.getDirection().z;
+
+		if (zMax < zMin) {
+			temp = zMax;
+			zMax = zMin;
+			zMin = temp;
+		}
+
+		// check if the intersection misses on the z axis
+		if ((curMin > zMax) || (curMax < zMin))
+			return false;
+
+		curMax = glm::min(curMax, zMax);
+		curMin = glm::max(curMin, zMin);
+
+	}
+
+	/*  Input: Hitbox a: hitbox of object
+		       Ray r:	 ray to intersect
+		Output: Intersection Points: solutions to the function made by line
+	*/
+	bool CollisionManager::isColliding(Hitbox a, Ray r, glm::vec2** intersection) {
+		// max = nearest far of all intersections 
+		// min = farthest near of ''
+		float max = NAN, min = NAN;
+
+		glm::vec3 to_targ = a.getPos() - r.getOrigin();
+
+		// grab each axis
+		glm::vec3 xa = rotateAxis(glm::vec3(1.0, 0.0, 0.0), a.getTrans());
+		glm::vec3 ya = rotateAxis(glm::vec3(0.0, 1.0, 0.0), a.getTrans());
+		glm::vec3 za = rotateAxis(glm::vec3(0.0, 0.0, 1.0), a.getTrans());
+
+		float p1 = glm::dot(xa, to_targ);
+		float p2 = glm::dot(r.getDirection(), xa);
+
+		float dist1 = (p1 + a.getMinPoint().x) / p2;
+		float dist2 = (p1 + a.getMaxPoint().x) / p2;
+
+		// if they're in the wrong order, swap
+		float temp;
+		if (dist1 > dist2) {
+			temp = dist1;
+			dist1 = dist2;
+			dist2 = temp;
+		}
+
+		min = glm::max(min, dist1);
+		max = glm::min(max, dist2);
+
+		if (max < min) 
+			return false;
+
+
+
+		p1 = glm::dot(ya, to_targ);
+		p2 = glm::dot(r.getDirection(), ya);
+
+		dist1 = (p1 + a.getMinPoint().y) / p2;
+		dist2 = (p1 + a.getMaxPoint().y) / p2;
+
+		// if they're in the wrong order, swap
+		temp;
+		if (dist1 > dist2) {
+			temp = dist1;
+			dist1 = dist2;
+			dist2 = temp;
+		}
+
+		min = glm::max(min, dist1);
+		max = glm::min(max, dist2);
+
+		if (max < min)
+			return false;
+
+
+
+		p1 = glm::dot(za, to_targ);
+		p2 = glm::dot(r.getDirection(), za);
+
+		dist1 = (p1 + a.getMinPoint().z) / p2;
+		dist2 = (p1 + a.getMaxPoint().z) / p2;
+
+		// if they're in the wrong order, swap
+		temp;
+		if (dist1 > dist2) {
+			temp = dist1;
+			dist1 = dist2;
+			dist2 = temp;
+		}
+
+		min = glm::max(min, dist1);
+		max = glm::min(max, dist2);
+
+		if (max < min)
+			return false;
+
+		(*intersection) = new glm::vec2(min, max);
+
+		return true;
+	}
+
 	bool CollisionManager::checkHierarchicalCollision(SceneNode* a, SceneNode* b) {
 		// list of all nodes in trees
-		std::vector<SceneNode*> a_list = std::vector<SceneNode*>();
-		std::vector<SceneNode*> b_list = std::vector<SceneNode*>();
-		
-		int i = 0;
-		SceneNode* curNode = a;
-		
-		std::vector<SceneNode*> children;
-
-		a_list.push_back(curNode);
-		//std::cout << "Creating Treelists a" << std::endl;
-		while (i < a_list.size()) {
-			curNode = a_list[i];
-
-			children = curNode->children_;
-			for (SceneNode* c : children)
-			{
-				//std::cout << "Adding node " << c->GetName() << " to a_list." << std::endl;
-				a_list.push_back(c);
-			}
-			//std::cout << "Done adding " << curNode->GetName() << "'s children." << std::endl;
-
-			i++;
-		}
-
-		i = 0;
-		curNode = b;
-		b_list.push_back(curNode);
-		//std::cout << "Creating Treelist b" << std::endl;
-		while (i < b_list.size()) {
-			curNode = b_list[i];
-
-			children = curNode->children_;
-			for (SceneNode* c : children)
-			{
-				//std::cout << "Adding node " << c->GetName() << " to a_list." << std::endl;
-				b_list.push_back(c);
-			}
-			//std::cout << "Done adding " << curNode->GetName() << "'s children." << std::endl;
-
-			i++;
-		}
+		std::vector<SceneNode*> a_list = flattenTree(a);
+		std::vector<SceneNode*> b_list = flattenTree(b);
 
 		for (SceneNode* n1 : a_list)
 		{
@@ -136,10 +258,51 @@ namespace game {
 		return false;
 	}
 
+	bool CollisionManager::checkHierarchicalCollision(SceneNode* root, Ray r) {
+		std::vector<SceneNode*> list = flattenTree(root);
+
+		for (SceneNode* n : list)
+		{
+			if (!n->isCollidable()) continue;
+
+			if (isColliding(n, r)) return true;
+		}
+
+		return false;
+	}
+
 	glm::vec3 CollisionManager::rotateAxis(glm::vec3 v, glm::mat4 t) {
 		glm::vec4 w_point = glm::vec4(v, 0.0);
 		w_point = t * w_point;
 
 		return glm::vec3(w_point.x, w_point.y, w_point.z);
 	}
-}
+
+	std::vector<SceneNode*> CollisionManager::flattenTree(SceneNode* root)
+	{
+		std::vector<SceneNode*> list = std::vector<SceneNode*>();
+
+		int i = 0;
+		SceneNode* curNode = root;
+
+		std::vector<SceneNode*> children;
+
+		list.push_back(curNode);
+		//std::cout << "Creating Treelists a" << std::endl;
+		while (i < list.size()) {
+			curNode = list[i];
+
+			children = curNode->children_;
+			for (SceneNode* c : children)
+			{
+				//std::cout << "Adding node " << c->GetName() << " to a_list." << std::endl;
+				list.push_back(c);
+			}
+			//std::cout << "Done adding " << curNode->GetName() << "'s children." << std::endl;
+
+			i++;
+		}
+
+		return list;
+	}
+} // namespce game

@@ -22,6 +22,30 @@ namespace game {
 
 	Hitbox::~Hitbox() {}
 
+	glm::vec3 Hitbox::getMaxPoint() {
+		float right = NAN, up = NAN, close = NAN;
+		for (glm::vec3 point : base_points)
+		{
+			right = fmax(right, point.x);
+			up = fmax(up, point.y);
+			close = fmax(close, point.z);
+		}
+
+		return glm::vec3(right * scale.x, up * scale.y, close * scale.z);
+	}
+
+	glm::vec3 Hitbox::getMinPoint() {
+		float left = NAN, down = NAN, far = NAN;
+		for (glm::vec3 point : base_points)
+		{
+			left = fmin(left, point.x);
+			down = fmin(down, point.y);
+			far = fmin(far, point.z);
+		}
+
+		return glm::vec3(left * scale.x, down * scale.y, far * scale.z);
+	}
+
 	std::vector<glm::vec3> Hitbox::getPoints() {
 		std::vector<glm::vec3> points;
 		glm::vec3 trans_point = glm::vec3(0, 0, 0);

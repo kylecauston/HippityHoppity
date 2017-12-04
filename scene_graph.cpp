@@ -138,4 +138,26 @@ namespace game {
 		}
 	}
 
+	std::vector<std::string> SceneGraph::CheckRayCollisions(Ray r) {
+		std::vector<std::string> hit_list = std::vector<std::string>();
+		
+		for (std::vector<SceneNode *>::const_iterator n = root_->children_begin();
+			n != root_->children_end(); n++) {
+
+			// if this node isn't collidable, we don't need to check it's collisions
+			if (!(*n)->isCollidable())	continue;
+
+			std::cout << "checking ray collision with " << (*n)->GetName();
+
+			if (CollisionManager::checkHierarchicalCollision(*n, r))
+			{
+				hit_list.push_back((*n)->GetName());
+			}
+
+			std::cout << std::endl << std::endl;
+		}
+
+		return hit_list;
+	}
+
 } // namespace game

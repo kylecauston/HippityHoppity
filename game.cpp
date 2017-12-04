@@ -210,9 +210,9 @@ namespace game {
 	}
 
 	void Game::MainLoop(void) {
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-		//glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
+		//glEnable(GL_CULL_FACE);
+		//glCullFace(GL_BACK);
+		glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
 
 		// Loop while the user did not close the window
 		while (!glfwWindowShouldClose(window_)) {
@@ -314,7 +314,16 @@ namespace game {
 			}
 			if (key == GLFW_KEY_T && action == GLFW_PRESS) {
 				temp = !temp;
-			}
+				std::cout << "firing laser" << std::endl;
+				glm::vec3 forward = game->camera_.GetForward();
+				glm::vec3 origin = game->camera_.GetPosition();
+				
+				std::vector<std::string> hit = game->scene_.CheckRayCollisions(Ray(origin, forward));
+
+				for (std::string s : hit) {
+					std::cout << "hit" << s << std::endl;
+				}
+ 			}
 			if (key == GLFW_KEY_V && action == GLFW_PRESS) { //change polygon display modes
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			}
