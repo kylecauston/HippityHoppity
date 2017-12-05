@@ -6,12 +6,8 @@
 #include <algorithm>
 #include "game.h"
 #include "bin/path_config.h"
-//#include <GLUT/glut.h>
 
 namespace game {
-	// Some configuration constants
-	// They are written here as global variables, but ideally they should be loaded from a configuration file
-
 	// Main window settings
 	const std::string window_title_g = "Demo";
 	const unsigned int window_width_g = 800;
@@ -48,6 +44,7 @@ namespace game {
 		// Set variables
 		animating_ = true;
 		game_state = TITLE;
+		hp = 100.0;
 	}
 
 	void Game::InitWindow(void) {
@@ -97,7 +94,6 @@ namespace game {
 		// Set projection
 		camera_.SetProjection(camera_fov_g, camera_near_clip_distance_g, camera_far_clip_distance_g, width, height);
 		heli_.SetProjection(camera_fov_g, camera_near_clip_distance_g, camera_far_clip_distance_g, width, height);
-
 	}
 
 	void Game::InitEventHandlers(void) {
@@ -133,6 +129,12 @@ namespace game {
 
 		filename = std::string(MATERIAL_DIRECTORY) + std::string("/gametitle.jpg");
 		resman_.LoadResource(Texture, "GameTitle", filename.c_str());
+
+		//screen space effect
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/screen_hp");
+		resman_.LoadResource(Material, "BlueMaterial", filename.c_str());
+
+		scene_.SetupDrawToTexture();
 	}
 
 	void Game::SetupScene(void) {
@@ -144,16 +146,22 @@ namespace game {
 		if (!geom) {
 			throw(GameException(std::string("Could not find resource \"") + "Terrain" + std::string("\"")));
 		}
-
 		Resource *mat = resman_.GetResource("ObjectMaterial");
 		if (!mat) {
 			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
+		}
+		Resource *tmat = resman_.GetResource("ShinyTextureMaterial");
+		if (!tmat) {
+			throw(GameException(std::string("Could not find resource \"") + "ShinyTextureMaterial" + std::string("\"")));
+		}
+		Resource *tex = resman_.GetResource("Cloud");
+		if (!tex) {
+			throw(GameException(std::string("Could not find resource \"") + "Cloud" + std::string("\"")));
 		}
 		Resource *dark = resman_.GetResource("DarkMaterial");
 		if (!dark) {
 			throw(GameException(std::string("Could not find resource \"") + "DarkMaterial" + std::string("\"")));
 		}
-
 
 		SceneNode* ground = new SceneNode("Ground", geom, dark);
 		scene_.SetRoot(ground);
@@ -217,17 +225,6 @@ namespace game {
 		title->Scale(17.3, 13.0, 0.01);
 	}
 
-	void Game::output(int x, int y, float r, float g, float b, int font, char *string)
-	{
-		glColor3f(r, g, b);
-		glRasterPos2f(x, y);
-		int len, i;
-		len = (int)strlen(string);
-		for (i = 0; i < len; i++) {
-			//glutBitmapCharacter(font, string[i]);
-		}
-	}
-
 	void Game::MainLoop(void) {
 		//glEnable(GL_CULL_FACE);
 		//glCullFace(GL_BACK);
@@ -274,7 +271,9 @@ namespace game {
 				} //end if animating_
 
 				// Draw the scene
-				scene_.Draw(&camera_);
+				//scene_.Draw(&camera_);
+				scene_.DrawToTexture(&camera_);
+				scene_.DisplayTexture(resman_.GetResource("BlueMaterial")->GetResource(), hp);
 				//heli_.DrawHelicopter(prgm, &camera_); //helicopter is just drawn as UI for now
 
 				scene_.CheckCollisions();
@@ -342,13 +341,13 @@ namespace game {
 				std::cout << "firing laser" << std::endl;
 				glm::vec3 forward = game->camera_.GetForward();
 				glm::vec3 origin = game->camera_.GetPosition();
-				
+
 				std::vector<std::string> hit = game->scene_.CheckRayCollisions(Ray(origin, forward));
 
 				for (std::string s : hit) {
 					std::cout << "hit" << s << std::endl;
 				}
- 			}
+			}
 			if (key == GLFW_KEY_V && action == GLFW_PRESS) { //change polygon display modes
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			}
@@ -439,6 +438,12 @@ namespace game {
 			}
 			if (key == GLFW_KEY_F && action == GLFW_PRESS) { //fire!
 				game->FireLaser();
+			}
+			if (key == GLFW_KEY_H && action == GLFW_PRESS) { // H increases hp
+				game->hp += 5;
+			}
+			if (key == GLFW_KEY_G && action == GLFW_PRESS) { // G lowers hp
+				game->hp -= 5;
 			}
 		} //end elseif game_state
 	}

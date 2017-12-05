@@ -11,6 +11,7 @@ LEFT/RIGHT - rolls helicopter left/right
 
 R - brakes, stops movement of helicopter
 F - fire a laser that collides with roughly center of screen
+G/H - lower and increase HP
 
 ESC - close the window
 V/B - change polygon display mode

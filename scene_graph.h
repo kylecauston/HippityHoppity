@@ -10,6 +10,9 @@
 #include "camera.h"
 #include "collision_manager.h"
 
+#define FRAME_BUFFER_WIDTH 1024
+#define FRAME_BUFFER_HEIGHT 768
+
 namespace game {
 	// Class that manages all the objects in a scene
 	class SceneGraph {
@@ -45,6 +48,16 @@ namespace game {
 		std::vector<std::string> CheckRayCollisions(Ray r);
 
 		void Remove(std::string node_name); //remove a node with a given name
+
+		void SetupDrawToTexture(void);
+		GLuint frame_buffer_;
+		GLuint quad_array_buffer_;
+		GLuint texture_;
+		GLuint depth_buffer_;
+		// Draw the scene into a texture
+		void DrawToTexture(Camera *camera);
+		// Process and draw the texture on the screen
+		void DisplayTexture(GLuint program, float hp);
 
 	}; // class SceneGraph
 
