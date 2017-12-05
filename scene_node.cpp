@@ -163,7 +163,7 @@ namespace game {
 		return material_;
 	}
 
-	glm::mat4 SceneNode::Draw(Camera *camera, glm::mat4 parent_transf) {
+	glm::mat4 SceneNode::Draw(Camera *camera, glm::mat4 parent_transf, bool sun) {
 		if (name_ == "Laser1") { //laser drawn in front of the helicopter for now
 			parent_transf = glm::mat4(1.0);
 		}
@@ -180,7 +180,7 @@ namespace game {
 			camera->SetupShader(material_);
 
 			// Set world matrix and other shader input variables
-			glm::mat4 transf = SetupShader(material_, parent_transf);
+			glm::mat4 transf = SetupShader(material_, parent_transf, sun);
 
 			// Draw geometry
 			if (mode_ == GL_POINTS) {
@@ -208,7 +208,7 @@ namespace game {
 		// do nothing for generic type
 	}
 
-	glm::mat4 SceneNode::SetupShader(GLuint program, glm::mat4 parent_transf) {
+	glm::mat4 SceneNode::SetupShader(GLuint program, glm::mat4 parent_transf, bool sun) {
 		// Set attributes for shaders
 		GLint vertex_att = glGetAttribLocation(program, "vertex");
 		glVertexAttribPointer(vertex_att, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(GLfloat), 0);
@@ -257,6 +257,13 @@ namespace game {
 		GLint timer_var = glGetUniformLocation(program, "timer");
 		double current_time = glfwGetTime();
 		glUniform1f(timer_var, (float)current_time);
+
+		// Light
+		GLint light_var = glGetUniformLocation(program, "light");
+		double light;
+		if (sun) { light = 0.9; }
+		else { light = 0.05; }
+		glUniform1f(light_var, (float)light);
 
 		// Return transformation of node combined with parent, without scaling
 		return transf;

@@ -6,6 +6,8 @@ in vec3 position_interp;
 in vec3 normal_interp;
 in vec3 light_pos;
 
+uniform float light;
+
 vec4 ambient_color = vec4(0.0, 0.1, 0.1, 1.0);
 vec4 diffuse_color = vec4(0.2, 0.2, 0.4, 1.0);
 vec4 specular_color = vec4(0.8, 0.8, 0.8, 1.0);
@@ -36,7 +38,7 @@ void main()
     float Is = pow(spec_angle_cos, phong_exponent);
 
 	// Assign light to the fragment
-    gl_FragColor = 0.9 * color_interp + ambient_color + Id*diffuse_color + Is*specular_color;
+    gl_FragColor = light * color_interp + ambient_color + Id*diffuse_color + Is*specular_color;
 	//ambient_color
 	//gl_FragColor = color_interp;
 }

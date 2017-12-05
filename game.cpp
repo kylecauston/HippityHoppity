@@ -45,6 +45,7 @@ namespace game {
 		animating_ = true;
 		game_state = TITLE;
 		hp = 100.0;
+		sun = true;
 	}
 
 	void Game::InitWindow(void) {
@@ -228,7 +229,7 @@ namespace game {
 			if (game_state == TITLE) { //on title screen we do nothing but display the UI
 				glClearColor(0.3, 0.1, 0.2, 0.0);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				title->Draw(&camera_, glm::mat4(1.0));
+				title->Draw(&camera_, glm::mat4(1.0), true);
 			}
 			else if (game_state == GAME) { //gameplay screen updates and draws the scene
 				if (animating_) {
@@ -265,7 +266,7 @@ namespace game {
 
 				// Draw the scene
 				//scene_.Draw(&camera_);
-				scene_.DrawToTexture(&camera_);
+				scene_.DrawToTexture(&camera_, sun);
 				scene_.DisplayTexture(resman_.GetResource("BlueMaterial")->GetResource(), hp);
 				//heli_.DrawHelicopter(prgm, &camera_); //helicopter is just drawn as UI for now
 
@@ -495,6 +496,9 @@ namespace game {
 
 		std::string collide = RaySphere(camera_.GetForward(), cube->GetPosition()); //terribly inaccurate hitscan collision
 		std::cout << collide << std::endl;
+		if (collide == "Sun") {
+			sun = false;
+		}
 		if (collide != "none") {
 			scene_.Remove(collide); //blow up the object we collided with
 		}

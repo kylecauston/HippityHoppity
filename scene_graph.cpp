@@ -69,7 +69,7 @@ namespace game {
 			glm::mat4 parent_transf = transf.top();
 			transf.pop();
 			// Draw node based on parent transformation
-			glm::mat4 current_transf = current->Draw(camera, parent_transf);
+			glm::mat4 current_transf = current->Draw(camera, parent_transf, true);
 
 			// if the current node has collision, update it's collidables
 			if (current->isCollidable())
@@ -203,7 +203,7 @@ namespace game {
 		glBufferData(GL_ARRAY_BUFFER, sizeof(quad_vertex_data), quad_vertex_data, GL_STATIC_DRAW);
 	}
 
-	void SceneGraph::DrawToTexture(Camera *camera) {
+	void SceneGraph::DrawToTexture(Camera *camera, bool sun) {
 
 		// Save current viewport
 		GLint viewport[4];
@@ -235,7 +235,7 @@ namespace game {
 			glm::mat4 parent_transf = transf.top();
 			transf.pop();
 			// Draw node based on parent transformation
-			glm::mat4 current_transf = current->Draw(camera, parent_transf);
+			glm::mat4 current_transf = current->Draw(camera, parent_transf, sun);
 
 			// if the current node has collision, update it's collidables
 			if (current->isCollidable())

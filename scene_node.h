@@ -48,7 +48,7 @@ namespace game {
 		void Scale(float x, float y, float z);
 
 		// Draw the node according to scene parameters in 'camera'
-		virtual glm::mat4 Draw(Camera *camera, glm::mat4 parent_transf);
+		virtual glm::mat4 Draw(Camera *camera, glm::mat4 parent_transf, bool sun);
 
 		// Update the node
 		virtual void Update(float deltaTime);
@@ -93,7 +93,7 @@ namespace game {
 		// Set matrices that transform the node in a shader program
 		// Return transformation of current node combined with
 		// parent transformation, without including scaling
-		glm::mat4 SetupShader(GLuint program, glm::mat4 parent_transf);
+		glm::mat4 SetupShader(GLuint program, glm::mat4 parent_transf, bool sun);
 
 	}; // class SceneNode
 

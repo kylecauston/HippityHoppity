@@ -48,6 +48,7 @@ namespace game {
 		int turning;
 
 		float hp;
+		bool sun;
 
 	private:
 		// GLFW window
