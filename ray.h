@@ -7,7 +7,6 @@
 #include <glm/glm.hpp>
 
 namespace game {
-	// Class that manages one object in a scene 
 	class Ray {
 	private:
 		glm::vec3 origin;

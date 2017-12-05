@@ -20,11 +20,12 @@ namespace game {
 		void Attack(void);
 
 		float rotateSpeed = 0.3; // factor for rotation speed [0, 1]
+		float speed = 1.0; // how fast the enemy moves per second
 
 		void collide(Collidable* other);
-	private:
+
+	protected:
 		const SceneNode* target; // what this enemy is trying to destroy
-		float speed = 10.0; // how fast the enemy moves per second
 		float threatRange; // radius that enemy begins attacking from
 
 		float firerate; // how many shots per second

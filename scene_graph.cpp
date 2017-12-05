@@ -116,20 +116,19 @@ namespace game {
 		}
 	}
 
+	/*   Cycle through each of the entities in the scene (first children of root). 
+	   Run collisions on each pair once, such that in nodes ABCD, comparisons 
+	   are AB AC AD BC BD CD. */
 	void SceneGraph::CheckCollisions() {
 		//std::cout << std::endl << "START" << std::endl;
-
+		
+		// start at the root and work through each node until second last
 		for (std::vector<SceneNode *>::const_iterator n1 = root_->children_begin();
 			n1 != root_->children_end()-1; n1++) {
-		
-			// if this node isn't collidable, we don't need to check it's collisions
-			if (!(*n1)->isCollidable())	continue;
 
+			// start at the node after n1 so we compare the next node (n2) to n1
 			for (std::vector<SceneNode *>::const_iterator n2 = n1+1;
 				n2 != root_->children_end(); n2++) {
-
-				// if this node isn't collidable, don't check collisions
-				if (!(*n2)->isCollidable()) continue;
 				
 				if (CollisionManager::checkHierarchicalCollision(*n1, *n2)) {
 					std::cout << "Collision between " << (*n1)->GetName() << " and " << (*n2)->GetName() << std::endl;
@@ -138,16 +137,12 @@ namespace game {
 		}
 	}
 
+	/* Cycle through all entities in scene (first children of root), and check against ray. */
 	std::vector<std::string> SceneGraph::CheckRayCollisions(Ray r) {
 		std::vector<std::string> hit_list = std::vector<std::string>();
 		
 		for (std::vector<SceneNode *>::const_iterator n = root_->children_begin();
 			n != root_->children_end(); n++) {
-
-			// if this node isn't collidable, we don't need to check it's collisions
-			if (!(*n)->isCollidable())	continue;
-
-			std::cout << "checking ray collision with " << (*n)->GetName();
 
 			if (CollisionManager::checkHierarchicalCollision(*n, r))
 			{

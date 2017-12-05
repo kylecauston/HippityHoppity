@@ -71,6 +71,21 @@ namespace game {
 		return position_;
 	}
 
+	/* Get the worldspace coords. */
+	glm::vec3 SceneNode::GetAbsolutePosition(void) {
+		SceneNode* n = this;
+		glm::vec3 v = glm::vec3(0, 0, 0);
+
+		// go until we've reached the root, but don't add root
+		while (n->parent_ != NULL)
+		{
+			v += n->GetPosition();
+			n = n->parent_;
+		}
+
+		return v;
+	}
+
 	glm::quat SceneNode::GetOrientation(void) const {
 		return orientation_;
 	}
@@ -102,6 +117,10 @@ namespace game {
 
 	void SceneNode::SetScale(float x, float y, float z) {
 		SetScale(glm::vec3(x, y, z));
+	}
+
+	void SceneNode::setCollidable(bool c) {
+		collidable = c;
 	}
 
 	void SceneNode::Translate(glm::vec3 trans) {

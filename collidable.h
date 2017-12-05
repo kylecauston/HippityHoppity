@@ -2,6 +2,7 @@
 #define COLLIDABLE_H_
 #include "hitbox.h"
 #include "AABB.h"
+#include "ray.h"
 
 namespace game {
 	class Collidable {

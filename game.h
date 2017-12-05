@@ -12,6 +12,7 @@
 #include "laser.h"
 #include "helicopter.h"
 #include "enemy.h"
+#include "doggy.h"
 #include "defs.h"
 
 namespace game {
@@ -62,6 +63,8 @@ namespace game {
 
 		// Flag to turn animation on/off
 		bool animating_;
+		int numEnemies = 0;
+		int numTrees = 0;
 
 		// Methods to initialize the game
 		void InitWindow(void);
@@ -77,6 +80,10 @@ namespace game {
 
 		//creates an instance of a 3d cube
 		SceneNode *Cube(int type, std::string entity_name, std::string object_name, std::string material_name, std::string tex_name = "");
+		SceneNode* CreateMole();
+		SceneNode* CreateDog();
+		SceneNode* CreateTree();
+
 	}; // class Game
 
 } // namespace game

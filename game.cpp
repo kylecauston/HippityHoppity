@@ -111,8 +111,9 @@ namespace game {
 	void Game::SetupResources(void) {
 		// Create our meshes
 		resman_.CreateSphere("SimpleSphereMesh", 1.0, 10, 10);
-
 		resman_.CreateCube("CubePointSet"); //set up cube for the laser
+		resman_.CreateTorus("TorusMesh");
+		resman_.CreateCylinder("CylinderMesh");
 
 		resman_.CreateGround("Terrain"); // load terrain
 
@@ -153,48 +154,40 @@ namespace game {
 		ground->SetPosition(glm::vec3(0, -100, 200));
 
 		//generate a test enemy and target for him to chase
+
+		Resource *sphere = resman_.GetResource("SimpleSphereMesh");
 		Resource *cube = resman_.GetResource("CubePointSet");
+		Resource *torus = resman_.GetResource("TorusMesh");
+		Resource *cyl= resman_.GetResource("CylinderMesh");
+
+
 		SceneNode *target = new SceneNode("Target", cube, mat, NULL, true);
-		target->SetPosition(10, 90, 400);
+		target->SetPosition(190, 30.5, 200);
 		target->SetScale(1, 1, 1);
 		ground->AddChild(target);
 
-		Enemy* baddie = new Enemy("Enemy1", target, cube, mat);
-		baddie->SetPosition(10, 80, 400);
-		baddie->SetScale(4, 4, 30);
+		SceneNode* mole = CreateMole();
+		mole->SetPosition(200, 26, 200);
+		ground->AddChild(mole);
 
-		SceneNode* arm = new SceneNode("Enemy1_arm", cube, mat, NULL, true);
-		arm->SetPosition(4, 0, 0);
-		arm->SetScale(2, 20, 2);
-		baddie->AddChild(arm);
+		/*SceneNode* tree;
 
-		SceneNode* hand = new SceneNode("Enemy1_arm_hand", cube, mat, NULL, true);
-		hand->SetPosition(2, 0, 0);
-		hand->SetScale(1, 1, 10);
-		arm->AddChild(hand);
 
-		arm = new SceneNode("Enemy1_arm2", cube, mat, NULL, true);
-		arm->SetPosition(-4, 0, 0);
-		arm->SetScale(2, 20, 2);
-		baddie->AddChild(arm);
+		for (int i = 0; i < 6; i++)
+		{
+			for (int j = 0; j < 6; j++)
+			{
+				tree = CreateTree();
+				tree->SetPosition(i * 10, 80 + tree->GetScale().y / 2, 500-j*10);
+				ground->AddChild(tree);
+			}
+		}*/
 
-		hand = new SceneNode("Enemy1_arm2_hand", cube, mat, NULL, true);
-		hand->SetPosition(-2, 0, 0);
-		hand->SetScale(1, 1, 10);
-		arm->AddChild(hand);
+		target->SetPosition(0, 100, 510);
 
-		ground->AddChild(baddie);
-
-		baddie = new Enemy("Enemy2", target, cube, mat);
-		baddie->SetPosition(40, 80, 400);
-		baddie->SetScale(4, 4, 30);
-		//ground->AddChild(baddie);
-
-		Resource *sphere = resman_.GetResource("SimpleSphereMesh");
-		baddie = new Enemy("Enemy3", target, sphere, mat);
-		baddie->SetPosition(0, 80, 400);
-		baddie->SetScale(10, 10, 10);
-		//ground->AddChild(baddie);
+		SceneNode* tester = CreateDog();
+		tester->SetPosition(0, 80, 500);
+		ground->AddChild(tester);
 
 		//this is stored to cheesily draw the helicopter later
 		prgm = resman_.GetResource("ObjectMaterial")->GetResource();
@@ -243,7 +236,7 @@ namespace game {
 
 						SceneNode* targ = scene_.GetNode("Target");
 						if (temp) {
-							//targ->Translate(vel);
+							targ->SetPosition(camera_.GetPosition() - scene_.GetNode("Ground")->GetPosition() - camera_.GetForward());
 						}
 					}
 				} //end if animating_
@@ -282,8 +275,10 @@ namespace game {
 				enemy->rotateSpeed = std::max(0.0f, std::min(enemy->rotateSpeed - 0.1f, 1.0f));
 				std::cout << enemy->rotateSpeed << std::endl;
 			}
-			if (key == GLFW_KEY_Y && action == GLFW_PRESS) { //reset target position
-				game->scene_.GetNode("Target")->SetPosition(10, 90, 400);
+			if (key == GLFW_KEY_Y && action == GLFW_PRESS) { //tell me target position
+				glm::vec3 pos = game->scene_.GetNode("Target")->GetPosition();
+
+				std::cout << "Targ @ [" << pos.x << ", "  << pos.y << ", " << pos.z << "]" << std::endl;
 			}
 			if (key == GLFW_KEY_KP_1 && action == GLFW_PRESS) {
 				game->scene_.GetNode("Target")->Translate(0, 0.1, 0);
@@ -321,7 +316,7 @@ namespace game {
 				std::vector<std::string> hit = game->scene_.CheckRayCollisions(Ray(origin, forward));
 
 				for (std::string s : hit) {
-					std::cout << "hit" << s << std::endl;
+					game->scene_.Remove(s);
 				}
  			}
 			if (key == GLFW_KEY_V && action == GLFW_PRESS) { //change polygon display modes
@@ -478,6 +473,103 @@ namespace game {
 			}
 		}
 		return "none"; //didn't find anything
+	}
+
+	SceneNode* Game::CreateMole() {
+		// Create a Mole SceneNode tree
+
+		Resource *sphere = resman_.GetResource("SimpleSphereMesh");
+		Resource *cube = resman_.GetResource("CubePointSet");
+		Resource *torus = resman_.GetResource("TorusMesh");
+
+		Resource *mat = resman_.GetResource("ObjectMaterial");
+		if (!mat) {
+			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
+		}
+
+		std::string name = "Enemy" + numEnemies++;
+
+		SceneNode* n = new SceneNode(name, NULL, NULL);
+		
+		SceneNode* dirt = new SceneNode(name + "_dirt", torus, mat);
+		dirt->setCollidable(false);
+		dirt->SetScale(2.0, 2.0, 2.0);
+		dirt->SetOrientation(glm::angleAxis(glm::pi<float>() / 2, glm::vec3(1.0, 0.0, 0.0)));
+
+		Enemy* body = new Enemy(name + "_body", scene_.GetNode("Target"), sphere, mat);
+		body->speed = 0;
+		body->setCollidable(true);
+		body->SetPosition(0, 0.5, 0);
+	
+		SceneNode* gun = new SceneNode(name + "_gun", cube, mat);
+		gun->SetPosition(1.0, 0.5, 1.5);
+		gun->setCollidable(true);
+		gun->SetScale(0.5, 0.5, 5.0);
+		
+		n->AddChild(dirt);
+		n->AddChild(body);
+		body->AddChild(gun);
+
+		return n;
+	}
+
+	SceneNode* Game::CreateDog() {
+		Resource *cube = resman_.GetResource("CubePointSet");
+		
+		Resource *mat = resman_.GetResource("ObjectMaterial");
+		if (!mat) {
+			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
+		}
+
+		std::string name = "Enemy" + std::to_string(numEnemies);
+		numEnemies++;
+		SceneNode* n = new SceneNode(name, NULL, NULL);
+		n->setCollidable(false);
+
+		Enemy* turret = new Enemy(name + "_turret", scene_.GetNode("Target"), cube, mat);
+		turret->setCollidable(true);
+		turret->SetScale(0.5, 0.5, 4.0);
+		turret->SetPosition(0, 0.75, 0);
+		turret->speed = 0;
+
+		Doggy* dog = new Doggy(name + "_body", scene_.GetNode("Target"), cube, mat);
+		dog->SetScale(2.0, 1.0, 6.0);
+		dog->setCollidable(true);
+		dog->setTurret(turret);
+
+		n->AddChild(turret);
+		n->AddChild(dog);
+
+		return n;
+	}
+
+	SceneNode* Game::CreateTree() {
+		Resource *cyl = resman_.GetResource("CylinderMesh");
+		Resource *sphere = resman_.GetResource("SimpleSphereMesh");
+
+		Resource *mat = resman_.GetResource("ObjectMaterial");
+		if (!mat) {
+			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
+		}
+
+		std::string name = "Tree" + std::to_string(numTrees);
+		numTrees++;
+
+		int height = rand() % 7 + 5;
+		float thicc = fmax(((double)rand() / (double)RAND_MAX) * 2, 0.3);
+
+		SceneNode* trunk = new SceneNode(name, cyl, mat);
+		trunk->setCollidable(true);
+		trunk->SetScale(thicc, height, thicc);
+
+		SceneNode* top = new SceneNode(name + "_leaves", sphere, mat);
+		top->setCollidable(false);
+		top->SetPosition(0, height/2.0 ,0);
+		top->SetScale(thicc * 3.0, thicc * 3.0, thicc * 3.0);
+		
+		trunk->AddChild(top);
+
+		return trunk;
 	}
 
 } // namespace game

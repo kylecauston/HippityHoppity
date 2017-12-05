@@ -27,6 +27,7 @@ namespace game {
 
 		// Get node attributes
 		glm::vec3 GetPosition(void) const;
+		glm::vec3 GetAbsolutePosition(void);
 		glm::quat GetOrientation(void) const;
 		glm::vec3 GetScale(void) const;
 		bool isCollidable(void) const;
@@ -37,6 +38,7 @@ namespace game {
 		void SetScale(glm::vec3 scale);
 		void SetPosition(float x, float y, float z);
 		void SetScale(float x, float y, float z);
+		void setCollidable(bool c);
 
 		// Perform transformations on node
 		void Translate(glm::vec3 trans);
@@ -66,8 +68,14 @@ namespace game {
 		std::vector<SceneNode *>::const_iterator children_end() const;
 		std::vector<SceneNode *> children_;
 
+		SceneNode *parent_;
+
+		bool dead = false;
+
 	protected:
 		static glm::vec3 default_forward;
+
+		bool collidable;
 
 	private:
 		std::string name_; // Name of the scene node
@@ -80,11 +88,7 @@ namespace game {
 		glm::vec3 position_; // Position of node
 		glm::quat orientation_; // Orientation of node
 		glm::vec3 scale_; // Scale of node
-
-		bool collidable;
-
-		// Hierarchy
-		SceneNode *parent_;
+					
 
 		// Set matrices that transform the node in a shader program
 		// Return transformation of current node combined with

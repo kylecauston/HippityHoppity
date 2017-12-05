@@ -9,7 +9,7 @@ namespace game {
 
 	void Enemy::Update(float deltaTime) {
 		// get the plane vector towards target
-		glm::vec3 toTarget = target->GetPosition() - GetPosition();
+		glm::vec3 toTarget = target->GetPosition() - GetAbsolutePosition();
 		// 2D to target vector, ignoring height
 		glm::vec3 toTarget_flat = glm::vec3(toTarget.x, 0, toTarget.z);
 
@@ -19,10 +19,10 @@ namespace game {
 			// the vector into a movement vector (the actual units it will move)
 			glm::vec3 movement = (deltaTime*speed) * (glm::normalize(toTarget));
 
-			//Translate(movement);
+			Translate(movement);
 		}
 
-		toTarget = target->GetPosition() - GetPosition();
+		toTarget = target->GetPosition() - GetAbsolutePosition();
 		toTarget_flat = glm::vec3(toTarget.x, 0, toTarget.z);
 
 
@@ -45,7 +45,7 @@ namespace game {
 			// find the axis to rotate on, by taking cross(forward, UP)
 			glm::vec3 forward = hor_rotation * SceneNode::default_forward * -hor_rotation;
 			glm::quat vert_rotation = glm::angleAxis(vert_angle, glm::cross(forward, glm::vec3(0.0, 1.0, 0.0)));
-			glm::quat rotation = glm::slerp(GetOrientation(), hor_rotation * vert_rotation, rotateSpeed);
+			glm::quat rotation = glm::slerp(GetOrientation(), hor_rotation*vert_rotation, rotateSpeed);
 			SetOrientation(rotation);
 
 			// may need to subtract any parent rotations somehow 
@@ -56,12 +56,15 @@ namespace game {
 	}
 
 	void Enemy::Attack() {
-		glm::quat aiming = GetOrientation();
+		
+		glm::vec3 aim = GetOrientation() * SceneNode::default_forward * -GetOrientation();
+
+		Ray r = Ray(GetAbsolutePosition(), aim);
+
 	}
 
 	void Enemy::collide(Collidable* other)
 	{
 
 	}
-
 } // namespace game

@@ -3,16 +3,16 @@
 #include <string>
 
 namespace game {
+	/* Return whether two collidable objects intersect. */
 	bool CollisionManager::isColliding(Collidable* a, Collidable* b) {
 		// check if the AABB's collide, and if they do, then check HB collision
 		return (isColliding(a->aabb, b->aabb) && isColliding(a->hb, b->hb));
 	}
 
+	/* Return whether a collidable object is intersected by a ray. */
 	bool CollisionManager::isColliding(Collidable* a, Ray r) {
 		if (isColliding(a->aabb, r))
 		{
-			std::cout << "[AABB collision]";
-
 			glm::vec2* PoI = NULL;
 			if (isColliding(a->hb, r, &PoI))
 			{
@@ -26,10 +26,9 @@ namespace game {
 		}
 
 		return false;
-
-		//return (isColliding(a->aabb, r) && isColliding(a->hb, r));
 	}
 
+	/* Return whether two axis-aligned bounding boxes intersect. */
 	bool CollisionManager::isColliding(AABB a, AABB b)
 	{
 		// use simple geometry to detect collision between two AABB
@@ -38,6 +37,7 @@ namespace game {
 			&& (glm::abs(a.getPos().z - b.getPos().z) * 2 < a.getScale().z + b.getScale().z);
 	}
 
+	/* Return whether two oriented bounding boxes (hitboxes) intersect. */
 	bool CollisionManager::isColliding(Hitbox a, Hitbox b)
 	{
 		// use SAT to detect collisions between two OBB
@@ -103,6 +103,7 @@ namespace game {
 		return true;
 	}
 
+	/* Return whether a ray intersects an axis-aligned bounding box. */
 	bool CollisionManager::isColliding(AABB a, Ray r) {
 		glm::vec3 a_max = a.getPos() + a.getScale() / 2.0f;
 		glm::vec3 a_min = a.getPos() - a.getScale() / 2.0f;
@@ -152,11 +153,12 @@ namespace game {
 		curMax = glm::min(curMax, zMax);
 		curMin = glm::max(curMin, zMin);
 
+		return true;
 	}
 
 	/*  Input: Hitbox a: hitbox of object
 		       Ray r:	 ray to intersect
-		Output: Intersection Points: solutions to the function made by line
+		Output: Intersection Points: solutions to the function made by ray/hb intersection.
 	*/
 	bool CollisionManager::isColliding(Hitbox a, Ray r, glm::vec2** intersection) {
 		// max = nearest far of all intersections 
@@ -239,6 +241,7 @@ namespace game {
 		return true;
 	}
 
+	/* Take two hierarchical SceneNodes and check if either tree collides with the other. */
 	bool CollisionManager::checkHierarchicalCollision(SceneNode* a, SceneNode* b) {
 		// list of all nodes in trees
 		std::vector<SceneNode*> a_list = flattenTree(a);
@@ -246,9 +249,11 @@ namespace game {
 
 		for (SceneNode* n1 : a_list)
 		{
+			// ignore non-collidables
 			if (!n1->isCollidable()) continue;
 			for (SceneNode* n2 : b_list)
 			{
+				// ignore non-collidables
 				if (!n2->isCollidable()) continue;
 
 				if (isColliding(n1, n2)) return true;
@@ -258,11 +263,14 @@ namespace game {
 		return false;
 	}
 
+	/* Take a single hierarchical SceneNode root and return if there is an intersection with Ray r. */
 	bool CollisionManager::checkHierarchicalCollision(SceneNode* root, Ray r) {
 		std::vector<SceneNode*> list = flattenTree(root);
 
 		for (SceneNode* n : list)
 		{
+
+			// ignore non-collidables
 			if (!n->isCollidable()) continue;
 
 			if (isColliding(n, r)) return true;
@@ -271,6 +279,7 @@ namespace game {
 		return false;
 	}
 
+	/* Rotate the given vector by the transformation matrix. *Ignores translation* */
 	glm::vec3 CollisionManager::rotateAxis(glm::vec3 v, glm::mat4 t) {
 		glm::vec4 w_point = glm::vec4(v, 0.0);
 		w_point = t * w_point;
@@ -278,10 +287,12 @@ namespace game {
 		return glm::vec3(w_point.x, w_point.y, w_point.z);
 	}
 
+	/* Take a hierarchical SceneNode tree root and turn it into a 1D array. */
 	std::vector<SceneNode*> CollisionManager::flattenTree(SceneNode* root)
 	{
 		std::vector<SceneNode*> list = std::vector<SceneNode*>();
 
+		// where in the array we are
 		int i = 0;
 		SceneNode* curNode = root;
 

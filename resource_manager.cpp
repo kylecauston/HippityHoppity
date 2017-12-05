@@ -606,4 +606,175 @@ namespace game {
 		AddResource(Mesh, object_name, vbo, ebo, face_num * face_att, Hitbox());
 	}
 
+	void ResourceManager::CreateCylinder(std::string object_name, float cylinder_height, float circle_radius, int num_circle_samples) {
+			// Number of vertices and faces to be created
+			const GLuint vertex_num = num_circle_samples * 2 + 2; // both circles, center of each endcap
+			const GLuint face_num = num_circle_samples * 4;
+
+			// Number of attributes for vertices and faces
+			const int vertex_att = 11;  // 11 attributes per vertex: 3D position (3), 3D normal (3), RGB color (3), 2D texture coordinates (2)
+			const int face_att = 3; // Vertex indices (3)
+
+									// Data buffers for the cylinder
+			GLfloat *vertex = NULL;
+			GLuint *face = NULL;
+
+			// Allocate memory for buffers
+			try {
+				vertex = new GLfloat[vertex_num * vertex_att];
+				face = new GLuint[face_num * face_att];
+			}
+			catch (std::exception &e) {
+				throw e;
+			}
+
+			// Create vertices 
+			float theta = 0; // Angle for circle
+			glm::vec3 vertex_position;
+			glm::vec3 vertex_normal;
+			glm::vec3 vertex_color;
+			glm::vec2 vertex_coord;
+
+			std::vector<glm::vec3> positions = std::vector<glm::vec3>(); // for generating hitbox
+
+			// vertices at
+			// - one in center of each endcap
+			// - num_circle_samples worth on edges of each endcap
+
+			// top centerpoint
+			vertex_normal = glm::vec3(0, 0, 1);
+			vertex_position = glm::vec3(0, cylinder_height / 2, 0);
+			vertex_color = glm::vec3(1.0, 0.0, 0.0);
+			vertex_coord = glm::vec2(theta / 2.0*glm::pi<GLfloat>(),
+				theta / 2.0*glm::pi<GLfloat>());
+
+			positions.push_back(vertex_position);
+
+			// Add vectors to the data buffer
+			for (int k = 0; k < 3; k++) {
+				vertex[k] = vertex_position[k];
+				vertex[k + 3] = vertex_normal[k];
+				vertex[k + 6] = vertex_color[k];
+			}
+			vertex[9] = vertex_coord[0];
+			vertex[10] = vertex_coord[1];
+
+			// bottom centerpoint
+			vertex_normal = glm::vec3(0, 0, -1);
+			vertex_position = glm::vec3(0, -cylinder_height / 2, 0);
+			vertex_color = glm::vec3(1.0, 0.0, 0.0);
+
+			positions.push_back(vertex_position);
+
+			// Add vectors to the data buffer
+			for (int k = 0; k < 3; k++) {
+				vertex[k + vertex_att] = vertex_position[k];
+				vertex[k + 3 + vertex_att] = vertex_normal[k];
+				vertex[k + 6 + vertex_att] = vertex_color[k];
+			}
+			vertex[9 + vertex_att] = vertex_coord[0];
+			vertex[10 + vertex_att] = vertex_coord[1];
+
+			for (int i = 0; i < num_circle_samples; i++) {
+				theta = 2.0*glm::pi<GLfloat>() * i / num_circle_samples; // where around the endcap circle you are
+
+				// top set of vertices
+				vertex_normal = glm::vec3(0, 0, 1);
+				vertex_position = glm::vec3((cos(theta)*circle_radius),
+					cylinder_height / 2,
+					(sin(theta)*circle_radius));
+				vertex_color = glm::vec3(0.0, 0.0, 1.0);
+
+				positions.push_back(vertex_position);
+
+				// Add vectors to the data buffer
+				for (int k = 0; k < 3; k++) {
+					vertex[(i + 2)*vertex_att + k] = vertex_position[k];
+					vertex[(i + 2)*vertex_att + k + 3] = vertex_normal[k];
+					vertex[(i + 2)*vertex_att + k + 6] = vertex_color[k];
+				}
+				vertex[(i + 2)*vertex_att + 9] = vertex_coord[0];
+				vertex[(i + 2)*vertex_att + 10] = vertex_coord[1];
+
+				// bottom set of vertices
+				vertex_normal = glm::vec3(0, 0, -1);
+				vertex_position = glm::vec3((cos(theta)*circle_radius),
+					-cylinder_height / 2,
+					(sin(theta)*circle_radius));
+				vertex_color = glm::vec3(0.0, 0.0, 1.0);
+
+				positions.push_back(vertex_position);
+
+				// Add vectors to the data buffer
+				for (int k = 0; k < 3; k++) {
+					vertex[(i + 2 + num_circle_samples)*vertex_att + k] = vertex_position[k];
+					vertex[(i + 2 + num_circle_samples)*vertex_att + k + 3] = vertex_normal[k];
+					vertex[(i + 2 + num_circle_samples)*vertex_att + k + 6] = vertex_color[k];
+				}
+				vertex[(i + 2 + num_circle_samples)*vertex_att + 9] = vertex_coord[0];
+				vertex[(i + 2 + num_circle_samples)*vertex_att + 10] = vertex_coord[1];
+			}
+
+			// create triangles
+			for (int i = 0; i < num_circle_samples - 1; i++) {
+				// top cap triangle
+				glm::vec3 t1(0, i + 2, i + 3);
+
+				// middle triangle 1		
+				glm::vec3 t2(i + 2, i + 3, i + 3 + num_circle_samples);
+
+				// middle triangle 2
+				glm::vec3 t3(i + 2, i + 2 + num_circle_samples, i + 3 + num_circle_samples);
+
+				// bottom cap triangle
+				glm::vec3 t4(1, i + 2 + num_circle_samples, i + 3 + num_circle_samples);
+
+				for (int k = 0; k < 3; k++) {
+					face[i * face_att * 4 + k] = (GLuint)t1[k];
+					face[i * face_att * 4 + k + face_att] = (GLuint)t2[k];
+					face[i * face_att * 4 + k + face_att * 2] = (GLuint)t3[k];
+					face[i * face_att * 4 + k + face_att * 3] = (GLuint)t4[k];
+				}
+			}
+
+			// add the remaining sides - missed by the loop
+			// top cap triangle between start of circle and end
+			glm::vec3 t1(0, 2, num_circle_samples + 1);
+
+			// middle triangle 1		
+			glm::vec3 t2(2, num_circle_samples + 1, num_circle_samples + 2);
+
+			// middle triangle 2
+			glm::vec3 t3(num_circle_samples + 1, num_circle_samples + 2, num_circle_samples * 2 + 1);
+
+			// bottom cap triangle between start of circle and end
+			glm::vec3 t4(1, num_circle_samples + 2, num_circle_samples * 2 + 1);
+
+			for (int k = 0; k < 3; k++) {
+				face[(num_circle_samples - 1) * face_att * 4 + k] = (GLuint)t1[k];
+				face[(num_circle_samples - 1) * face_att * 4 + k + face_att] = (GLuint)t2[k];
+				face[(num_circle_samples - 1) * face_att * 4 + k + face_att * 2] = (GLuint)t3[k];
+				face[(num_circle_samples - 1) * face_att * 4 + k + face_att * 3] = (GLuint)t4[k];
+			}
+
+			// Create OpenGL buffers and copy data
+			// Create buffer for vertices
+			GLuint vbo, ebo;
+			glGenBuffers(1, &vbo);
+			glBindBuffer(GL_ARRAY_BUFFER, vbo);
+			glBufferData(GL_ARRAY_BUFFER, vertex_num * vertex_att * sizeof(GLfloat), vertex, GL_STATIC_DRAW);
+
+			// Create buffer for faces
+			glGenBuffers(1, &ebo);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, face_num * face_att * sizeof(GLuint), face, GL_STATIC_DRAW);
+
+			// Free data buffers
+			delete[] vertex;
+			delete[] face;
+
+			// Return number of elements in array buffer
+			AddResource(Mesh, object_name, vbo, ebo, face_num * face_att, genHitbox(positions));
+		}
+
 } // namespace game;

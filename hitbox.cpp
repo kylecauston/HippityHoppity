@@ -4,6 +4,7 @@ namespace game {
 	Hitbox::Hitbox(std::vector<glm::vec3> p) {
 		base_points = p;
 		trans = glm::mat4(0.0);
+		scale = glm::vec3(1.0, 1.0, 1.0);
 	}
 
 	Hitbox::Hitbox()
@@ -54,6 +55,8 @@ namespace game {
 		glm::mat4 local_trans = trans * glm::scale(glm::mat4(1.0), scale);
 
 		for (glm::vec3 p : base_points) {
+			//std::cout << " p: [" << p.x << ", " << p.y << ", " << p.z << "] " << std::endl;
+
 			w_point = glm::vec4(p.x, p.y, p.z, 1.0);
 			w_point = local_trans * w_point;
 			trans_point = glm::vec3(w_point.x, w_point.y, w_point.z);
@@ -73,7 +76,6 @@ namespace game {
 		float right = NAN, left = NAN, up = NAN, down = NAN, close = NAN, far = NAN;
 		for (glm::vec3 point : points)
 		{
-			//std::cout << "[" << p.x << ", " << p.y << ", " << p.z << "]" << std::endl;
 			right = fmax(right, point.x);
 			left = fmin(left, point.x);
 

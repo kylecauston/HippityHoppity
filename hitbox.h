@@ -27,7 +27,6 @@ namespace game {
 		glm::vec3 getMaxPoint();
 		glm::vec3 getMinPoint();
 
-
 		glm::vec3 getScale();
 		glm::vec3 getPos();
 		glm::mat4 getTrans();
