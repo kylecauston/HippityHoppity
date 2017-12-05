@@ -3,9 +3,11 @@ COMP3501 Final Project - Hippity Hoppity
 
 **CONTROLS**
 W/S - move forward and backward
-A/D - turn the helicopter
+A/D - turn the helicopter left/right
 Q/E - strafes left and right
 Space/X - hovers up and down
+UP/DOWN - turns helicopter up/downwards
+LEFT/RIGHT - rolls helicopter left/right
 
 R - brakes, stops movement of helicopter
 F - fire a laser that collides with roughly center of screen

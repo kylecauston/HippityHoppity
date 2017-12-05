@@ -6,6 +6,7 @@
 #include <algorithm>
 #include "game.h"
 #include "bin/path_config.h"
+//#include <GLUT/glut.h>
 
 namespace game {
 	// Some configuration constants
@@ -120,6 +121,9 @@ namespace game {
 		std::string filename = std::string(MATERIAL_DIRECTORY) + std::string("/material");
 		resman_.LoadResource(Material, "ObjectMaterial", filename.c_str());
 
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/dark");
+		resman_.LoadResource(Material, "DarkMaterial", filename.c_str());
+
 		//load texture materials
 		filename = std::string(MATERIAL_DIRECTORY) + std::string("/shiny_texture");
 		resman_.LoadResource(Material, "ShinyTextureMaterial", filename.c_str());
@@ -145,9 +149,13 @@ namespace game {
 		if (!mat) {
 			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
 		}
+		Resource *dark = resman_.GetResource("DarkMaterial");
+		if (!dark) {
+			throw(GameException(std::string("Could not find resource \"") + "DarkMaterial" + std::string("\"")));
+		}
 
 
-		SceneNode* ground = new SceneNode("Ground", geom, mat);
+		SceneNode* ground = new SceneNode("Ground", geom, dark);
 		scene_.SetRoot(ground);
 		//ground->SetScale(glm::vec3(0.5, 1.0, 0.5));
 		ground->SetPosition(glm::vec3(0, -100, 200));
@@ -209,10 +217,21 @@ namespace game {
 		title->Scale(17.3, 13.0, 0.01);
 	}
 
+	void Game::output(int x, int y, float r, float g, float b, int font, char *string)
+	{
+		glColor3f(r, g, b);
+		glRasterPos2f(x, y);
+		int len, i;
+		len = (int)strlen(string);
+		for (i = 0; i < len; i++) {
+			//glutBitmapCharacter(font, string[i]);
+		}
+	}
+
 	void Game::MainLoop(void) {
 		//glEnable(GL_CULL_FACE);
 		//glCullFace(GL_BACK);
-		glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
+		//glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
 
 		// Loop while the user did not close the window
 		while (!glfwWindowShouldClose(window_)) {
@@ -240,6 +259,12 @@ namespace game {
 						else if (turning == 2) {
 							camera_.Yaw(-rot_factor);
 						}
+						else if (turning == 3) {
+							camera_.Pitch(rot_factor);
+						}
+						else if (turning == 4) {
+							camera_.Pitch(-rot_factor);
+						}
 
 						SceneNode* targ = scene_.GetNode("Target");
 						if (temp) {
@@ -250,7 +275,7 @@ namespace game {
 
 				// Draw the scene
 				scene_.Draw(&camera_);
-				heli_.DrawHelicopter(prgm, &camera_); //helicopter is just drawn as UI for now
+				//heli_.DrawHelicopter(prgm, &camera_); //helicopter is just drawn as UI for now
 
 				scene_.CheckCollisions();
 			}
@@ -388,11 +413,23 @@ namespace game {
 			if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
 				game->turning = 0;
 			}
-			if (key == GLFW_KEY_UP) {
-				game->camera_.Pitch(rot_factor);
+			if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
+				game->turning = 3;
 			}
-			if (key == GLFW_KEY_DOWN) {
-				game->camera_.Pitch(-rot_factor);
+			if (key == GLFW_KEY_UP && action == GLFW_RELEASE) {
+				game->turning = 0;
+			}
+			if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
+				game->turning = 4;
+			}
+			if (key == GLFW_KEY_DOWN && action == GLFW_RELEASE) {
+				game->turning = 0;
+			}
+			if (key == GLFW_KEY_LEFT) {
+				game->camera_.Roll(-rot_factor);
+			}
+			if (key == GLFW_KEY_RIGHT) {
+				game->camera_.Roll(rot_factor);
 			}
 
 			if (key == GLFW_KEY_R) { //always good to have a brake handy
@@ -430,7 +467,7 @@ namespace game {
 			throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
 		}
 		Resource *tex = NULL;
-		if (tex_name != "") {
+		if (!tex_name.empty()) {
 			tex = resman_.GetResource(tex_name);
 			if (!tex) {
 				throw(GameException(std::string("Could not find resource \"") + tex_name + std::string("\"")));
