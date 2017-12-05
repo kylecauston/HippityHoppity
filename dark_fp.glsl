@@ -36,7 +36,7 @@ void main()
     float Is = pow(spec_angle_cos, phong_exponent);
 
 	// Assign light to the fragment
-    gl_FragColor = 0.9 * color_interp + ambient_color + Id*diffuse_color + Is*specular_color;
+    gl_FragColor = 0.15 * color_interp + ambient_color + Id*diffuse_color + Is*specular_color;
 	//ambient_color
 	//gl_FragColor = color_interp;
 }

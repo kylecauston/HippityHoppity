@@ -8,9 +8,6 @@
 #include "bin/path_config.h"
 
 namespace game {
-	// Some configuration constants
-	// They are written here as global variables, but ideally they should be loaded from a configuration file
-
 	// Main window settings
 	const std::string window_title_g = "Demo";
 	const unsigned int window_width_g = 800;
@@ -47,6 +44,7 @@ namespace game {
 		// Set variables
 		animating_ = true;
 		game_state = TITLE;
+		hp = 100.0;
 	}
 
 	void Game::InitWindow(void) {
@@ -96,7 +94,6 @@ namespace game {
 		// Set projection
 		camera_.SetProjection(camera_fov_g, camera_near_clip_distance_g, camera_far_clip_distance_g, width, height);
 		heli_.SetProjection(camera_fov_g, camera_near_clip_distance_g, camera_far_clip_distance_g, width, height);
-
 	}
 
 	void Game::InitEventHandlers(void) {
@@ -121,6 +118,9 @@ namespace game {
 		std::string filename = std::string(MATERIAL_DIRECTORY) + std::string("/material");
 		resman_.LoadResource(Material, "ObjectMaterial", filename.c_str());
 
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/dark");
+		resman_.LoadResource(Material, "DarkMaterial", filename.c_str());
+
 		//load texture materials
 		filename = std::string(MATERIAL_DIRECTORY) + std::string("/shiny_texture");
 		resman_.LoadResource(Material, "ShinyTextureMaterial", filename.c_str());
@@ -130,6 +130,12 @@ namespace game {
 
 		filename = std::string(MATERIAL_DIRECTORY) + std::string("/gametitle.jpg");
 		resman_.LoadResource(Texture, "GameTitle", filename.c_str());
+
+		//screen space effect
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/screen_hp");
+		resman_.LoadResource(Material, "BlueMaterial", filename.c_str());
+
+		scene_.SetupDrawToTexture();
 	}
 
 	void Game::SetupScene(void) {
@@ -141,14 +147,24 @@ namespace game {
 		if (!geom) {
 			throw(GameException(std::string("Could not find resource \"") + "Terrain" + std::string("\"")));
 		}
-
 		Resource *mat = resman_.GetResource("ObjectMaterial");
 		if (!mat) {
 			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
 		}
+		Resource *tmat = resman_.GetResource("ShinyTextureMaterial");
+		if (!tmat) {
+			throw(GameException(std::string("Could not find resource \"") + "ShinyTextureMaterial" + std::string("\"")));
+		}
+		Resource *tex = resman_.GetResource("Cloud");
+		if (!tex) {
+			throw(GameException(std::string("Could not find resource \"") + "Cloud" + std::string("\"")));
+		}
+		Resource *dark = resman_.GetResource("DarkMaterial");
+		if (!dark) {
+			throw(GameException(std::string("Could not find resource \"") + "DarkMaterial" + std::string("\"")));
+		}
 
-
-		SceneNode* ground = new SceneNode("Ground", geom, mat);
+		SceneNode* ground = new SceneNode("Ground", geom, dark);
 		scene_.SetRoot(ground);
 		//ground->SetScale(glm::vec3(0.5, 1.0, 0.5));
 		ground->SetPosition(glm::vec3(0, -100, 200));
@@ -205,7 +221,7 @@ namespace game {
 	void Game::MainLoop(void) {
 		//glEnable(GL_CULL_FACE);
 		//glCullFace(GL_BACK);
-		glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
+		//glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
 
 		// Loop while the user did not close the window
 		while (!glfwWindowShouldClose(window_)) {
@@ -233,6 +249,12 @@ namespace game {
 						else if (turning == 2) {
 							camera_.Yaw(-rot_factor);
 						}
+						else if (turning == 3) {
+							camera_.Pitch(rot_factor);
+						}
+						else if (turning == 4) {
+							camera_.Pitch(-rot_factor);
+						}
 
 						SceneNode* targ = scene_.GetNode("Target");
 						if (temp) {
@@ -242,8 +264,10 @@ namespace game {
 				} //end if animating_
 
 				// Draw the scene
-				scene_.Draw(&camera_);
-				heli_.DrawHelicopter(prgm, &camera_); //helicopter is just drawn as UI for now
+				//scene_.Draw(&camera_);
+				scene_.DrawToTexture(&camera_);
+				scene_.DisplayTexture(resman_.GetResource("BlueMaterial")->GetResource(), hp);
+				//heli_.DrawHelicopter(prgm, &camera_); //helicopter is just drawn as UI for now
 
 				scene_.CheckCollisions();
 			}
@@ -312,13 +336,13 @@ namespace game {
 				std::cout << "firing laser" << std::endl;
 				glm::vec3 forward = game->camera_.GetForward();
 				glm::vec3 origin = game->camera_.GetPosition();
-				
+
 				std::vector<std::string> hit = game->scene_.CheckRayCollisions(Ray(origin, forward));
 
 				for (std::string s : hit) {
 					game->scene_.Remove(s);
 				}
- 			}
+			}
 			if (key == GLFW_KEY_V && action == GLFW_PRESS) { //change polygon display modes
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			}
@@ -383,11 +407,23 @@ namespace game {
 			if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
 				game->turning = 0;
 			}
-			if (key == GLFW_KEY_UP) {
-				game->camera_.Pitch(rot_factor);
+			if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
+				game->turning = 3;
 			}
-			if (key == GLFW_KEY_DOWN) {
-				game->camera_.Pitch(-rot_factor);
+			if (key == GLFW_KEY_UP && action == GLFW_RELEASE) {
+				game->turning = 0;
+			}
+			if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
+				game->turning = 4;
+			}
+			if (key == GLFW_KEY_DOWN && action == GLFW_RELEASE) {
+				game->turning = 0;
+			}
+			if (key == GLFW_KEY_LEFT) {
+				game->camera_.Roll(-rot_factor);
+			}
+			if (key == GLFW_KEY_RIGHT) {
+				game->camera_.Roll(rot_factor);
 			}
 
 			if (key == GLFW_KEY_R) { //always good to have a brake handy
@@ -397,6 +433,12 @@ namespace game {
 			}
 			if (key == GLFW_KEY_F && action == GLFW_PRESS) { //fire!
 				game->FireLaser();
+			}
+			if (key == GLFW_KEY_H && action == GLFW_PRESS) { // H increases hp
+				game->hp += 5;
+			}
+			if (key == GLFW_KEY_G && action == GLFW_PRESS) { // G lowers hp
+				game->hp -= 5;
 			}
 		} //end elseif game_state
 	}
@@ -425,7 +467,7 @@ namespace game {
 			throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
 		}
 		Resource *tex = NULL;
-		if (tex_name != "") {
+		if (!tex_name.empty()) {
 			tex = resman_.GetResource(tex_name);
 			if (!tex) {
 				throw(GameException(std::string("Could not find resource \"") + tex_name + std::string("\"")));

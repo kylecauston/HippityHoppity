@@ -47,6 +47,8 @@ namespace game {
 		SceneNode *title; //cube that displays the title screen
 		int turning;
 
+		float hp;
+
 	private:
 		// GLFW window
 		GLFWwindow* window_;
