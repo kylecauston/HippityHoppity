@@ -262,7 +262,7 @@ namespace game {
 		GLint light_var = glGetUniformLocation(program, "light");
 		double light;
 		if (sun) { light = 0.9; }
-		else { light = 0.05; }
+		else { light = 0.0; }
 		glUniform1f(light_var, (float)light);
 
 		// Return transformation of node combined with parent, without scaling
