@@ -55,7 +55,7 @@ namespace game {
 		GLuint texture_;
 		GLuint depth_buffer_;
 		// Draw the scene into a texture
-		void DrawToTexture(Camera *camera);
+		void DrawToTexture(Camera *camera, bool sun);
 		// Process and draw the texture on the screen
 		void DisplayTexture(GLuint program, float hp);
 

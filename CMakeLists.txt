@@ -10,7 +10,6 @@ set(HDRS
  
 set(SRCS
     aabb.cpp asteroid.cpp camera.cpp collidable.cpp collision_manager.cpp doggy.cpp enemy.cpp game.cpp helicopter.cpp hitbox.cpp laser.cpp main.cpp ray.cpp resource.cpp resource_manager.cpp scene_graph.cpp scene_node.cpp material_vp.glsl material_fp.glsl shiny_texture_fp.glsl shiny_texture_vp.glsl dark_vp.glsl dark_fp.glsl screen_hp_fp.glsl screen_hp_vp.glsl
-
 )
 
 # Add path name to configuration file
