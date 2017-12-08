@@ -6,6 +6,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "scene_node.h"
+#include "enemy.h"
 #include "resource.h"
 #include "camera.h"
 #include "collision_manager.h"
@@ -23,6 +24,7 @@ namespace game {
 	public:
 		// Root of the hierarchy
 		SceneNode * root_;
+		SceneNode * projectiles = NULL;
 
 		SceneGraph(void);
 		~SceneGraph();
@@ -45,7 +47,10 @@ namespace game {
 
 		// run collisions on the children of node (the separate entities)
 		void CheckCollisions();
-		std::vector<std::string> CheckRayCollisions(Ray r);
+		std::vector<std::pair<SceneNode*, glm::vec2*>> CheckRayCollisions(Ray r);
+
+		// function for if an enemy has raised an attack flag
+		void EnemyAttacking(Enemy* e);
 
 		void Remove(std::string node_name); //remove a node with a given name
 

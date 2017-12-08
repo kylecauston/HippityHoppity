@@ -28,9 +28,12 @@ namespace game {
 		// Get node attributes
 		glm::vec3 GetPosition(void) const;
 		glm::vec3 GetAbsolutePosition(void);
+		glm::vec3 GetEntityPosition(void);
 		glm::quat GetOrientation(void) const;
 		glm::vec3 GetScale(void) const;
+		float GetHealth(void) const;
 		bool isCollidable(void) const;
+		bool isDestroyed(void) const;
 
 		// Set node attributes
 		void SetPosition(glm::vec3 position);
@@ -39,6 +42,7 @@ namespace game {
 		void SetPosition(float x, float y, float z);
 		void SetScale(float x, float y, float z);
 		void setCollidable(bool c);
+		void takeDamage(float d);
 
 		// Perform transformations on node
 		void Translate(glm::vec3 trans);
@@ -70,12 +74,10 @@ namespace game {
 
 		SceneNode *parent_;
 
-		bool dead = false;
-
 	protected:
 		static glm::vec3 default_forward;
 
-		bool collidable;
+		void destroy();
 
 	private:
 		std::string name_; // Name of the scene node
@@ -89,6 +91,10 @@ namespace game {
 		glm::quat orientation_; // Orientation of node
 		glm::vec3 scale_; // Scale of node
 					
+		float health = 20;
+		bool destroyed = false;
+		bool enemy = false;
+		bool collidable = false;
 
 		// Set matrices that transform the node in a shader program
 		// Return transformation of current node combined with

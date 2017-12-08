@@ -65,9 +65,11 @@ namespace game {
 			// Get next node to be processed and pop it from the stack
 			SceneNode *current = stck.top();
 			stck.pop();
+
 			// Get transformation corresponding to the parent of the next node
 			glm::mat4 parent_transf = transf.top();
 			transf.pop();
+
 			// Draw node based on parent transformation
 			glm::mat4 current_transf = current->Draw(camera, parent_transf, true);
 
@@ -92,7 +94,24 @@ namespace game {
 		while (stck.size() > 0) {
 			SceneNode *current = stck.top();
 			stck.pop();
+
+			if (current->isDestroyed()) {
+				Remove(current->GetName());
+				continue;
+			}
+
 			current->Update(deltaTime);
+			
+			// if we're updating an enemy, we wanna see if they can attack
+			if (Enemy* e = dynamic_cast<Enemy*>(current)) {
+
+				// if they are attacking, 
+				if (e->isAttacking())
+				{
+					EnemyAttacking(e);
+				}
+			}
+
 			for (std::vector<SceneNode *>::const_iterator it = current->children_begin();
 				it != current->children_end(); it++) {
 				stck.push(*it);
@@ -109,10 +128,51 @@ namespace game {
 		return NULL;
 	}
 
-	void SceneGraph::Remove(std::string node_name) { //cheesily removes node of a given name
+	void SceneGraph::Remove(std::string node_name) { //cheesily removes node of a given 
 		std::vector<SceneNode*>::iterator position = std::find(root_->children_.begin(), root_->children_.end(), FindName(node_name));
 		if (position != root_->children_.end()) {
 			root_->children_.erase(position);
+		}
+	}
+
+	// If an enemy has raised the attack flag, we handle the attack here
+	void SceneGraph::EnemyAttacking(Enemy* e) {
+		// grab their attack 
+		AttackNode* a = e->getAttack();
+
+		// if it's a hitscan attack, run the collision right now
+		if (Hitscan* hs = dynamic_cast<Hitscan*>(a)) {
+			// we get a list of <Node, Intersection Point> pairs back from CheckRayCollision
+			std::vector <std::pair<SceneNode*, glm::vec2*>> list = CheckRayCollisions(hs->getRay());
+
+			// cycle through the pairs and find the closest (non-current) node
+			float min = INFINITY;
+			SceneNode* closest = NULL;
+			for (std::pair<SceneNode*, glm::vec2*> n : list) {
+				// don't shoot ourselves
+				if (e->GetName().find(n.first->GetName()) != std::string::npos) continue;
+
+				// if this node is closer than the previous closest
+				if (n.second->x < min) {
+					min = n.second->x;
+					closest = n.first;
+				}
+			}
+
+			// now deal damage to the closest node, if there is one
+			if (closest != NULL) {
+				closest->takeDamage(a->getDamage());
+				std::cout << closest->GetName() << ": " << closest->GetHealth() << "HP" << std::endl;
+			}
+		}
+		else  // if it's not hitscan, we add it to the projectiles node
+		{
+			if (projectiles == NULL) {
+				projectiles = new SceneNode("Dummy_Projectiles", NULL, NULL);
+				root_->AddChild(projectiles);
+			}
+
+			projectiles->AddChild(a);
 		}
 	}
 
@@ -135,19 +195,20 @@ namespace game {
 		}
 	}
 
-	/* Cycle through all entities in scene (first children of root), and check against ray. */
-	std::vector<std::string> SceneGraph::CheckRayCollisions(Ray r) {
-		std::vector<std::string> hit_list = std::vector<std::string>();
+	/* Cycle through all entities in scene (first children of root), and check against ray. 
+			Returns a list of pairs: <SceneNode*, Points of Intesection*>  */
+	std::vector<std::pair<SceneNode*, glm::vec2*>> SceneGraph::CheckRayCollisions(Ray r) {
+		std::vector<std::pair<SceneNode*, glm::vec2*>> hit_list = std::vector<std::pair<SceneNode*, glm::vec2*>>();
+
+		glm::vec2* PoI;
 
 		for (std::vector<SceneNode *>::const_iterator n = root_->children_begin();
 			n != root_->children_end(); n++) {
 
-			if (CollisionManager::checkHierarchicalCollision(*n, r))
+			if (CollisionManager::checkHierarchicalCollision(*n, r, &PoI))
 			{
-				hit_list.push_back((*n)->GetName());
+				hit_list.push_back(std::pair<SceneNode*, glm::vec2*>((*n), PoI));
 			}
-
-			std::cout << std::endl << std::endl;
 		}
 
 		return hit_list;

@@ -77,6 +77,21 @@ namespace game {
 		glm::vec3 v = glm::vec3(0, 0, 0);
 
 		// go until we've reached the root, but don't add root
+		while (n != NULL)
+		{
+			v += n->GetPosition();
+			n = n->parent_;
+		}
+
+		return v;
+	}
+
+	/* Get the Entity coords (where on the map they are). */
+	glm::vec3 SceneNode::GetEntityPosition(void) {
+		SceneNode* n = this;
+		glm::vec3 v = glm::vec3(0, 0, 0);
+
+		// go until we've reached the root, but don't add root
 		while (n->parent_ != NULL)
 		{
 			v += n->GetPosition();
@@ -94,8 +109,14 @@ namespace game {
 		return scale_;
 	}
 
+	float SceneNode::GetHealth(void) const { return health; }
+
 	bool SceneNode::isCollidable(void) const {
 		return collidable;
+	}
+
+	bool SceneNode::isDestroyed(void) const {
+		return destroyed;
 	}
 
 	void SceneNode::SetPosition(glm::vec3 position) {
@@ -121,6 +142,20 @@ namespace game {
 
 	void SceneNode::setCollidable(bool c) {
 		collidable = c;
+	}
+
+	void SceneNode::takeDamage(float dam) { 
+		health -= dam;
+		if (health <= 0)
+		{
+			health = 0;
+			destroy();
+		}
+	}
+
+	void SceneNode::destroy()
+	{
+		destroyed = true;
 	}
 
 	void SceneNode::Translate(glm::vec3 trans) {

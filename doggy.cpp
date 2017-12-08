@@ -2,7 +2,7 @@
 #include <iostream>
 
 namespace game {
-	Doggy::Doggy(const std::string name, const SceneNode* targ, const Resource* geometry, const Resource* mat, const Resource *tex)
+	Doggy::Doggy(const std::string name, SceneNode* targ, const Resource* geometry, const Resource* mat, const Resource *tex)
 		: Enemy(name, targ, geometry, mat, tex)
 	{
 		turret = NULL;
@@ -16,10 +16,27 @@ namespace game {
 		turret = t;
 	}
 
+	AttackNode* Doggy::getAttack() {
+		attack_flag = false;
+
+		if (firerate == 0) {
+			shot_CD = INFINITY;
+		}
+		else {
+			shot_CD = 1 / firerate;
+		}
+
+		glm::vec3 aim = turret->GetOrientation() * SceneNode::default_forward;
+		Ray r = Ray(turret->GetAbsolutePosition(), aim);
+		AttackNode* shot = new Hitscan(r);
+
+		return shot;
+	}
+
 	void Doggy::Update(float t) {
 		//Enemy::Update(t);
 
-		glm::vec3 toTarget = target->GetPosition() - GetAbsolutePosition();
+		glm::vec3 toTarget = target->GetPosition() - GetEntityPosition();
 		// 2D to target vector, ignoring height
 		glm::vec3 toTarget_flat = glm::vec3(toTarget.x, 0, toTarget.z);
 
@@ -45,6 +62,13 @@ namespace game {
 
 			glm::quat rotation = glm::slerp(GetOrientation(), hor_rotation, 0.05f);
 			SetOrientation(rotation);
+		}
+
+		if (shot_CD <= 0) {
+			attack_flag = true;
+		}
+		else {
+			shot_CD -= t;
 		}
 	}
 

@@ -1,15 +1,19 @@
 #include "enemy.h"
+#include <iostream>
 
 namespace game {
-	Enemy::Enemy(const std::string name, const SceneNode* targ, const Resource *geometry, const Resource *material, const Resource *tex) : SceneNode(name, geometry, material, tex, true) {
+	Enemy::Enemy(const std::string name, SceneNode* targ, const Resource *geometry, const Resource *material, const Resource *tex) : SceneNode(name, geometry, material, tex, true) {
 		target = targ;
 	}
 
 	Enemy::~Enemy() {}
 
 	void Enemy::Update(float deltaTime) {
+		if (target == NULL)
+			return;
+
 		// get the plane vector towards target
-		glm::vec3 toTarget = target->GetPosition() - GetAbsolutePosition();
+		glm::vec3 toTarget = target->GetPosition() - GetEntityPosition();
 		// 2D to target vector, ignoring height
 		glm::vec3 toTarget_flat = glm::vec3(toTarget.x, 0, toTarget.z);
 
@@ -22,7 +26,7 @@ namespace game {
 			Translate(movement);
 		}
 
-		toTarget = target->GetPosition() - GetAbsolutePosition();
+		toTarget = target->GetPosition() - GetEntityPosition();
 		toTarget_flat = glm::vec3(toTarget.x, 0, toTarget.z);
 
 
@@ -42,9 +46,7 @@ namespace game {
 			// get the angle to aim upwards (no more than 90deg)
 			float vert_angle = asin(toTarget.y / glm::length(toTarget));
 
-			// find the axis to rotate on, by taking cross(forward, UP)
-			glm::vec3 forward = hor_rotation * SceneNode::default_forward * -hor_rotation;
-			glm::quat vert_rotation = glm::angleAxis(vert_angle, glm::cross(forward, glm::vec3(0.0, 1.0, 0.0)));
+			glm::quat vert_rotation = glm::angleAxis(vert_angle, glm::cross(SceneNode::default_forward, glm::vec3(0.0, 1.0, 0.0)));
 			glm::quat rotation = glm::slerp(GetOrientation(), hor_rotation*vert_rotation, rotateSpeed);
 			SetOrientation(rotation);
 
@@ -53,18 +55,75 @@ namespace game {
 		}
 
 		// if in range, attack
+		
+		if (shot_CD <= 0) {
+			attack_flag = true;
+		}
+		else {
+			shot_CD -= deltaTime;
+		}
+		
 	}
 
-	void Enemy::Attack() {
-		
-		glm::vec3 aim = GetOrientation() * SceneNode::default_forward * -GetOrientation();
+	float Enemy::getRotateSpeed() {
+		return rotateSpeed;
+	}
 
-		Ray r = Ray(GetAbsolutePosition(), aim);
+	float Enemy::getMovementSpeed() {
+		return speed;
+	}
 
+	bool Enemy::isAttacking() {
+		return attack_flag;
+	}
+
+	void Enemy::setRotateSpeed(float s) {
+		rotateSpeed = s;
+	}
+
+	void Enemy::setMovementSpeed(float s) {
+		speed = s;
+	}
+
+	void Enemy::setFirerate(float f) {
+		firerate = f;
+	}
+
+	void Enemy::setProjectileGeometry(Resource* g) { 
+		projectile_geometry = g; 
+	}
+
+	void Enemy::setProjectileMaterial(Resource* m) { 
+		projectile_material = m;
+	}
+
+	void Enemy::setProjectileTexture(Resource* t) { 
+		projectile_texture = t;
+	}
+	
+	AttackNode* Enemy::getAttack() {
+		attack_flag = false;
+
+		if (firerate == 0) {
+			shot_CD = INFINITY;
+		}
+		else {
+			shot_CD = 1 / firerate;
+		}
+
+		glm::vec3 aim = GetOrientation() * SceneNode::default_forward;
+		/*Ray r = Ray(GetAbsolutePosition(), aim);
+		AttackNode* shot = new Hitscan(r);*/
+		AttackNode* shot = new Projectile(GetEntityPosition(), aim, glm::vec3(0, -0.1, 0), 
+			projectile_geometry, projectile_material, projectile_texture);
+
+		//shot->SetScale(10, 10, 10);
+
+		return shot;
 	}
 
 	void Enemy::collide(Collidable* other)
 	{
-
+		
 	}
 } // namespace game

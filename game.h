@@ -56,6 +56,7 @@ namespace game {
 
 		// Scene graph containing all nodes to render
 		SceneGraph scene_;
+		SceneNode* projectiles;
 
 		// Resources available to the game
 		ResourceManager resman_;
@@ -66,8 +67,9 @@ namespace game {
 
 		// Flag to turn animation on/off
 		bool animating_;
+		int EnemyID = 0;
 		int numEnemies = 0;
-		int numTrees = 0;
+		int TreeID = 0;
 
 		// Methods to initialize the game
 		void InitWindow(void);

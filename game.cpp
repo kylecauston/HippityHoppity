@@ -187,8 +187,7 @@ namespace game {
 		mole->SetPosition(200, 26, 200);
 		ground->AddChild(mole);
 
-		/*SceneNode* tree;
-
+		SceneNode* tree;
 
 		for (int i = 0; i < 6; i++)
 		{
@@ -196,15 +195,18 @@ namespace game {
 			{
 				tree = CreateTree();
 				tree->SetPosition(i * 10, 80 + tree->GetScale().y / 2, 500-j*10);
-				ground->AddChild(tree);
+				//ground->AddChild(tree);
 			}
-		}*/
+		}
 
 		target->SetPosition(0, 100, 510);
 
-		SceneNode* tester = CreateDog();
-		tester->SetPosition(0, 80, 500);
-		ground->AddChild(tester);
+		//SceneNode* tester = CreateDog();
+		//tester->SetPosition(0, 80, 500);
+		//ground->AddChild(tester);
+
+		projectiles = new SceneNode("projectiles", NULL, NULL);
+		ground->AddChild(projectiles);
 
 		//this is stored to cheesily draw the helicopter later
 		prgm = resman_.GetResource("ObjectMaterial")->GetResource();
@@ -223,7 +225,7 @@ namespace game {
 		//glEnable(GL_CULL_FACE);
 		//glCullFace(GL_BACK);
 		//glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
-
+		
 		// Loop while the user did not close the window
 		while (!glfwWindowShouldClose(window_)) {
 			if (game_state == TITLE) { //on title screen we do nothing but display the UI
@@ -291,14 +293,14 @@ namespace game {
 		else if (game->game_state == GAME) { //keybinds for gameplay
 			float trans_factor = 3.0;
 			if (key == GLFW_KEY_KP_9 && action == GLFW_PRESS) {
-				Enemy* enemy = ((Enemy*)(game->scene_.GetNode("Enemy1")));
-				enemy->rotateSpeed = std::max(0.0f, std::min(enemy->rotateSpeed + 0.1f, 1.0f));
-				std::cout << enemy->rotateSpeed << std::endl;
+				Enemy* enemy = ((Enemy*)(game->scene_.GetNode("Enemy0")));
+				enemy->setRotateSpeed(std::max(0.0f, std::min(enemy->getRotateSpeed() + 0.1f, 1.0f)));
+				std::cout << enemy->getRotateSpeed() << std::endl;
 			}
 			if (key == GLFW_KEY_KP_7 && action == GLFW_PRESS) {
-				Enemy* enemy = ((Enemy*)(game->scene_.GetNode("Enemy1")));
-				enemy->rotateSpeed = std::max(0.0f, std::min(enemy->rotateSpeed - 0.1f, 1.0f));
-				std::cout << enemy->rotateSpeed << std::endl;
+				Enemy* enemy = ((Enemy*)(game->scene_.GetNode("Enemy0")));
+				enemy->setRotateSpeed(std::max(0.0f, std::min(enemy->getRotateSpeed() - 0.1f, 1.0f)));
+				std::cout << enemy->getRotateSpeed() << std::endl;
 			}
 			if (key == GLFW_KEY_Y && action == GLFW_PRESS) { //tell me target position
 				glm::vec3 pos = game->scene_.GetNode("Target")->GetPosition();
@@ -336,12 +338,14 @@ namespace game {
 				temp = !temp;
 				std::cout << "firing laser" << std::endl;
 				glm::vec3 forward = game->camera_.GetForward();
-				glm::vec3 origin = game->camera_.GetPosition();
+				glm::vec3 origin = game->camera_.GetPosition();	
 
-				std::vector<std::string> hit = game->scene_.CheckRayCollisions(Ray(origin, forward));
-
-				for (std::string s : hit) {
-					game->scene_.Remove(s);
+				std::vector<std::pair<SceneNode*, glm::vec2*>> hit = game->scene_.CheckRayCollisions(Ray(origin, forward));
+				
+				for (int i = 0; i < hit.size(); i++) {
+					if (hit[i].first->GetName() != "Target") {
+						hit[i].first->takeDamage(9999);
+					}
 				}
 			}
 			if (key == GLFW_KEY_V && action == GLFW_PRESS) { //change polygon display modes
@@ -533,9 +537,12 @@ namespace game {
 			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
 		}
 
-		std::string name = "Enemy" + numEnemies++;
+		std::string name = "Enemy" + std::to_string(EnemyID++);
+		numEnemies++;
 
-		SceneNode* n = new SceneNode(name, NULL, NULL);
+		Enemy* n = new Enemy(name, NULL, NULL, NULL);
+		n->setMovementSpeed(0);
+		n->setRotateSpeed(0);
 		
 		SceneNode* dirt = new SceneNode(name + "_dirt", torus, mat);
 		dirt->setCollidable(false);
@@ -543,7 +550,7 @@ namespace game {
 		dirt->SetOrientation(glm::angleAxis(glm::pi<float>() / 2, glm::vec3(1.0, 0.0, 0.0)));
 
 		Enemy* body = new Enemy(name + "_body", scene_.GetNode("Target"), sphere, mat);
-		body->speed = 0;
+		body->setMovementSpeed(0);
 		body->setCollidable(true);
 		body->SetPosition(0, 0.5, 0);
 	
@@ -551,6 +558,9 @@ namespace game {
 		gun->SetPosition(1.0, 0.5, 1.5);
 		gun->setCollidable(true);
 		gun->SetScale(0.5, 0.5, 5.0);
+
+		body->setProjectileGeometry(sphere);
+		body->setProjectileMaterial(mat);
 		
 		n->AddChild(dirt);
 		n->AddChild(body);
@@ -567,16 +577,17 @@ namespace game {
 			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
 		}
 
-		std::string name = "Enemy" + std::to_string(numEnemies);
+		std::string name = "Enemy" + std::to_string(EnemyID++);
 		numEnemies++;
-		SceneNode* n = new SceneNode(name, NULL, NULL);
+		Enemy* n = new Enemy(name, NULL, NULL, NULL);
 		n->setCollidable(false);
+		n->setMovementSpeed(0);
 
 		Enemy* turret = new Enemy(name + "_turret", scene_.GetNode("Target"), cube, mat);
 		turret->setCollidable(true);
 		turret->SetScale(0.5, 0.5, 4.0);
 		turret->SetPosition(0, 0.75, 0);
-		turret->speed = 0;
+		turret->setMovementSpeed(0);
 
 		Doggy* dog = new Doggy(name + "_body", scene_.GetNode("Target"), cube, mat);
 		dog->SetScale(2.0, 1.0, 6.0);
@@ -598,8 +609,7 @@ namespace game {
 			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
 		}
 
-		std::string name = "Tree" + std::to_string(numTrees);
-		numTrees++;
+		std::string name = "Tree" + std::to_string(TreeID++);
 
 		int height = rand() % 7 + 5;
 		float thicc = fmax(((double)rand() / (double)RAND_MAX) * 2, 0.3);

@@ -9,16 +9,14 @@ namespace game {
 		return (isColliding(a->aabb, b->aabb) && isColliding(a->hb, b->hb));
 	}
 
-	/* Return whether a collidable object is intersected by a ray. */
-	bool CollisionManager::isColliding(Collidable* a, Ray r) {
+	/* Return whether a collidable object is intersected by a ray. The final variable 
+		'intersection' is an output param, which holds the points of intersection*/
+	bool CollisionManager::isColliding(Collidable* a, Ray r, glm::vec2** intersection) {
 		if (isColliding(a->aabb, r))
 		{
-			glm::vec2* PoI = NULL;
-			if (isColliding(a->hb, r, &PoI))
+			if (isColliding(a->hb, r, intersection))
 			{
-				std::cout << "[" << PoI->x << ", " << PoI->y << "]" << std::endl;
 				return true;
-
 			}
 			
 			return false;
@@ -263,8 +261,9 @@ namespace game {
 		return false;
 	}
 
-	/* Take a single hierarchical SceneNode root and return if there is an intersection with Ray r. */
-	bool CollisionManager::checkHierarchicalCollision(SceneNode* root, Ray r) {
+	/* Take a single hierarchical SceneNode root and return if there is an intersection with Ray r.
+			PoI is an output parameter that holds the two points of intersection. */
+	bool CollisionManager::checkHierarchicalCollision(SceneNode* root, Ray r, glm::vec2** PoI) {
 		std::vector<SceneNode*> list = flattenTree(root);
 
 		for (SceneNode* n : list)
@@ -273,7 +272,7 @@ namespace game {
 			// ignore non-collidables
 			if (!n->isCollidable()) continue;
 
-			if (isColliding(n, r)) return true;
+			if (isColliding(n, r, PoI)) return true;
 		}
 
 		return false;

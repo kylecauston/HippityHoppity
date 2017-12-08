@@ -13,6 +13,7 @@ namespace game {
 		glm::vec3 direction; // unit vector
 
 	public:
+		Ray();
 		Ray(glm::vec3 o, glm::vec3 d);
 
 		glm::vec3 getOrigin();

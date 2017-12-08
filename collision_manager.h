@@ -9,9 +9,9 @@ namespace game {
 	class CollisionManager {
 	public:
 		static bool isColliding(Collidable* a, Collidable* b);
-		static bool isColliding(Collidable* n, Ray r);
+		static bool isColliding(Collidable* n, Ray r, glm::vec2** intersection);
 		static bool checkHierarchicalCollision(SceneNode* a, SceneNode* b);
-		static bool checkHierarchicalCollision(SceneNode* n, Ray r);
+		static bool checkHierarchicalCollision(SceneNode* n, Ray r, glm::vec2** PoI);
 
 	private:
 		CollisionManager();
