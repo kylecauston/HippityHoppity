@@ -5,11 +5,11 @@ project(GameTest)
 
 # Specify project files: header files and source files
 set(HDRS
-    aabb.h asteroid.h camera.h collidable.h collision_manager.h defs.h doggy.h enemy.h game.h helicopter.h hitbox.h laser.h ray.h resource.h resource_manager.h scene_graph.h scene_node.h
+    aabb.h asteroid.h attack_node.h camera.h collidable.h collision_manager.h defs.h doggy.h enemy.h game.h helicopter.h hitbox.h hitscan.h laser.h projectile.h ray.h resource.h resource_manager.h scene_graph.h scene_node.h
 )
  
 set(SRCS
-    aabb.cpp asteroid.cpp camera.cpp collidable.cpp collision_manager.cpp doggy.cpp enemy.cpp game.cpp helicopter.cpp hitbox.cpp laser.cpp main.cpp ray.cpp resource.cpp resource_manager.cpp scene_graph.cpp scene_node.cpp material_vp.glsl material_fp.glsl shiny_texture_fp.glsl shiny_texture_vp.glsl dark_vp.glsl dark_fp.glsl screen_hp_fp.glsl screen_hp_vp.glsl
+    aabb.cpp asteroid.cpp attack_node.cpp camera.cpp collidable.cpp collision_manager.cpp doggy.cpp enemy.cpp game.cpp helicopter.cpp hitbox.cpp hitscan.cpp laser.cpp main.cpp projectile.cpp ray.cpp resource.cpp resource_manager.cpp scene_graph.cpp scene_node.cpp material_vp.glsl material_fp.glsl shiny_texture_fp.glsl shiny_texture_vp.glsl dark_vp.glsl dark_fp.glsl screen_hp_fp.glsl screen_hp_vp.glsl
 )
 
 # Add path name to configuration file
