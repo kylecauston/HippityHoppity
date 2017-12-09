@@ -200,6 +200,7 @@ namespace game {
 		if (projectiles == NULL)
 		{
 			projectiles = new SceneNode("Proj_Dummy", NULL, NULL, NULL, false);
+			projectiles->setCollidable(false);
 			root_->AddChild(projectiles);
 		}
 		projectiles->AddChild(p);
