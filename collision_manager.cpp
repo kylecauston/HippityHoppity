@@ -5,7 +5,6 @@
 namespace game {
 	/* Return whether two collidable objects intersect. */
 	bool CollisionManager::isColliding(Collidable* a, Collidable* b) {
-		// check if the AABB's collide, and if they do, then check HB collision
 		return (isColliding(a->aabb, b->aabb) && isColliding(a->hb, b->hb));
 	}
 
@@ -42,8 +41,8 @@ namespace game {
 
 		glm::vec3 aPos = a.getPos();
 		glm::vec3 bPos = b.getPos();
-		glm::vec3 aScale = a.getScale();
-		glm::vec3 bScale = b.getScale();
+		glm::vec3 aScale = a.getDimensions();
+		glm::vec3 bScale = b.getDimensions();
 		glm::vec3 aHalfScale = glm::vec3(aScale.x / 2.0, aScale.y / 2.0, aScale.z / 2.0);
 		glm::vec3 bHalfScale = glm::vec3(bScale.x / 2.0, bScale.y / 2.0, bScale.z / 2.0);
 		

@@ -11,8 +11,8 @@ namespace game {
 			float getDamage(void) const;
 
 		protected:
-			AttackNode(std::string s, const Resource* geom, const Resource* material, const Resource* tex = NULL);
-			float damage = 2;
+			AttackNode(std::string s, float dam, const Resource* geom, const Resource* material, const Resource* tex = NULL);
+			float damage = 0.5;
 	};
 }
 

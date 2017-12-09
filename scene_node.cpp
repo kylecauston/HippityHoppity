@@ -67,6 +67,24 @@ namespace game {
 		return name_;
 	}
 
+	std::string SceneNode::GetEntityName(void) {
+		SceneNode* parent = this->parent_;
+		SceneNode* last = this;
+
+		if (parent == NULL)
+			return parent->GetName();
+
+		// go until we've reached the root
+		while (parent->parent_ != NULL)
+		{
+			last = parent;
+			parent = parent->parent_;
+
+		}
+
+		return last->GetName();
+	}
+
 	glm::vec3 SceneNode::GetPosition(void) const {
 		return position_;
 	}
@@ -76,7 +94,7 @@ namespace game {
 		SceneNode* n = this;
 		glm::vec3 v = glm::vec3(0, 0, 0);
 
-		// go until we've reached the root, but don't add root
+		// go until we've reached the root
 		while (n != NULL)
 		{
 			v += n->GetPosition();
@@ -241,6 +259,23 @@ namespace game {
 
 	void SceneNode::onCollide(Collidable* other) {
 		// do nothing for generic type
+	}
+
+	glm::quat SceneNode::VectorToRotation(glm::vec3 v) {
+		// get the rotation around the y axis
+		float angle = asin(v.x / sqrt(pow(v.x, 2) + pow(v.z, 2)));
+
+		if (v.z < 0)
+			angle = glm::pi<float>() - angle;
+
+		glm::quat hor_rotation = glm::angleAxis(angle, glm::vec3(0.0, 1.0, 0.0));
+
+		// get the vertical angle (no more than 90deg)
+		float vert_angle = asin(v.y / glm::length(v));
+
+		glm::quat vert_rotation = glm::angleAxis(vert_angle, glm::cross(SceneNode::default_forward, glm::vec3(0.0, 1.0, 0.0)));
+
+		return hor_rotation * vert_rotation;
 	}
 
 	glm::mat4 SceneNode::SetupShader(GLuint program, glm::mat4 parent_transf, bool sun) {

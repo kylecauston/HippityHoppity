@@ -42,6 +42,7 @@ namespace game {
 		InitEventHandlers();
 
 		// Set variables
+		player_vel = glm::vec3(0, 0, 0);
 		animating_ = true;
 		game_state = TITLE;
 		hp = 100.0;
@@ -177,6 +178,9 @@ namespace game {
 		Resource *torus = resman_.GetResource("TorusMesh");
 		Resource *cyl= resman_.GetResource("CylinderMesh");
 
+		SceneNode* player = new SceneNode("Player", cube, mat, NULL, true);
+		player->SetPosition(200, 100, 200);
+		ground->AddChild(player);
 
 		SceneNode *target = new SceneNode("Target", cube, mat, NULL, true);
 		target->SetPosition(190, 30.5, 200);
@@ -186,6 +190,16 @@ namespace game {
 		SceneNode* mole = CreateMole();
 		mole->SetPosition(200, 26, 200);
 		ground->AddChild(mole);
+
+		SceneNode* box = new SceneNode("testing box", sphere, mat);
+		box->setCollidable(true);
+		box->SetScale(10, 10, 10);
+		box->SetPosition(0, 100, 480);
+		//ground->AddChild(box);
+
+		SceneNode* tester = CreateDog();
+		tester->SetPosition(0, 80, 510);
+		ground->AddChild(tester);
 
 		SceneNode* tree;
 
@@ -201,12 +215,6 @@ namespace game {
 
 		target->SetPosition(0, 100, 510);
 
-		//SceneNode* tester = CreateDog();
-		//tester->SetPosition(0, 80, 500);
-		//ground->AddChild(tester);
-
-		projectiles = new SceneNode("projectiles", NULL, NULL);
-		ground->AddChild(projectiles);
 
 		//this is stored to cheesily draw the helicopter later
 		prgm = resman_.GetResource("ObjectMaterial")->GetResource();
@@ -241,6 +249,15 @@ namespace game {
 					if (deltaTime > 0.05) {
 						scene_.Update(deltaTime);
 						camera_.Update(); //update our camera to keep momentum going with thrusters
+						
+					/*	SceneNode* player = scene_.GetNode("Player");
+						
+
+						glm::vec3 forward = SceneNode::default_forward * player->GetOrientation();
+						player->Translate(player_vel * forward);
+						camera_.SetPosition(scene_.GetNode("Player")->GetAbsolutePosition() + camera_.GetForward());
+						*/
+
 						heli_.Update(deltaTime);
 						last_time = current_time;
 
@@ -260,7 +277,7 @@ namespace game {
 						}
 
 						SceneNode* targ = scene_.GetNode("Target");
-						if (temp) {
+						if (temp && targ != NULL) {
 							targ->SetPosition(camera_.GetPosition() - scene_.GetNode("Ground")->GetPosition() - camera_.GetForward());
 						}
 					}
@@ -332,21 +349,30 @@ namespace game {
 				vel = glm::vec3(0, 0, 1);
 			}
 			if (key == GLFW_KEY_KP_5 && action == GLFW_PRESS) {
-				vel = glm::vec3(0, 0, 0);
+				//game->animating_ = !game->animating_;
 			}
 			if (key == GLFW_KEY_T && action == GLFW_PRESS) {
-				temp = !temp;
-				std::cout << "firing laser" << std::endl;
+				//temp = true;
 				glm::vec3 forward = game->camera_.GetForward();
 				glm::vec3 origin = game->camera_.GetPosition();	
-
-				std::vector<std::pair<SceneNode*, glm::vec2*>> hit = game->scene_.CheckRayCollisions(Ray(origin, forward));
 				
-				for (int i = 0; i < hit.size(); i++) {
+				Resource *cube = game->resman_.GetResource("CubePointSet");
+				Resource *mat = game->resman_.GetResource("ObjectMaterial");
+				if (!mat) {
+					throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
+				}
+
+				Projectile* p = new Projectile("Player", game->camera_.GetPosition() - game->scene_.GetNode("Ground")->GetAbsolutePosition(), forward*1.0f, glm::vec3(0, -0.5, 0), INFINITY, cube, mat);
+				p->SetScale(0.5, 0.5, 2);
+				game->scene_.AddProjectile(p);
+
+				//std::vector<std::pair<SceneNode*, glm::vec2*>> hit = game->scene_.CheckRayCollisions(Ray(origin, forward));
+				
+				/*for (int i = 0; i < hit.size(); i++) {
 					if (hit[i].first->GetName() != "Target") {
 						hit[i].first->takeDamage(9999);
 					}
-				}
+				}*/
 			}
 			if (key == GLFW_KEY_V && action == GLFW_PRESS) { //change polygon display modes
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -360,40 +386,52 @@ namespace game {
 
 			//MOVEMENT HERE
 			if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) { // spacebar hovers upwards
+				//game->player_vel.y = trans_factor;
 				game->camera_.vel_y = trans_factor;
 			}
 			if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
+				//game->player_vel.y = 0.0;
 				game->camera_.vel_y = 0.0;
 			}
 			if (key == GLFW_KEY_X && action == GLFW_PRESS) { // x hovers downwards
+				//game->player_vel.y = -trans_factor;
 				game->camera_.vel_y = -trans_factor;
 			}
 			if (key == GLFW_KEY_X && action == GLFW_RELEASE) {
-				game->camera_.vel_y = 0.0;
+				//game->player_vel.y= 0.0;
+				game->camera_.vel_y = 0;
 			}
 			if (key == GLFW_KEY_S && action == GLFW_PRESS) { // s moves backwards
+				//game->player_vel.z = -trans_factor;
 				game->camera_.vel_z = -trans_factor;
 			}
 			if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
-				game->camera_.vel_z = 0.0;
+				//game->player_vel.z = 0.0;
+				game->camera_.vel_z = 0;
 			}
 			if (key == GLFW_KEY_W && action == GLFW_PRESS) { // w moves forwards
+				//game->player_vel.z = trans_factor;
 				game->camera_.vel_z = trans_factor;
 			}
 			if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
-				game->camera_.vel_z = 0.0;
+				//game->player_vel.z = 0.0;
+				game->camera_.vel_z = 0;
 			}
 			if (key == GLFW_KEY_Q && action == GLFW_PRESS) { // Q strafes left
+				//game->player_vel.x = -trans_factor;
 				game->camera_.vel_x = -trans_factor;
 			}
 			if (key == GLFW_KEY_Q && action == GLFW_RELEASE) {
-				game->camera_.vel_x = 0.0;
+				//game->player_vel.x = 0.0;
+				game->camera_.vel_x = 0;
 			}
 			if (key == GLFW_KEY_E && action == GLFW_PRESS) { // E strafes right
+				//game->player_vel.x = trans_factor;
 				game->camera_.vel_x = trans_factor;
 			}
 			if (key == GLFW_KEY_E && action == GLFW_RELEASE) {
-				game->camera_.vel_x = 0.0;
+				//game->player_vel.x = 0.0;
+				game->camera_.vel_x = 0;
 			}
 
 			//TURNING HERE
@@ -540,17 +578,17 @@ namespace game {
 		std::string name = "Enemy" + std::to_string(EnemyID++);
 		numEnemies++;
 
-		Enemy* n = new Enemy(name, NULL, NULL, NULL);
-		n->setMovementSpeed(0);
-		n->setRotateSpeed(0);
+
+		SceneNode* n = new SceneNode(name, NULL, NULL, NULL);
+		//n->setMovementSpeed(0);
+		//n->setRotateSpeed(0);
 		
 		SceneNode* dirt = new SceneNode(name + "_dirt", torus, mat);
 		dirt->setCollidable(false);
 		dirt->SetScale(2.0, 2.0, 2.0);
 		dirt->SetOrientation(glm::angleAxis(glm::pi<float>() / 2, glm::vec3(1.0, 0.0, 0.0)));
 
-		Enemy* body = new Enemy(name + "_body", scene_.GetNode("Target"), sphere, mat);
-		body->setMovementSpeed(0);
+		Mole* body = new Mole(name + "_body", scene_.GetNode("Target"), sphere, mat);
 		body->setCollidable(true);
 		body->SetPosition(0, 0.5, 0);
 	
@@ -564,6 +602,7 @@ namespace game {
 		
 		n->AddChild(dirt);
 		n->AddChild(body);
+		//n->setAttackingComponent(body);
 		body->AddChild(gun);
 
 		return n;
@@ -571,7 +610,9 @@ namespace game {
 
 	SceneNode* Game::CreateDog() {
 		Resource *cube = resman_.GetResource("CubePointSet");
-		
+		Resource *sphere = resman_.GetResource("SimpleSphereMesh");
+
+
 		Resource *mat = resman_.GetResource("ObjectMaterial");
 		if (!mat) {
 			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
@@ -579,23 +620,24 @@ namespace game {
 
 		std::string name = "Enemy" + std::to_string(EnemyID++);
 		numEnemies++;
-		Enemy* n = new Enemy(name, NULL, NULL, NULL);
-		n->setCollidable(false);
-		n->setMovementSpeed(0);
+		SceneNode* n = new SceneNode(name, NULL, NULL, NULL);
 
-		Enemy* turret = new Enemy(name + "_turret", scene_.GetNode("Target"), cube, mat);
+		SceneNode* turret = new SceneNode(name + "_turret", cube, mat);
 		turret->setCollidable(true);
 		turret->SetScale(0.5, 0.5, 4.0);
 		turret->SetPosition(0, 0.75, 0);
-		turret->setMovementSpeed(0);
+		//turret->setMovementSpeed(0);
 
 		Doggy* dog = new Doggy(name + "_body", scene_.GetNode("Target"), cube, mat);
 		dog->SetScale(2.0, 1.0, 6.0);
 		dog->setCollidable(true);
 		dog->setTurret(turret);
+		dog->setProjectileGeometry(sphere);
+		dog->setProjectileMaterial(mat);
 
 		n->AddChild(turret);
 		n->AddChild(dog);
+		//n->setAttackingComponent(dog);
 
 		return n;
 	}
@@ -621,7 +663,7 @@ namespace game {
 		SceneNode* top = new SceneNode(name + "_leaves", sphere, mat);
 		top->setCollidable(false);
 		top->SetPosition(0, height/2.0 ,0);
-		top->SetScale(thicc * 3.0, thicc * 3.0, thicc * 3.0);
+		top->SetScale(thicc * 1.5, thicc * 1.5, thicc * 1.5);
 		
 		trunk->AddChild(top);
 

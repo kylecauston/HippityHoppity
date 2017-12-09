@@ -10,6 +10,7 @@
 #include "resource.h"
 #include "camera.h"
 #include "collision_manager.h"
+#include <queue>
 
 #define FRAME_BUFFER_WIDTH 1024
 #define FRAME_BUFFER_HEIGHT 768
@@ -24,7 +25,7 @@ namespace game {
 	public:
 		// Root of the hierarchy
 		SceneNode * root_;
-		SceneNode * projectiles = NULL;
+		SceneNode* projectiles = NULL;
 
 		SceneGraph(void);
 		~SceneGraph();
@@ -35,6 +36,7 @@ namespace game {
 
 		// Set root of the hierarchy
 		void SetRoot(SceneNode *node);
+		void AddProjectile(SceneNode* p);
 		// Find a scene node with a specific name
 		SceneNode *GetNode(std::string node_name) const;
 		SceneNode *FindName(std::string node_name) const;

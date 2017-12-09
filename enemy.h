@@ -19,7 +19,7 @@ namespace game {
 		float getRotateSpeed();
 		float getMovementSpeed();
 		bool isAttacking();
-		AttackNode* getAttack();
+		virtual AttackNode* getAttack() = 0;
 
 		void setRotateSpeed(float s);
 		void setMovementSpeed(float s);
@@ -27,14 +27,16 @@ namespace game {
 		void setProjectileGeometry(Resource* g);
 		void setProjectileMaterial(Resource* m);
 		void setProjectileTexture(Resource* t);
-			
-		// Update: move, attack etc
+
 		void Update(float deltaTime);
 
 		void collide(Collidable* other);
 
 	protected:
-		SceneNode* target; // what this enemy is trying to destroy
+		SceneNode* target = NULL; // what this enemy is trying to destroy
+
+		void resetCooldown();
+
 		float threatRange; // radius that enemy begins attacking from
 
 		float rotateSpeed = 0.1; // factor for rotation speed [0, 1]
