@@ -17,59 +17,50 @@ namespace game {
 	}
 
 	AttackNode* Doggy::getAttack() {
-		attack_flag = false;
-
-		if (firerate == 0) {
-			shot_CD = INFINITY;
-		}
-		else {
-			shot_CD = 1 / firerate;
-		}
+		// Doggy attack is an arcing projectile (maybe)
+		resetCooldown();
 
 		glm::vec3 aim = turret->GetOrientation() * SceneNode::default_forward;
-		Ray r = Ray(turret->GetAbsolutePosition(), aim);
-		AttackNode* shot = new Hitscan(r);
+		/*Ray r = Ray(GetAbsolutePosition(), aim);
+		AttackNode* shot = new Hitscan(r);*/
+		AttackNode* shot = new Projectile(GetEntityName(), GetEntityPosition(), aim*10.0f, glm::vec3(0, -0.05, 0), 1.0,
+			projectile_geometry, projectile_material, projectile_texture);
+
+		shot->SetScale(0.3, 0.3, 0.3);
 
 		return shot;
 	}
 
 	void Doggy::Update(double time) {
-		//Enemy::Update(t);
 		float t = time;
+		Enemy::Update(t);
+
+		if (target == NULL)
+			return;
+
 
 		glm::vec3 toTarget = target->GetPosition() - GetEntityPosition();
 		// 2D to target vector, ignoring height
 		glm::vec3 toTarget_flat = glm::vec3(toTarget.x, 0, toTarget.z);
 
+		if (glm::length(toTarget_flat) != 0) {
+			glm::quat body_rotation = glm::slerp(GetOrientation(), VectorToRotation(toTarget_flat), 0.05f);
+			SetOrientation(body_rotation);
+
+			glm::quat turret_rotation = glm::slerp(turret->GetOrientation(), VectorToRotation(toTarget), 0.5f);
+			turret->SetOrientation(turret_rotation);
+		}
+
+		// this moves the dog towards target
+		// TODO: switch to movement in the direction of facing
 		if (glm::length(toTarget_flat) > t*speed) {
 
 			// we drop the y value if the enemy can't fly, and then make 
 			// the vector into a movement vector (the actual units it will move)
-			glm::vec3 movement = (t*speed) * (glm::normalize(toTarget_flat));
-
+			glm::vec3 movement = GetOrientation() * SceneNode::default_forward;//(glm::normalize(toTarget_flat));
+			movement *= (t*speed);
+			// move the parent node (the dog has a dummy parent to keep turret separate)
 			parent_->Translate(movement);
-		}
-
-		if (glm::length(toTarget_flat) > 1) {
-			// rotate on the y axis (turn towards where the target is in 2D space)
-			// make a triangle from target and self pos, take angle, rotate
-			float angle = asin(toTarget.x / sqrt(pow(toTarget.x, 2) + pow(toTarget.z, 2)));
-			if (toTarget.z < 0)
-			{
-				angle = glm::pi<float>() - angle;
-			}
-
-			glm::quat hor_rotation = glm::angleAxis(angle, glm::vec3(0.0, 1.0, 0.0));
-
-			glm::quat rotation = glm::slerp(GetOrientation(), hor_rotation, 0.05f);
-			SetOrientation(rotation);
-		}
-
-		if (shot_CD <= 0) {
-			attack_flag = true;
-		}
-		else {
-			shot_CD -= t;
 		}
 	}
 

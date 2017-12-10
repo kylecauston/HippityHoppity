@@ -128,10 +128,35 @@ namespace game {
 		return NULL;
 	}
 
-	void SceneGraph::Remove(std::string node_name) { //cheesily removes node of a given 
-		std::vector<SceneNode*>::iterator position = std::find(root_->children_.begin(), root_->children_.end(), FindName(node_name));
-		if (position != root_->children_.end()) {
-			root_->children_.erase(position);
+	void SceneGraph::Remove(std::string node_name) { 
+		// uses bfs to remove a node from the scenegraph
+		// uses bfs because most of the time the removed node is a first child/entity
+
+		std::queue<SceneNode*> q = std::queue<SceneNode*>();
+		q.push(root_);
+
+		SceneNode* n;
+		while (!q.empty()) {
+			n = q.front();
+			q.pop();
+
+			if (n->GetName() == node_name) {
+				// if we found the node, remove it from the parent's list
+				std::vector<SceneNode*>::iterator position = std::find(n->parent_->children_.begin(), n->parent_->children_.end(), n);
+				if (position != n->parent_->children_.end()) {
+					n->parent_->children_.erase(position);
+					return;
+				}
+				else {
+					std::cout << "this shouldn't happen" << std::endl;
+				}
+			}
+			else {
+				// if we didn't find the node, add this node's children to the queue
+				for (SceneNode* c : n->children_) {
+					q.push(c);
+				}
+			}
 		}
 	}
 
@@ -165,15 +190,20 @@ namespace game {
 				std::cout << closest->GetName() << ": " << closest->GetHealth() << "HP" << std::endl;
 			}
 		}
-		else  // if it's not hitscan, we add it to the projectiles node
+		else  // if it's not hitscan, we add it to the scene
 		{
-			if (projectiles == NULL) {
-				projectiles = new SceneNode("Dummy_Projectiles", NULL, NULL);
-				root_->AddChild(projectiles);
-			}
-
-			projectiles->AddChild(a);
+			AddProjectile(a);
 		}
+	}
+
+	void SceneGraph::AddProjectile(SceneNode* p) {
+		if (projectiles == NULL)
+		{
+			projectiles = new SceneNode("Proj_Dummy", NULL, NULL, NULL, false);
+			projectiles->setCollidable(false);
+			root_->AddChild(projectiles);
+		}
+		projectiles->AddChild(p);
 	}
 
 	/*   Cycle through each of the entities in the scene (first children of root). 
@@ -184,12 +214,45 @@ namespace game {
 		for (std::vector<SceneNode *>::const_iterator n1 = root_->children_begin();
 			n1 != root_->children_end()-1; n1++) {
 
+			if ((*n1) == projectiles) {
+				continue;
+			}
+
 			// start at the node after n1 so we compare the next node (n2) to n1
 			for (std::vector<SceneNode *>::const_iterator n2 = n1+1;
 				n2 != root_->children_end(); n2++) {
 
+				if ((*n2) == projectiles) {
+					continue;
+				}
+
 				if (CollisionManager::checkHierarchicalCollision(*n1, *n2)) {
 					//std::cout << "Collision between " << (*n1)->GetName() << " and " << (*n2)->GetName() << std::endl;
+				}
+			}
+		}
+
+		// now compare each entity to projectiles
+		if (projectiles != NULL) {
+			for (std::vector<SceneNode *>::const_iterator entity = root_->children_begin();
+				entity != root_->children_end(); entity++) {
+
+				if ((*entity) == projectiles) {
+					continue;
+				}
+
+				for (std::vector<SceneNode *>::const_iterator p_n = projectiles->children_begin();
+					p_n != projectiles->children_end(); p_n++) {
+
+					Projectile* p = dynamic_cast<Projectile*>((*p_n));
+
+					if (p->GetParentName() == (*entity)->GetName() || p->isDestroyed()) continue;
+
+					if (CollisionManager::checkHierarchicalCollision(*entity, p)) {
+						std::cout << "Proj Collision between " << (*entity)->GetName() << " and " << p->GetName() << std::endl;
+						(*entity)->takeDamage(p->getDamage());
+						p->takeDamage(INFINITY);
+					}
 				}
 			}
 		}

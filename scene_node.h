@@ -24,6 +24,7 @@ namespace game {
 
 		// Get name of node
 		const std::string GetName(void) const;
+		std::string GetEntityName(void);
 
 		// Get node attributes
 		glm::vec3 GetPosition(void) const;
@@ -74,10 +75,12 @@ namespace game {
 
 		SceneNode *parent_;
 		double time_to_live = -5000.0;
-	protected:
+		bool destroyed = false;
 		static glm::vec3 default_forward;
-		
+
+	protected:
 		void destroy();
+		glm::quat VectorToRotation(glm::vec3 v);
 
 		std::string name_; // Name of the scene node
 		GLuint array_buffer_; // References to geometry: vertex and array buffers
@@ -91,7 +94,6 @@ namespace game {
 		glm::vec3 scale_; // Scale of node
 					
 		float health = 20;
-		bool destroyed = false;
 		bool enemy = false;
 		bool collidable = false;
 

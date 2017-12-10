@@ -14,6 +14,7 @@
 #include "helicopter.h"
 #include "enemy.h"
 #include "doggy.h"
+#include "mole.h"
 #include "defs.h"
 
 namespace game {
@@ -47,6 +48,8 @@ namespace game {
 		int game_state;
 		SceneNode *title; //cube that displays the title screen
 		int turning;
+
+		glm::vec3 player_vel;
 
 		float hp;
 		bool sun;

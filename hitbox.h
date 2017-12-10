@@ -16,6 +16,7 @@ namespace game {
 		glm::vec3 pos;
 
 		std::vector<glm::vec3> base_points;
+		glm::vec3 base_scale;
 
 	public:
 		Hitbox(std::vector<glm::vec3> p);
@@ -27,7 +28,7 @@ namespace game {
 		glm::vec3 getMaxPoint();
 		glm::vec3 getMinPoint();
 
-		glm::vec3 getScale();
+		glm::vec3 getDimensions();
 		glm::vec3 getPos();
 		glm::mat4 getTrans();
 

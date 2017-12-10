@@ -5,6 +5,11 @@ namespace game {
 		base_points = p;
 		trans = glm::mat4(0.0);
 		scale = glm::vec3(1.0, 1.0, 1.0);
+
+		glm::vec3 a = getMaxPoint();
+		glm::vec3 b = getMinPoint();
+
+		base_scale = a - b;
 	}
 
 	Hitbox::Hitbox()
@@ -90,8 +95,8 @@ namespace game {
 		return pos;
 	}
 
-	glm::vec3 Hitbox::getScale() {
-		return scale;
+	glm::vec3 Hitbox::getDimensions() {
+		return scale * base_scale;
 	}
 
 	glm::mat4 Hitbox::getTrans() {
@@ -105,7 +110,5 @@ namespace game {
 	void Hitbox::setTransform(glm::mat4 t)
 	{
 		trans = t;
-
-		
 	}
 }
