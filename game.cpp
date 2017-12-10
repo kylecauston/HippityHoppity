@@ -387,6 +387,12 @@ namespace game {
 				glfwSetWindowShouldClose(window, true);
 			}
 			if (key == GLFW_KEY_TAB && action == GLFW_PRESS) { // switch camera if TAB is pressed
+				if (game->tpCam) { //when entering first person, position the camera forward
+					game->camera_.SetPosition(game->camera_.GetPosition() + game->camera_.GetForward() * 10.0f);
+				}
+				else { //when entering third person, position the camera behind the player
+					game->camera_.SetPosition(game->camera_.GetPosition() - game->camera_.GetForward() * 10.0f);
+				}
 				game->tpCam = !game->tpCam;
 			}
 
