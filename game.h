@@ -83,6 +83,8 @@ namespace game {
 
 		void FireLaser();
 		void FireBomb();
+		void FireTracer();
+
 		std::string RaySphere(glm::vec3 raydir, glm::vec3 raypos);
 
 		// Methods to handle events

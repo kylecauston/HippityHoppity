@@ -133,12 +133,16 @@ namespace game {
 		filename = std::string(MATERIAL_DIRECTORY) + std::string("/screen_hp");
 		resman_.LoadResource(Material, "BlueMaterial", filename.c_str());
 
-		//particle effect material
+		//particle effect material for bomb
 		filename = std::string(MATERIAL_DIRECTORY) + std::string("/particle");
 		resman_.LoadResource(Material, "ParticleMaterial", filename.c_str());
+		//material for tracer
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/line");
+		resman_.LoadResource(Material, "LineMaterial", filename.c_str());
 
-		// Create particles for firework weapon
+		// Create particles for firework weapon and tracer
 		resman_.CreateSphereParticles("SphereParticles");
+		resman_.CreateTorusParticles("LineParticles");
 
 		// Load texture to be applied to particles
 		filename = std::string(MATERIAL_DIRECTORY) + std::string("/firework.png");
@@ -476,6 +480,9 @@ namespace game {
 			if (key == GLFW_KEY_R && action == GLFW_PRESS) { //fires a bomb with particle effects
 				game->FireBomb();
 			}
+			if (key == GLFW_KEY_C && action == GLFW_PRESS) { //fires a tracer with particle effects
+				game->FireTracer();
+			}
 			if (key == GLFW_KEY_F && action == GLFW_PRESS) { //fire a laser
 				game->FireLaser();
 			}
@@ -561,8 +568,21 @@ namespace game {
 
 		game::Bomb *particles = (Bomb*)Cube(BombType, "ParticleInstance" + exploCount++, "SphereParticles", "ParticleMaterial",
 			glm::vec3(r, g, b), 4.0, "Firework");
-		particles->SetPosition(camera_.GetPosition() + (camera_.GetForward() * 12.0f) + (camera_.GetUp() * -0.5f));;
+		particles->SetPosition(camera_.GetPosition() + (camera_.GetForward() * 12.0f) + (camera_.GetUp() * -0.5f));
 		particles->SetScale(glm::vec3(0.4, 0.4, 0.4)); //increasing the scale makes the explosion more dense
+	}
+
+	void Game::FireTracer() {
+		float ttlr = 3.0 + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (4.5 - 3.0)));
+		float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+
+		game::Bomb *particles = (Bomb*)Cube(BombType, "TracerInstance" + exploCount++, "LineParticles", "LineMaterial",
+			glm::vec3(r, g, b), 2.5, "Firework");
+		particles->SetScale(glm::vec3(0.02, 0.02, 1000.0)); //1000 is ~far away~
+		particles->SetPosition(camera_.GetPosition() + (camera_.GetForward() * 200.0f) + (camera_.GetUp() * -0.3f)); //200.0f starts the line on the playerish
+		particles->SetOrientation(camera_.GetOrientation());
 	}
 
 	std::string Game::RaySphere(glm::vec3 raydir, glm::vec3 raypos) {

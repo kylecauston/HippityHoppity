@@ -873,4 +873,85 @@ namespace game {
 		// Create resource
 		AddResource(PointSet, object_name, vbo, 0, num_particles);
 	}
+
+	void ResourceManager::CreateTorusParticles(std::string object_name, int num_particles, float loop_radius, float circle_radius) {
+
+		// Create a set of points which will be the particles
+		// This is similar to drawing a torus
+
+		// Data buffer
+		GLfloat *particle = NULL;
+
+		// Number of attributes per particle: position (3), normal (3), and color (3), texture coordinates (2)
+		const int particle_att = 11;
+
+		// Allocate memory for buffer
+		try {
+			particle = new GLfloat[num_particles * particle_att];
+		}
+		catch (std::exception &e) {
+			throw e;
+		}
+
+		float maxspray = 0.5; // This is how much we allow the points to deviate from the sphere
+		float u, v, w, theta, phi, spray; // Work variables
+
+		for (int i = 0; i < num_particles; i++) {
+
+			// Get a random point on a torus
+
+			// Get two random numbers
+			u = ((double)rand() / (RAND_MAX));
+			v = ((double)rand() / (RAND_MAX));
+
+			// Use u to define the angle theta along the loop of the torus
+			theta = u * 2.0*glm::pi<float>();
+			// Use v to define the angle phi along the circle of the torus
+			phi = v * 2.0*glm::pi<float>();
+
+			// Define the normal and point based on theta and phi
+			glm::vec3 normal(cos(theta)*cos(phi), sin(theta)*cos(phi), sin(phi));
+			glm::vec3 center(loop_radius*cos(theta), loop_radius*sin(theta), 0.0);
+			glm::vec3 position = center + normal*circle_radius;
+			glm::vec3 color(i / (float)num_particles, 0.0, 1.0 - (i / (float)num_particles)); // The red channel of the color stores the particle id
+
+			// Now sample a point on a sphere to define a direction for points to wander around
+			// Get three random numbers
+			u = ((double)rand() / (RAND_MAX));
+			v = ((double)rand() / (RAND_MAX));
+			w = ((double)rand() / (RAND_MAX));
+
+			// Use u to define the angle theta along one direction of the sphere
+			theta = u * 2.0*glm::pi<float>();
+			// Use v to define the angle phi along the other direction of the sphere
+			phi = acos(2.0*v - 1.0);
+			// Use w to define how much we can deviate from the surface of the sphere (change of radius)
+			spray = maxspray*pow((float)w, (float)(1.0 / 3.0)); // Cubic root of w
+
+																// Define the normal and point based on theta, phi and the spray
+			glm::vec3 wander(spray*cos(theta)*sin(phi), spray*sin(theta)*sin(phi), spray*cos(phi));
+
+			// Assign the wander direction to the normal
+			normal = wander;
+
+			// Add vectors to the data buffer
+			for (int k = 0; k < 3; k++) {
+				particle[i*particle_att + k] = position[k];
+				particle[i*particle_att + k + 3] = normal[k];
+				particle[i*particle_att + k + 6] = color[k];
+			}
+		}
+
+		// Create OpenGL buffers and copy data
+		GLuint vbo;
+		glGenBuffers(1, &vbo);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, num_particles * particle_att * sizeof(GLfloat), particle, GL_STATIC_DRAW);
+
+		// Free data buffers
+		delete[] particle;
+
+		// Create resource
+		AddResource(PointSet, object_name, vbo, 0, num_particles);
+	}
 } // namespace game;
