@@ -21,10 +21,7 @@ namespace game {
 		// Set global camera attributes
 		void SetPosition(glm::vec3 position);
 		void SetOrientation(glm::quat orientation);
-
-		// Perform global transformations of camera
 		void Translate(glm::vec3 trans);
-		void Rotate(glm::quat rot);
 
 		// here we go boys
 		float vel_x = 0, vel_y = 0, vel_z = 0;
@@ -35,32 +32,18 @@ namespace game {
 		glm::vec3 GetSide(void) const;
 		glm::vec3 GetUp(void) const;
 
-		// Perform relative transformations of camera
-		void Pitch(float angle);
-		void Yaw(float angle);
-		void Roll(float angle);
-
-		// Set the view from camera parameters: initial position of camera,
-		// point looking at, and up vector
-		// Resets the current orientation and position of the camera
 		void SetView(glm::vec3 position, glm::vec3 look_at, glm::vec3 up);
-		// Set projection from frustum parameters: field-of-view,
-		// near and far planes, and width and height of viewport
 		void SetProjection(GLfloat fov, GLfloat near, GLfloat far, GLfloat w, GLfloat h);
-		// Set all camera-related variables in shader program
 		void SetupShader(GLuint program);
 
 		//this is where the shit hits the fan
 		bool first = true; //ensures we only generate the mesh for the heli once
 		GLuint cubeVertexBuffer;
 		GLuint cubeFaceBuffer;
-
 		GLuint cylVertexBuffer;
 		GLuint cylFaceBuffer;
-
 		int cyl_size = -1;
 		int size = -1;
-
 		glm::quat topOrientation;
 		glm::quat backOrientation;
 
@@ -78,9 +61,6 @@ namespace game {
 		glm::mat4 view_matrix_; // View matrix
 		glm::mat4 projection_matrix_; // Projection matrix
 		void SetupViewMatrix(void); // Create view matrix from current camera parameters
-
 	}; // class Camera
-
 } // namespace game
-
 #endif // CAMERA_H_

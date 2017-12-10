@@ -8,7 +8,6 @@
 #include "scene_graph.h"
 #include "resource_manager.h"
 #include "camera.h"
-#include "asteroid.h"
 #include "laser.h"
 #include "bomb.h"
 #include "helicopter.h"
@@ -47,14 +46,14 @@ namespace game {
 		GLuint prgm; //need this to cheesily draw the heli for now
 		int game_state;
 		SceneNode *title; //cube that displays the title screen
-		int turning;
+		int turning; //direction player is turning (left,right,up,down)
 
 		glm::vec3 player_vel;
 
-		float hp;
-		bool sun;
-		bool tpCam;
-		int exploCount = 0;
+		float hp; //player's health
+		bool sun; //tells the game if the sun has exploded
+		bool tpCam; //third person camera switch
+		int exploCount = 0; //helps name our bombs for proper deletion
 
 	private:
 		// GLFW window
@@ -91,14 +90,12 @@ namespace game {
 		static void ResizeCallback(GLFWwindow* window, int width, int height);
 
 		//creates an instance of a 3d cube
-		SceneNode *Cube(int type, std::string entity_name, std::string object_name, std::string material_name, 
-			glm::vec3 rgb = glm::vec3(0.8, 0.8, 0.8), double ttl = 4.0,std::string tex_name = "");
+		SceneNode *Cube(int type, std::string entity_name, std::string object_name, std::string material_name,
+			glm::vec3 rgb = glm::vec3(0.8, 0.8, 0.8), double ttl = 4.0, std::string tex_name = "");
 		SceneNode* CreateMole();
 		SceneNode* CreateDog();
 		SceneNode* CreateTree();
 
 	}; // class Game
-
 } // namespace game
-
 #endif // GAME_H_

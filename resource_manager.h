@@ -33,7 +33,7 @@ namespace game {
 		void CreateSphere(std::string object_name, float radius = 0.6, int num_samples_theta = 90, int num_samples_phi = 45);
 		void CreateCube(std::string object_name);
 		void CreateGround(std::string object_name); //terrain mesh
-		void CreateCylinder(std::string object_name, float cylinder_height = 1, float circle_radius=1, int num_circle_samples=90);
+		void CreateCylinder(std::string object_name, float cylinder_height = 1, float circle_radius = 1, int num_circle_samples = 90);
 		void CreateSphereParticles(std::string object_name, int num_particles = 20000);
 
 		Hitbox genHitbox(std::vector<glm::vec3> points);
@@ -42,16 +42,11 @@ namespace game {
 		// List storing all resources
 		std::vector<Resource*> resource_;
 
-		// Methods to load specific types of resources
 		// Load shaders programs
 		void LoadMaterial(const std::string name, const char *prefix);
 		// Load a text file into memory (could be source code)
 		std::string LoadTextFile(const char *filename);
-
 		void LoadTexture(const std::string name, const char *filename);
-
 	}; // class ResourceManager
-
 } // namespace game
-
 #endif // RESOURCE_MANAGER_H_

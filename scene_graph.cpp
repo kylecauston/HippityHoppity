@@ -77,8 +77,7 @@ namespace game {
 			if (current->isCollidable())
 				current->updateCollidable(current_transf);
 
-			// Push children of the node to the stack, along with the node's
-			// transformation
+			// Push children of the node to the stack
 			for (std::vector<SceneNode *>::const_iterator it = current->children_begin();
 				it != current->children_end(); it++) {
 				stck.push(*it);
@@ -101,7 +100,7 @@ namespace game {
 			}
 
 			current->Update(deltaTime);
-			
+
 			// if we're updating an enemy, we wanna see if they can attack
 			if (Enemy* e = dynamic_cast<Enemy*>(current)) {
 
@@ -128,7 +127,7 @@ namespace game {
 		return NULL;
 	}
 
-	void SceneGraph::Remove(std::string node_name) { 
+	void SceneGraph::Remove(std::string node_name) {
 		// uses bfs to remove a node from the scenegraph
 		// uses bfs because most of the time the removed node is a first child/entity
 
@@ -206,20 +205,20 @@ namespace game {
 		projectiles->AddChild(p);
 	}
 
-	/*   Cycle through each of the entities in the scene (first children of root). 
-	   Run collisions on each pair once, such that in nodes ABCD, comparisons 
+	/*   Cycle through each of the entities in the scene (first children of root).
+	   Run collisions on each pair once, such that in nodes ABCD, comparisons
 	   are AB AC AD BC BD CD. */
 	void SceneGraph::CheckCollisions() {
 		// start at the root and work through each node until second last
 		for (std::vector<SceneNode *>::const_iterator n1 = root_->children_begin();
-			n1 != root_->children_end()-1; n1++) {
+			n1 != root_->children_end() - 1; n1++) {
 
 			if ((*n1) == projectiles) {
 				continue;
 			}
 
 			// start at the node after n1 so we compare the next node (n2) to n1
-			for (std::vector<SceneNode *>::const_iterator n2 = n1+1;
+			for (std::vector<SceneNode *>::const_iterator n2 = n1 + 1;
 				n2 != root_->children_end(); n2++) {
 
 				if ((*n2) == projectiles) {
@@ -258,7 +257,7 @@ namespace game {
 		}
 	}
 
-	/* Cycle through all entities in scene (first children of root), and check against ray. 
+	/* Cycle through all entities in scene (first children of root), and check against ray.
 			Returns a list of pairs: <SceneNode*, Points of Intesection*>  */
 	std::vector<std::pair<SceneNode*, glm::vec2*>> SceneGraph::CheckRayCollisions(Ray r) {
 		std::vector<std::pair<SceneNode*, glm::vec2*>> hit_list = std::vector<std::pair<SceneNode*, glm::vec2*>>();
@@ -372,8 +371,7 @@ namespace game {
 			if (current->isCollidable())
 				current->updateCollidable(current_transf);
 
-			// Push children of the node to the stack, along with the node's
-			// transformation
+			// Push children of the node to the stack
 			for (std::vector<SceneNode *>::const_iterator it = current->children_begin();
 				it != current->children_end(); it++) {
 				stck.push(*it);

@@ -27,14 +27,6 @@ namespace game {
 		orientation_ = orientation;
 	}
 
-	void Helicopter::Translate(glm::vec3 trans) {
-		position_ += trans;
-	}
-
-	void Helicopter::Rotate(glm::quat rot) {
-		orientation_ = rot * orientation_;
-	}
-
 	glm::vec3 Helicopter::GetForward(void) const {
 		glm::vec3 current_forward = orientation_ * forward_;
 		return -current_forward; // Return -forward since the camera coordinate system points in the opposite direction
@@ -53,19 +45,8 @@ namespace game {
 		return current_up;
 	}
 
-	void Helicopter::Pitch(float angle) {
-		glm::quat rotation = glm::angleAxis(angle, GetSide());
-		orientation_ = rotation * orientation_;
-	}
-
-	void Helicopter::Yaw(float angle) {
-		glm::quat rotation = glm::angleAxis(angle, GetUp());
-		orientation_ = rotation * orientation_;
-	}
-
-	void Helicopter::Roll(float angle) {
-		glm::quat rotation = glm::angleAxis(angle, GetForward());
-		orientation_ = rotation * orientation_;
+	void Helicopter::Translate(glm::vec3 trans) {
+		position_ += trans;
 	}
 
 	void Helicopter::Update(double timer) { //keep momentum going

@@ -57,9 +57,6 @@ namespace game {
 		glm::mat4 projection_matrix_; // Projection matrix
 		// Create view matrix from current camera parameters
 		void SetupViewMatrix(void);
-
 	}; // class Camera
-
 } // namespace game
-
 #endif // CAMERA_H_

@@ -23,8 +23,5 @@ namespace game {
 		static glm::vec3 rotateAxis(glm::vec3 v, glm::mat4 t);
 		static std::vector<SceneNode*> flattenTree(SceneNode* root);
 	};
-
 } // game
-
-
 #endif // COLLISION_MANAGER_H_

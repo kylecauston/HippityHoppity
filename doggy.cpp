@@ -8,9 +8,7 @@ namespace game {
 		turret = NULL;
 	}
 
-	Doggy::~Doggy() {
-
-	}
+	Doggy::~Doggy() {}
 
 	void Doggy::setTurret(SceneNode* t) {
 		turret = t;
@@ -38,7 +36,6 @@ namespace game {
 		if (target == NULL)
 			return;
 
-
 		glm::vec3 toTarget = target->GetPosition() - GetEntityPosition();
 		// 2D to target vector, ignoring height
 		glm::vec3 toTarget_flat = glm::vec3(toTarget.x, 0, toTarget.z);
@@ -63,5 +60,4 @@ namespace game {
 			parent_->Translate(movement);
 		}
 	}
-
 }

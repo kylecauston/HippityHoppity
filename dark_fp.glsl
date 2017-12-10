@@ -48,6 +48,4 @@ void main()
 		specular_color = vec4(0.8, 0.5, 0.9, 1.0);
 	}
     gl_FragColor = light2 * color_interp + ambient_color + Id*diffuse_color + Is*specular_color;
-	//ambient_color
-	//gl_FragColor = color_interp;
 }

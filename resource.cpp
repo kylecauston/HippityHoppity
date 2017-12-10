@@ -47,5 +47,4 @@ namespace game {
 	Hitbox Resource::GetHitbox(void) const {
 		return hb;
 	}
-
 } // namespace game

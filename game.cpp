@@ -34,8 +34,6 @@ namespace game {
 	}
 
 	void Game::Init(void) {
-		//srand(time(NULL));
-
 		// Run all initialization steps
 		InitWindow();
 		InitView();
@@ -44,10 +42,11 @@ namespace game {
 		// Set variables
 		player_vel = glm::vec3(0, 0, 0);
 		animating_ = true;
-		game_state = TITLE;
+		game_state = TITLE; //start on title screen
 		hp = 100.0;
-		sun = true;
-		tpCam = false;
+		sun = true; //the sun rises
+		tpCam = false; //start in first person
+		turning = NONE;
 	}
 
 	void Game::InitWindow(void) {
@@ -114,7 +113,6 @@ namespace game {
 		resman_.CreateCube("CubePointSet"); //set up cube for the laser
 		resman_.CreateTorus("TorusMesh");
 		resman_.CreateCylinder("CylinderMesh");
-
 		resman_.CreateGround("Terrain"); // load terrain
 
 		// Load non textured materials
@@ -127,9 +125,6 @@ namespace game {
 		//load texture materials
 		filename = std::string(MATERIAL_DIRECTORY) + std::string("/shiny_texture");
 		resman_.LoadResource(Material, "ShinyTextureMaterial", filename.c_str());
-
-		filename = std::string(MATERIAL_DIRECTORY) + std::string("/cloudtex.jpg");
-		resman_.LoadResource(Texture, "Cloud", filename.c_str());
 
 		filename = std::string(MATERIAL_DIRECTORY) + std::string("/gametitle.jpg");
 		resman_.LoadResource(Texture, "GameTitle", filename.c_str());
@@ -169,10 +164,6 @@ namespace game {
 		if (!tmat) {
 			throw(GameException(std::string("Could not find resource \"") + "ShinyTextureMaterial" + std::string("\"")));
 		}
-		Resource *tex = resman_.GetResource("Cloud");
-		if (!tex) {
-			throw(GameException(std::string("Could not find resource \"") + "Cloud" + std::string("\"")));
-		}
 		Resource *dark = resman_.GetResource("DarkMaterial");
 		if (!dark) {
 			throw(GameException(std::string("Could not find resource \"") + "DarkMaterial" + std::string("\"")));
@@ -180,10 +171,7 @@ namespace game {
 
 		SceneNode* ground = new SceneNode("Ground", geom, dark);
 		scene_.SetRoot(ground);
-		//ground->SetScale(glm::vec3(0.5, 1.0, 0.5));
 		ground->SetPosition(glm::vec3(0, -100, 200));
-
-		//generate a test enemy and target for him to chase
 
 		Resource *sphere = resman_.GetResource("SimpleSphereMesh");
 		Resource *cube = resman_.GetResource("CubePointSet");
@@ -207,7 +195,6 @@ namespace game {
 		box->setCollidable(true);
 		box->SetScale(10, 10, 10);
 		box->SetPosition(0, 100, 480);
-		//ground->AddChild(box);
 
 		SceneNode* tester = CreateDog();
 		tester->SetPosition(0, 80, 510);
@@ -221,12 +208,10 @@ namespace game {
 			{
 				tree = CreateTree();
 				tree->SetPosition(i * 10, 80 + tree->GetScale().y / 2, 500 - j * 10);
-				//ground->AddChild(tree);
 			}
 		}
 
 		target->SetPosition(0, 100, 510);
-
 
 		//this is stored to cheesily draw the helicopter later
 		prgm = resman_.GetResource("ObjectMaterial")->GetResource();
@@ -236,7 +221,7 @@ namespace game {
 		ground->AddChild(test_sun);
 
 		//draw our title screen text on a square (cause i have no idea how to draw text on the screen)
-		title = Cube(UI, "TitleScreen", "CubePointSet", "ShinyTextureMaterial", glm::vec3(0.0,0.0,0.0), 0.0, "GameTitle");
+		title = Cube(UI, "TitleScreen", "CubePointSet", "ShinyTextureMaterial", glm::vec3(0.0, 0.0, 0.0), 0.0, "GameTitle");
 		title->SetPosition(0, 0, 765);
 		title->Scale(17.3, 13.0, 0.01);
 	}
@@ -261,9 +246,9 @@ namespace game {
 					if (deltaTime > 0.01) {
 						scene_.Update(deltaTime);
 						camera_.Update(); //update our camera to keep momentum going with thrusters
-						
+
 					/*	SceneNode* player = scene_.GetNode("Player");
-						
+
 
 						glm::vec3 forward = SceneNode::default_forward * player->GetOrientation();
 						player->Translate(player_vel * forward);
@@ -275,16 +260,16 @@ namespace game {
 
 						//handle turning here
 						float rot_factor(1.5 * glm::pi<float>() / 180);
-						if (turning == 1) { //left
+						if (turning == LEFT) {
 							camera_.Yaw(rot_factor);
 						}
-						else if (turning == 2) { //right
+						else if (turning == RIGHT) {
 							camera_.Yaw(-rot_factor);
 						}
-						else if (turning == 3) { //up
+						else if (turning == UP) {
 							camera_.Pitch(rot_factor);
 						}
-						else if (turning == 4) { //down
+						else if (turning == DOWN) {
 							camera_.Pitch(-rot_factor);
 						}
 
@@ -305,8 +290,7 @@ namespace game {
 					scene_.DisplayTexture(resman_.GetResource("BlueMaterial")->GetResource(), hp);
 				}
 				scene_.CheckCollisions();
-			}
-
+			} //end of GAME gamestate
 			glfwSwapBuffers(window_); // Push buffer drawn in the background onto the display
 			glfwPollEvents(); // Update other events like input handling
 		}
@@ -455,32 +439,32 @@ namespace game {
 			//TURNING HERE
 			float rot_factor(1.5 * glm::pi<float>() / 180);
 			if (key == GLFW_KEY_A && action == GLFW_PRESS) { // a turns left
-				game->turning = 1;
+				game->turning = LEFT;
 				if (game->tpCam) { game->camera_.vel_x = trans_factor; } //third person turning L
 			}
 			if (key == GLFW_KEY_A && action == GLFW_RELEASE) {
-				game->turning = 0;
+				game->turning = NONE;
 				if (game->tpCam) { game->camera_.vel_x = 0.0; }
 			}
 			if (key == GLFW_KEY_D && action == GLFW_PRESS) { // d turns right
-				game->turning = 2;
+				game->turning = RIGHT;
 				if (game->tpCam) { game->camera_.vel_x = -trans_factor; } //third person turning R
 			}
 			if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
-				game->turning = 0;
+				game->turning = NONE;
 				if (game->tpCam) { game->camera_.vel_x = 0.0; }
 			}
 			if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
-				game->turning = 3;
+				game->turning = UP;
 			}
 			if (key == GLFW_KEY_UP && action == GLFW_RELEASE) {
-				game->turning = 0;
+				game->turning = NONE;
 			}
 			if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
-				game->turning = 4;
+				game->turning = DOWN;
 			}
 			if (key == GLFW_KEY_DOWN && action == GLFW_RELEASE) {
-				game->turning = 0;
+				game->turning = NONE;
 			}
 			if (key == GLFW_KEY_LEFT) {
 				game->camera_.Roll(-rot_factor);
@@ -517,7 +501,7 @@ namespace game {
 		glfwTerminate();
 	}
 
-	SceneNode *Game::Cube(int type, std::string entity_name, std::string object_name, std::string material_name, 
+	SceneNode *Game::Cube(int type, std::string entity_name, std::string object_name, std::string material_name,
 		glm::vec3 rgb, double ttl, std::string tex_name) {
 		// Get resources
 		Resource *geom = resman_.GetResource(object_name);
@@ -547,7 +531,6 @@ namespace game {
 		else if (type == BombType) {
 			cube = new Bomb(entity_name, geom, mat, ttl, rgb, tex); //help
 			scene_.root_->AddChild(cube);
-			std::cout << "pls work" << std::endl;
 		}
 		return cube;
 	}
@@ -563,7 +546,7 @@ namespace game {
 		std::string collide = RaySphere(camera_.GetForward(), cube->GetPosition()); //terribly inaccurate hitscan collision
 		std::cout << collide << std::endl;
 		if (collide == "Sun") {
-			sun = false;
+			sun = false; //we killed the sun
 		}
 		if (collide != "none") {
 			scene_.Remove(collide); //blow up the object we collided with
@@ -579,8 +562,7 @@ namespace game {
 		game::Bomb *particles = (Bomb*)Cube(BombType, "ParticleInstance" + exploCount++, "SphereParticles", "ParticleMaterial",
 			glm::vec3(r, g, b), 4.0, "Firework");
 		particles->SetPosition(camera_.GetPosition() + (camera_.GetForward() * 12.0f) + (camera_.GetUp() * -0.5f));;
-		particles->SetOrientation(camera_.GetOrientation());
-		particles->SetScale(glm::vec3(0.4, 0.4, 0.4));
+		particles->SetScale(glm::vec3(0.4, 0.4, 0.4)); //increasing the scale makes the explosion more dense
 	}
 
 	std::string Game::RaySphere(glm::vec3 raydir, glm::vec3 raypos) {
@@ -649,7 +631,6 @@ namespace game {
 		Resource *cube = resman_.GetResource("CubePointSet");
 		Resource *sphere = resman_.GetResource("SimpleSphereMesh");
 
-
 		Resource *mat = resman_.GetResource("ObjectMaterial");
 		if (!mat) {
 			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
@@ -706,5 +687,4 @@ namespace game {
 
 		return trunk;
 	}
-
 } // namespace game

@@ -1,5 +1,5 @@
 #include "ray.h"
-#include<iostream>
+#include <iostream>
 
 namespace game {
 	Ray::Ray() {

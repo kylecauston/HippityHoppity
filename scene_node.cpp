@@ -162,7 +162,7 @@ namespace game {
 		collidable = c;
 	}
 
-	void SceneNode::takeDamage(float dam) { 
+	void SceneNode::takeDamage(float dam) {
 		health -= dam;
 		if (health <= 0)
 		{

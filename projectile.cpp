@@ -11,7 +11,6 @@ namespace game {
 		parent_name = par;
 
 		SetOrientation(VectorToRotation(v));
-
 	}
 
 	std::string Projectile::GetParentName() {

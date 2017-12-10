@@ -32,15 +32,15 @@ namespace game {
 		firerate = f;
 	}
 
-	void Enemy::setProjectileGeometry(Resource* g) { 
-		projectile_geometry = g; 
+	void Enemy::setProjectileGeometry(Resource* g) {
+		projectile_geometry = g;
 	}
 
-	void Enemy::setProjectileMaterial(Resource* m) { 
+	void Enemy::setProjectileMaterial(Resource* m) {
 		projectile_material = m;
 	}
 
-	void Enemy::setProjectileTexture(Resource* t) { 
+	void Enemy::setProjectileTexture(Resource* t) {
 		projectile_texture = t;
 	}
 
@@ -63,7 +63,7 @@ namespace game {
 
 	void Enemy::collide(Collidable* other)
 	{
-		
+
 	}
 
 	void Enemy::resetCooldown() {

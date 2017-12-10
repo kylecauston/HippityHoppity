@@ -1,7 +1,7 @@
 #include "laser.h"
 
 namespace game {
-	Laser::Laser(const std::string name, const Resource *geometry, 
+	Laser::Laser(const std::string name, const Resource *geometry,
 		const Resource *material, const Resource *tex) : SceneNode(name, geometry, material, tex) {}
 
 	Laser::~Laser() {}
@@ -20,5 +20,4 @@ namespace game {
 
 		this->Translate(direction); //the shot keeps moving in the direction we originally fired it from
 	}
-
 } // namespace game

@@ -8,7 +8,7 @@ namespace game {
 		return (isColliding(a->aabb, b->aabb) && isColliding(a->hb, b->hb));
 	}
 
-	/* Return whether a collidable object is intersected by a ray. The final variable 
+	/* Return whether a collidable object is intersected by a ray. The final variable
 		'intersection' is an output param, which holds the points of intersection*/
 	bool CollisionManager::isColliding(Collidable* a, Ray r, glm::vec2** intersection) {
 		if (isColliding(a->aabb, r))
@@ -17,9 +17,9 @@ namespace game {
 			{
 				return true;
 			}
-			
+
 			return false;
-			
+
 		}
 
 		return false;
@@ -45,7 +45,7 @@ namespace game {
 		glm::vec3 bScale = b.getDimensions();
 		glm::vec3 aHalfScale = glm::vec3(aScale.x / 2.0, aScale.y / 2.0, aScale.z / 2.0);
 		glm::vec3 bHalfScale = glm::vec3(bScale.x / 2.0, bScale.y / 2.0, bScale.z / 2.0);
-		
+
 		// use the axis defined by the edges of the two cubes
 		glm::vec3 aX, aY, aZ, bX, bY, bZ;
 		aX = rotateAxis(glm::vec3(1.0, 0.0, 0.0), a.getTrans());
@@ -84,8 +84,8 @@ namespace game {
 			// check if the projection of the distance between the two cubes on to the axis
 			// is greater than
 			// the sum of the projections of the half cube onto the axis
-			if (glm::abs(glm::dot((b.getPos() - a.getPos()), ax)) 
-				>
+			if (glm::abs(glm::dot((b.getPos() - a.getPos()), ax))
+			>
 				glm::abs(glm::dot((aHalfScale.x * aX), ax)) +
 				glm::abs(glm::dot((aHalfScale.y * aY), ax)) +
 				glm::abs(glm::dot((aHalfScale.z * aZ), ax)) +
@@ -128,9 +128,9 @@ namespace game {
 		}
 
 		// check if the intersection misses on the y axis
-		if ((curMin > yMax) || (curMax < yMin)) 
+		if ((curMin > yMax) || (curMax < yMin))
 			return false;
-		
+
 		curMax = glm::min(curMax, yMax);
 		curMin = glm::max(curMin, yMin);
 
@@ -154,7 +154,7 @@ namespace game {
 	}
 
 	/*  Input: Hitbox a: hitbox of object
-		       Ray r:	 ray to intersect
+			   Ray r:	 ray to intersect
 		Output: Intersection Points: solutions to the function made by ray/hb intersection.
 	*/
 	bool CollisionManager::isColliding(Hitbox a, Ray r, glm::vec2** intersection) {
@@ -186,7 +186,7 @@ namespace game {
 		min = glm::max(min, dist1);
 		max = glm::min(max, dist2);
 
-		if (max < min) 
+		if (max < min)
 			return false;
 
 

@@ -7,7 +7,7 @@ namespace game {
 	public:
 		Doggy(const std::string name, SceneNode* targ, const Resource* geometry, const Resource* mat, const Resource *tex = NULL);
 		~Doggy();
-		
+
 		void Update(double t);
 		void setTurret(SceneNode* t);
 
@@ -17,6 +17,4 @@ namespace game {
 		SceneNode* turret;
 	};
 }
-
-
 #endif // DOGGY_H_

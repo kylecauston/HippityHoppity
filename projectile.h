@@ -1,6 +1,5 @@
 #ifndef PROJECTILE_H_
 #define PROJECTILE_H_
-
 #include "attack_node.h"
 
 namespace game {
@@ -21,5 +20,4 @@ namespace game {
 		std::string parent_name; // what entity spawned this
 	};
 }
-
 #endif  // PROJECTILE_H

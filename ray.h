@@ -1,6 +1,5 @@
 #ifndef RAY_H_
 #define RAY_H_
-
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -19,10 +18,6 @@ namespace game {
 		glm::vec3 getOrigin();
 		glm::vec3 getDirection();
 		glm::vec3 getPoint(float t);
-
-		};
-
+	};
 } // game
-
-
 #endif // RAY_H_

@@ -57,7 +57,6 @@ namespace game {
 
 		// Update the node
 		virtual void Update(double deltaTime);
-
 		virtual void onCollide(Collidable* other);
 
 		// OpenGL variables
@@ -92,18 +91,12 @@ namespace game {
 		glm::vec3 position_; // Position of node
 		glm::quat orientation_; // Orientation of node
 		glm::vec3 scale_; // Scale of node
-					
+
 		float health = 20;
 		bool enemy = false;
 		bool collidable = false;
 
-		// Set matrices that transform the node in a shader program
-		// Return transformation of current node combined with
-		// parent transformation, without including scaling
 		virtual glm::mat4 SetupShader(GLuint program, glm::mat4 parent_transf, bool sun);
-
 	}; // class SceneNode
-
 } // namespace game
-
 #endif // SCENE_NODE_H_

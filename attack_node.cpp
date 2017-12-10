@@ -1,8 +1,8 @@
 #include "attack_node.h"
 
 namespace game {
-	
-	AttackNode::AttackNode(std::string s, float dam, const Resource* geom, const Resource* mat, const Resource* tex) 
+
+	AttackNode::AttackNode(std::string s, float dam, const Resource* geom, const Resource* mat, const Resource* tex)
 		: SceneNode(s, geom, mat, tex, true) {
 		damage = dam;
 	}

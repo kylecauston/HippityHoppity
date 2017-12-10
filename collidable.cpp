@@ -1,7 +1,7 @@
 #include "collidable.h"
 #include <iostream>
 
-namespace game { 
+namespace game {
 
 	void Collidable::updateCollidable(glm::mat4 trans)
 	{
@@ -15,7 +15,7 @@ namespace game {
 		// up/down = +/- y 
 		// close/far = +/- z
 		float right = NAN, left = NAN, up = NAN, down = NAN, close = NAN, far = NAN;
-		
+
 		for (glm::vec3 p : points)
 		{
 			right = fmax(right, p.x);

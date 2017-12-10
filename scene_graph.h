@@ -68,7 +68,5 @@ namespace game {
 		void DisplayTexture(GLuint program, float hp);
 
 	}; // class SceneGraph
-
 } // namespace game
-
 #endif // SCENE_GRAPH_H_

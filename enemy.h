@@ -27,7 +27,7 @@ namespace game {
 		void setProjectileGeometry(Resource* g);
 		void setProjectileMaterial(Resource* m);
 		void setProjectileTexture(Resource* t);
-			
+
 		// Update: move, attack etc
 		void Update(double deltaTime);
 
@@ -51,8 +51,5 @@ namespace game {
 		Resource* projectile_material = NULL;
 		Resource* projectile_texture = NULL;
 	};
-
 } // game
-
-
 #endif // SCENE_NODE_H_

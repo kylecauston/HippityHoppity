@@ -136,7 +136,6 @@ namespace game {
 		}
 
 		// Create a shader program linking both vertex and fragment shaders
-		// together
 		GLuint sp = glCreateProgram();
 		glAttachShader(sp, vs);
 		glAttachShader(sp, fs);
@@ -154,7 +153,6 @@ namespace game {
 		}
 
 		// Delete memory used by shaders, since they were already compiled
-		// and linked
 		glDeleteShader(vs);
 		glDeleteShader(fs);
 		if (geometry_program) {
@@ -215,7 +213,6 @@ namespace game {
 		hb_points.push_back(glm::vec3(right, up, Far));
 		hb_points.push_back(glm::vec3(right, up, close));
 		Hitbox hb = Hitbox(hb_points);
-
 
 		return hb;
 	}
@@ -852,12 +849,11 @@ namespace game {
 			// Use w to define how much we can deviate from the surface of the sphere (change of radius)
 			spray = maxspray*pow((float)w, (float)(1.0 / 3.0)); // Cubic root of w
 
-																// Define the normal and point based on theta, phi and the spray
+			// Define the normal and point based on theta, phi and the spray
 			glm::vec3 normal(spray*cos(theta)*sin(phi), spray*sin(theta)*sin(phi), spray*cos(phi));
 			glm::vec3 position(normal.x*trad, normal.y*trad, normal.z*trad);
 			glm::vec3 color(i / (float)num_particles, 0.0, 1.0 - (i / (float)num_particles)); // We can use the color for debug, if needed
 
-																							  // Add vectors to the data buffer
 			for (int k = 0; k < 3; k++) {
 				particle[i*particle_att + k] = position[k];
 				particle[i*particle_att + k + 3] = normal[k];

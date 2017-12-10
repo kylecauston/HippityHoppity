@@ -40,7 +40,5 @@ namespace game {
 		Hitbox GetHitbox(void) const;
 
 	}; // class Resource
-
 } // namespace game
-
 #endif // RESOURCE_H_

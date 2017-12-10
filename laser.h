@@ -14,21 +14,16 @@ namespace game {
 	class Laser : public SceneNode {
 	public:
 		Laser(const std::string name, const Resource *geometry, const Resource *material, const Resource *tex = NULL);
-
-		// Destructor
 		~Laser();
 
 		glm::vec3 GetDir(void) const;
 		void SetDir(glm::vec3 dir);
 
-		// Update geometry configuration
 		void Update(double delta_time);
 
 	private:
 		glm::vec3 direction;
 		float speed = 5.0;
 	}; // class
-
 } // namespace game
-
 #endif // LASER_H_

@@ -14,7 +14,6 @@ namespace game {
 		// The mole enemy rotates to face the target, but doesn't move
 		Enemy::Update(deltaTime);
 
-
 		if (target == NULL)
 			return;
 
@@ -25,7 +24,6 @@ namespace game {
 			glm::quat rotation = glm::slerp(GetOrientation(), VectorToRotation(toTarget), rotateSpeed);
 			SetOrientation(rotation);
 		}
-		
 	}
 
 	AttackNode* Mole::getAttack() {
@@ -35,10 +33,8 @@ namespace game {
 		glm::vec3 aim = GetOrientation() * SceneNode::default_forward;
 		Ray r = Ray(GetAbsolutePosition(), aim);
 		AttackNode* shot = new Hitscan(r, damage);
-	
 
 		//shot->SetScale(0.1, 0.1, 0.1);
 		return shot;
 	}
-
 }

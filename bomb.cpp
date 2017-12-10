@@ -16,14 +16,6 @@ namespace game {
 
 	Bomb::~Bomb() {}
 
-	glm::vec3 Bomb::GetDir(void) const {
-		return direction;
-	}
-
-	void Bomb::SetDir(glm::vec3 dir) {
-		direction = dir;
-	}
-
 	void Bomb::Update(double delta_time) {
 		time_to_live -= delta_time;
 		if (time_to_live <= 0.0 && time_to_live > -4000.0) {
@@ -32,7 +24,6 @@ namespace game {
 	}
 
 	glm::mat4 Bomb::Draw(Camera *camera, glm::mat4 parent_transf, bool sun) {
-
 		parent_transf = glm::mat4(1.0);
 
 		// Disable z-buffer
@@ -40,12 +31,10 @@ namespace game {
 
 		// Enable blending
 		glEnable(GL_BLEND);
-		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // Simpler form
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glBlendEquationSeparate(GL_FUNC_ADD, GL_MAX);
 
-
-			// Select proper material (shader program)
+		// Select proper material (shader program)
 		glUseProgram(material_);
 
 		// Set geometry to draw
@@ -67,7 +56,6 @@ namespace game {
 		}
 
 		return transf;
-
 	}
 
 	glm::mat4 Bomb::SetupShader(GLuint program, glm::mat4 parent_transf, bool sun) {
@@ -116,7 +104,6 @@ namespace game {
 
 		// Timer
 		GLint timer_var = glGetUniformLocation(program, "timer");
-		//double current_time = glfwGetTime();
 		double current_time = (time_to_live - 4.0)*-1.0;
 		glUniform1f(timer_var, (float)current_time);
 
@@ -130,8 +117,6 @@ namespace game {
 		GLint blue_var = glGetUniformLocation(program, "blue");
 		glUniform1f(blue_var, (float)rgb_col[2]);
 
-		// Return transformation of node combined with parent, without scaling
 		return transf;
 	}
-
 } // namespace game

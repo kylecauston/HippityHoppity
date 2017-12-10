@@ -9,12 +9,9 @@ namespace game {
 	public:
 		Hitbox hb;
 		AABB aabb;
-		
+
 		virtual void updateCollidable(glm::mat4 transf);
 		virtual void onCollide(Collidable* other) = 0;
 	};
-
 } // game
-
-
 #endif // COLLIDABLE_H_

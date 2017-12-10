@@ -9,13 +9,11 @@ namespace game {
 		~Mole();
 
 		void Update(float t);
-		
+
 		AttackNode* getAttack();
 
 	private:
 		static float damage;
 	};
 }
-
-
 #endif // MOLE_H_

@@ -108,8 +108,6 @@ namespace game {
 	}
 
 	void Camera::SetupViewMatrix(void) {
-		//view_matrix_ = glm::lookAt(position, look_at, up);
-
 		// Get current vectors of coordinate system
 		// [side, up, forward]
 		// See slide in "Camera control" for details
@@ -122,10 +120,8 @@ namespace game {
 		view_matrix_ = glm::mat4(1.0);
 
 		// Copy vectors to matrix
-		// Add vectors to rows, not columns of the matrix, so that we get
-		// the inverse transformation
-		// Note that in glm, the reference for matrix entries is of the form
-		// matrix[column][row]
+		// Add vectors to rows, not columns of the matrix, so that we get the inverse transformation
+		// Note that in glm, the reference for matrix entries is of the form: matrix[column][row]
 		view_matrix_[0][0] = current_side[0]; // First row
 		view_matrix_[1][0] = current_side[1];
 		view_matrix_[2][0] = current_side[2];
@@ -142,5 +138,4 @@ namespace game {
 		// Combine translation and view matrix in proper order
 		view_matrix_ *= trans;
 	}
-
 } // namespace game

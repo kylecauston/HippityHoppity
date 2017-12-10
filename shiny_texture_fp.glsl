@@ -9,7 +9,6 @@ uniform sampler2D texture_map;
 
 void main() 
 {
-        
     // Retrieve texture value
     vec4 pixel = texture(texture_map, uv_interp);
 

@@ -19,7 +19,6 @@ uniform float particle_size = 0.01;
 out vec4 frag_color;
 out vec2 tex_coord;
 
-
 void main(void){
 
     // Get the position of the particle
@@ -46,6 +45,5 @@ void main(void){
         frag_color = vec4(vertex_color[0], 1.0);
         EmitVertex();
      }
-
      EndPrimitive();
 }
