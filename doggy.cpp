@@ -41,13 +41,11 @@ namespace game {
 		// 2D to target vector, ignoring height
 		glm::vec3 toTarget_flat = glm::vec3(toTarget.x, 0, toTarget.z);
 
-		
-
 		if (glm::length(toTarget_flat) != 0) {
 			glm::quat body_rotation = glm::slerp(GetOrientation(), VectorToRotation(toTarget_flat), 0.05f);
 			SetOrientation(body_rotation);
 
-			glm::quat turret_rotation = glm::slerp(turret->GetOrientation(), VectorToRotation(toTarget), rotateSpeed);
+			glm::quat turret_rotation = glm::slerp(turret->GetOrientation(), VectorToRotation(toTarget), 0.5f);
 			turret->SetOrientation(turret_rotation);
 		}
 		
@@ -57,12 +55,11 @@ namespace game {
 
 			// we drop the y value if the enemy can't fly, and then make 
 			// the vector into a movement vector (the actual units it will move)
-			glm::vec3 movement = (t*speed) * (glm::normalize(toTarget_flat));
-
+			glm::vec3 movement = GetOrientation() * SceneNode::default_forward;//(glm::normalize(toTarget_flat));
+			movement *= (t*speed);
 			// move the parent node (the dog has a dummy parent to keep turret separate)
 			parent_->Translate(movement);
 		}
-		
 	}
 
 }
