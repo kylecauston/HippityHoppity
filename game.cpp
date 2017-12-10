@@ -34,7 +34,7 @@ namespace game {
 	}
 
 	void Game::Init(void) {
-		srand(time(NULL));
+		//srand(time(NULL));
 
 		// Run all initialization steps
 		InitWindow();
@@ -46,6 +46,7 @@ namespace game {
 		game_state = TITLE;
 		hp = 100.0;
 		sun = true;
+		tpCam = false;
 	}
 
 	void Game::InitWindow(void) {
@@ -136,6 +137,17 @@ namespace game {
 		filename = std::string(MATERIAL_DIRECTORY) + std::string("/screen_hp");
 		resman_.LoadResource(Material, "BlueMaterial", filename.c_str());
 
+		//particle effect material
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/particle");
+		resman_.LoadResource(Material, "ParticleMaterial", filename.c_str());
+
+		// Create particles for firework weapon
+		resman_.CreateSphereParticles("SphereParticles");
+
+		// Load texture to be applied to particles
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/firework.png");
+		resman_.LoadResource(Texture, "Firework", filename.c_str());
+
 		scene_.SetupDrawToTexture();
 	}
 
@@ -175,7 +187,7 @@ namespace game {
 		Resource *sphere = resman_.GetResource("SimpleSphereMesh");
 		Resource *cube = resman_.GetResource("CubePointSet");
 		Resource *torus = resman_.GetResource("TorusMesh");
-		Resource *cyl= resman_.GetResource("CylinderMesh");
+		Resource *cyl = resman_.GetResource("CylinderMesh");
 
 
 		SceneNode *target = new SceneNode("Target", cube, mat, NULL, true);
@@ -194,7 +206,7 @@ namespace game {
 			for (int j = 0; j < 6; j++)
 			{
 				tree = CreateTree();
-				tree->SetPosition(i * 10, 80 + tree->GetScale().y / 2, 500-j*10);
+				tree->SetPosition(i * 10, 80 + tree->GetScale().y / 2, 500 - j * 10);
 				//ground->AddChild(tree);
 			}
 		}
@@ -216,7 +228,7 @@ namespace game {
 		ground->AddChild(test_sun);
 
 		//draw our title screen text on a square (cause i have no idea how to draw text on the screen)
-		title = Cube(UI, "TitleScreen", "CubePointSet", "ShinyTextureMaterial", "GameTitle");
+		title = Cube(UI, "TitleScreen", "CubePointSet", "ShinyTextureMaterial", glm::vec3(0.0,0.0,0.0), 0.0, "GameTitle");
 		title->SetPosition(0, 0, 765);
 		title->Scale(17.3, 13.0, 0.01);
 	}
@@ -225,7 +237,7 @@ namespace game {
 		//glEnable(GL_CULL_FACE);
 		//glCullFace(GL_BACK);
 		//glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
-		
+
 		// Loop while the user did not close the window
 		while (!glfwWindowShouldClose(window_)) {
 			if (game_state == TITLE) { //on title screen we do nothing but display the UI
@@ -238,24 +250,24 @@ namespace game {
 					static double last_time = 0;
 					double current_time = glfwGetTime();
 					double deltaTime = current_time - last_time;
-					if (deltaTime > 0.05) {
+					if (deltaTime > 0.01) {
 						scene_.Update(deltaTime);
 						camera_.Update(); //update our camera to keep momentum going with thrusters
 						heli_.Update(deltaTime);
 						last_time = current_time;
 
-						//handle turning here LUL
+						//handle turning here
 						float rot_factor(1.5 * glm::pi<float>() / 180);
-						if (turning == 1) {
+						if (turning == 1) { //left
 							camera_.Yaw(rot_factor);
 						}
-						else if (turning == 2) {
+						else if (turning == 2) { //right
 							camera_.Yaw(-rot_factor);
 						}
-						else if (turning == 3) {
+						else if (turning == 3) { //up
 							camera_.Pitch(rot_factor);
 						}
-						else if (turning == 4) {
+						else if (turning == 4) { //down
 							camera_.Pitch(-rot_factor);
 						}
 
@@ -267,11 +279,14 @@ namespace game {
 				} //end if animating_
 
 				// Draw the scene
-				//scene_.Draw(&camera_);
-				scene_.DrawToTexture(&camera_, sun);
-				scene_.DisplayTexture(resman_.GetResource("BlueMaterial")->GetResource(), hp);
-				//heli_.DrawHelicopter(prgm, &camera_); //helicopter is just drawn as UI for now
-
+				if (tpCam) { //third person
+					scene_.Draw(&camera_);
+					heli_.DrawHelicopter(prgm, &camera_); //helicopter is just drawn as UI for now
+				}
+				else { //first person
+					scene_.DrawToTexture(&camera_, sun);
+					scene_.DisplayTexture(resman_.GetResource("BlueMaterial")->GetResource(), hp);
+				}
 				scene_.CheckCollisions();
 			}
 
@@ -291,7 +306,7 @@ namespace game {
 			}
 		}
 		else if (game->game_state == GAME) { //keybinds for gameplay
-			float trans_factor = 3.0;
+			float trans_factor = 1.0;
 			if (key == GLFW_KEY_KP_9 && action == GLFW_PRESS) {
 				Enemy* enemy = ((Enemy*)(game->scene_.GetNode("Enemy0")));
 				enemy->setRotateSpeed(std::max(0.0f, std::min(enemy->getRotateSpeed() + 0.1f, 1.0f)));
@@ -305,7 +320,7 @@ namespace game {
 			if (key == GLFW_KEY_Y && action == GLFW_PRESS) { //tell me target position
 				glm::vec3 pos = game->scene_.GetNode("Target")->GetPosition();
 
-				std::cout << "Targ @ [" << pos.x << ", "  << pos.y << ", " << pos.z << "]" << std::endl;
+				std::cout << "Targ @ [" << pos.x << ", " << pos.y << ", " << pos.z << "]" << std::endl;
 			}
 			if (key == GLFW_KEY_KP_1 && action == GLFW_PRESS) {
 				game->scene_.GetNode("Target")->Translate(0, 0.1, 0);
@@ -338,10 +353,10 @@ namespace game {
 				temp = !temp;
 				std::cout << "firing laser" << std::endl;
 				glm::vec3 forward = game->camera_.GetForward();
-				glm::vec3 origin = game->camera_.GetPosition();	
+				glm::vec3 origin = game->camera_.GetPosition();
 
 				std::vector<std::pair<SceneNode*, glm::vec2*>> hit = game->scene_.CheckRayCollisions(Ray(origin, forward));
-				
+
 				for (int i = 0; i < hit.size(); i++) {
 					if (hit[i].first->GetName() != "Target") {
 						hit[i].first->takeDamage(9999);
@@ -356,6 +371,9 @@ namespace game {
 			}
 			if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) { // Quit game if 'ESC' is pressed
 				glfwSetWindowShouldClose(window, true);
+			}
+			if (key == GLFW_KEY_TAB && action == GLFW_PRESS) { // switch camera if TAB is pressed
+				game->tpCam = !game->tpCam;
 			}
 
 			//MOVEMENT HERE
@@ -399,18 +417,20 @@ namespace game {
 			//TURNING HERE
 			float rot_factor(1.5 * glm::pi<float>() / 180);
 			if (key == GLFW_KEY_A && action == GLFW_PRESS) { // a turns left
-				//game->camera_.Yaw(rot_factor);
 				game->turning = 1;
+				if (game->tpCam) { game->camera_.vel_x = trans_factor; } //third person turning L
 			}
 			if (key == GLFW_KEY_A && action == GLFW_RELEASE) {
 				game->turning = 0;
+				if (game->tpCam) { game->camera_.vel_x = 0.0; }
 			}
 			if (key == GLFW_KEY_D && action == GLFW_PRESS) { // d turns right
-				//game->camera_.Yaw(-rot_factor);
 				game->turning = 2;
+				if (game->tpCam) { game->camera_.vel_x = -trans_factor; } //third person turning R
 			}
 			if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
 				game->turning = 0;
+				if (game->tpCam) { game->camera_.vel_x = 0.0; }
 			}
 			if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
 				game->turning = 3;
@@ -431,12 +451,10 @@ namespace game {
 				game->camera_.Roll(rot_factor);
 			}
 
-			if (key == GLFW_KEY_R) { //always good to have a brake handy
-				game->camera_.vel_x = 0;
-				game->camera_.vel_y = 0;
-				game->camera_.vel_z = 0;
+			if (key == GLFW_KEY_R && action == GLFW_PRESS) { //fires a bomb with particle effects
+				game->FireBomb();
 			}
-			if (key == GLFW_KEY_F && action == GLFW_PRESS) { //fire!
+			if (key == GLFW_KEY_F && action == GLFW_PRESS) { //fire a laser
 				game->FireLaser();
 			}
 			if (key == GLFW_KEY_H && action == GLFW_PRESS) { // H increases hp
@@ -461,7 +479,8 @@ namespace game {
 		glfwTerminate();
 	}
 
-	SceneNode *Game::Cube(int type, std::string entity_name, std::string object_name, std::string material_name, std::string tex_name) {
+	SceneNode *Game::Cube(int type, std::string entity_name, std::string object_name, std::string material_name, 
+		glm::vec3 rgb, double ttl, std::string tex_name) {
 		// Get resources
 		Resource *geom = resman_.GetResource(object_name);
 		if (!geom) {
@@ -487,6 +506,11 @@ namespace game {
 		else if (type == UI) {
 			cube = new SceneNode(entity_name, geom, mat, tex);
 		}
+		else if (type == BombType) {
+			cube = new Bomb(entity_name, geom, mat, ttl, rgb, tex); //help
+			scene_.root_->AddChild(cube);
+			std::cout << "pls work" << std::endl;
+		}
 		return cube;
 	}
 
@@ -506,6 +530,19 @@ namespace game {
 		if (collide != "none") {
 			scene_.Remove(collide); //blow up the object we collided with
 		}
+	}
+
+	void Game::FireBomb() {
+		float ttlr = 3.0 + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (4.5 - 3.0)));
+		float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+
+		game::Bomb *particles = (Bomb*)Cube(BombType, "ParticleInstance" + exploCount++, "SphereParticles", "ParticleMaterial",
+			glm::vec3(r, g, b), 4.0, "Firework");
+		particles->SetPosition(camera_.GetPosition() + (camera_.GetForward() * 12.0f) + (camera_.GetUp() * -0.5f));;
+		particles->SetOrientation(camera_.GetOrientation());
+		particles->SetScale(glm::vec3(0.4, 0.4, 0.4));
 	}
 
 	std::string Game::RaySphere(glm::vec3 raydir, glm::vec3 raypos) {
@@ -543,7 +580,7 @@ namespace game {
 		Enemy* n = new Enemy(name, NULL, NULL, NULL);
 		n->setMovementSpeed(0);
 		n->setRotateSpeed(0);
-		
+
 		SceneNode* dirt = new SceneNode(name + "_dirt", torus, mat);
 		dirt->setCollidable(false);
 		dirt->SetScale(2.0, 2.0, 2.0);
@@ -553,7 +590,7 @@ namespace game {
 		body->setMovementSpeed(0);
 		body->setCollidable(true);
 		body->SetPosition(0, 0.5, 0);
-	
+
 		SceneNode* gun = new SceneNode(name + "_gun", cube, mat);
 		gun->SetPosition(1.0, 0.5, 1.5);
 		gun->setCollidable(true);
@@ -561,7 +598,7 @@ namespace game {
 
 		body->setProjectileGeometry(sphere);
 		body->setProjectileMaterial(mat);
-		
+
 		n->AddChild(dirt);
 		n->AddChild(body);
 		body->AddChild(gun);
@@ -571,7 +608,7 @@ namespace game {
 
 	SceneNode* Game::CreateDog() {
 		Resource *cube = resman_.GetResource("CubePointSet");
-		
+
 		Resource *mat = resman_.GetResource("ObjectMaterial");
 		if (!mat) {
 			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
@@ -620,9 +657,9 @@ namespace game {
 
 		SceneNode* top = new SceneNode(name + "_leaves", sphere, mat);
 		top->setCollidable(false);
-		top->SetPosition(0, height/2.0 ,0);
+		top->SetPosition(0, height / 2.0, 0);
 		top->SetScale(thicc * 3.0, thicc * 3.0, thicc * 3.0);
-		
+
 		trunk->AddChild(top);
 
 		return trunk;

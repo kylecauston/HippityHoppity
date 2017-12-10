@@ -8,6 +8,7 @@
 #include "scene_node.h"
 #include "enemy.h"
 #include "resource.h"
+#include "bomb.h"
 #include "camera.h"
 #include "collision_manager.h"
 
@@ -43,7 +44,7 @@ namespace game {
 		void Draw(Camera *camera);
 
 		// Update entire scene
-		void Update(float deltaTime);
+		void Update(double deltaTime);
 
 		// run collisions on the children of node (the separate entities)
 		void CheckCollisions();

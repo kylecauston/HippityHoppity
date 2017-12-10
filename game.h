@@ -10,6 +10,7 @@
 #include "camera.h"
 #include "asteroid.h"
 #include "laser.h"
+#include "bomb.h"
 #include "helicopter.h"
 #include "enemy.h"
 #include "doggy.h"
@@ -49,6 +50,8 @@ namespace game {
 
 		float hp;
 		bool sun;
+		bool tpCam;
+		int exploCount = 0;
 
 	private:
 		// GLFW window
@@ -77,6 +80,7 @@ namespace game {
 		void InitEventHandlers(void);
 
 		void FireLaser();
+		void FireBomb();
 		std::string RaySphere(glm::vec3 raydir, glm::vec3 raypos);
 
 		// Methods to handle events
@@ -84,7 +88,8 @@ namespace game {
 		static void ResizeCallback(GLFWwindow* window, int width, int height);
 
 		//creates an instance of a 3d cube
-		SceneNode *Cube(int type, std::string entity_name, std::string object_name, std::string material_name, std::string tex_name = "");
+		SceneNode *Cube(int type, std::string entity_name, std::string object_name, std::string material_name, 
+			glm::vec3 rgb = glm::vec3(0.8, 0.8, 0.8), double ttl = 4.0,std::string tex_name = "");
 		SceneNode* CreateMole();
 		SceneNode* CreateDog();
 		SceneNode* CreateTree();

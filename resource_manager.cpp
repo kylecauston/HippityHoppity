@@ -68,6 +68,7 @@ namespace game {
 	}
 
 	void ResourceManager::LoadMaterial(const std::string name, const char *prefix) {
+
 		// Load vertex program source code
 		std::string filename = std::string(prefix) + std::string(VERTEX_PROGRAM_EXTENSION);
 		std::string vp = LoadTextFile(filename.c_str());
@@ -105,10 +106,43 @@ namespace game {
 			throw(std::ios_base::failure(std::string("Error compiling fragment shader: ") + std::string(buffer)));
 		}
 
-		// Create a shader program linking both vertex and fragment shaders together
+		// Try to also load a geometry shader
+		filename = std::string(prefix) + std::string(GEOMETRY_PROGRAM_EXTENSION);
+		bool geometry_program = false;
+		std::string gp = "";
+		GLuint gs;
+		try {
+			gp = LoadTextFile(filename.c_str());
+			geometry_program = true;
+		}
+		catch (std::exception &e) {
+		}
+
+		if (geometry_program) {
+			// Create a shader from the geometry program source code
+			gs = glCreateShader(GL_GEOMETRY_SHADER);
+			const char *source_gp = gp.c_str();
+			glShaderSource(gs, 1, &source_gp, NULL);
+			glCompileShader(gs);
+
+			// Check if shader compiled successfully
+			GLint status;
+			glGetShaderiv(gs, GL_COMPILE_STATUS, &status);
+			if (status != GL_TRUE) {
+				char buffer[512];
+				glGetShaderInfoLog(gs, 512, NULL, buffer);
+				throw(std::ios_base::failure(std::string("Error compiling geometry shader: ") + std::string(buffer)));
+			}
+		}
+
+		// Create a shader program linking both vertex and fragment shaders
+		// together
 		GLuint sp = glCreateProgram();
 		glAttachShader(sp, vs);
 		glAttachShader(sp, fs);
+		if (geometry_program) {
+			glAttachShader(sp, gs);
+		}
 		glLinkProgram(sp);
 
 		// Check if shaders were linked successfully
@@ -119,9 +153,13 @@ namespace game {
 			throw(std::ios_base::failure(std::string("Error linking shaders: ") + std::string(buffer)));
 		}
 
-		// Delete memory used by shaders, since they were already compiled and linked
+		// Delete memory used by shaders, since they were already compiled
+		// and linked
 		glDeleteShader(vs);
 		glDeleteShader(fs);
+		if (geometry_program) {
+			glDeleteShader(gs);
+		}
 
 		// Add a resource for the shader program
 		AddResource(Material, name, sp, 0);
@@ -329,7 +367,7 @@ namespace game {
 					vertex_normal.y*radius,
 					vertex_normal.z*radius),
 					vertex_color = glm::vec3(0.8, 0.7, 0.1);
-					//((float)i) / ((float)num_samples_theta), 1.0 - ((float)j) / ((float)num_samples_phi), ((float)j) / ((float)num_samples_phi)
+				//((float)i) / ((float)num_samples_theta), 1.0 - ((float)j) / ((float)num_samples_phi), ((float)j) / ((float)num_samples_phi)
 				vertex_coord = glm::vec2(((float)i) / ((float)num_samples_theta), 1.0 - ((float)j) / ((float)num_samples_phi));
 
 				positions.push_back(vertex_position);
@@ -607,174 +645,236 @@ namespace game {
 	}
 
 	void ResourceManager::CreateCylinder(std::string object_name, float cylinder_height, float circle_radius, int num_circle_samples) {
-			// Number of vertices and faces to be created
-			const GLuint vertex_num = num_circle_samples * 2 + 2; // both circles, center of each endcap
-			const GLuint face_num = num_circle_samples * 4;
+		// Number of vertices and faces to be created
+		const GLuint vertex_num = num_circle_samples * 2 + 2; // both circles, center of each endcap
+		const GLuint face_num = num_circle_samples * 4;
 
-			// Number of attributes for vertices and faces
-			const int vertex_att = 11;  // 11 attributes per vertex: 3D position (3), 3D normal (3), RGB color (3), 2D texture coordinates (2)
-			const int face_att = 3; // Vertex indices (3)
+		// Number of attributes for vertices and faces
+		const int vertex_att = 11;  // 11 attributes per vertex: 3D position (3), 3D normal (3), RGB color (3), 2D texture coordinates (2)
+		const int face_att = 3; // Vertex indices (3)
 
-									// Data buffers for the cylinder
-			GLfloat *vertex = NULL;
-			GLuint *face = NULL;
+								// Data buffers for the cylinder
+		GLfloat *vertex = NULL;
+		GLuint *face = NULL;
 
-			// Allocate memory for buffers
-			try {
-				vertex = new GLfloat[vertex_num * vertex_att];
-				face = new GLuint[face_num * face_att];
-			}
-			catch (std::exception &e) {
-				throw e;
-			}
-
-			// Create vertices 
-			float theta = 0; // Angle for circle
-			glm::vec3 vertex_position;
-			glm::vec3 vertex_normal;
-			glm::vec3 vertex_color;
-			glm::vec2 vertex_coord;
-
-			std::vector<glm::vec3> positions = std::vector<glm::vec3>(); // for generating hitbox
-
-			// vertices at
-			// - one in center of each endcap
-			// - num_circle_samples worth on edges of each endcap
-
-			// top centerpoint
-			vertex_normal = glm::vec3(0, 0, 1);
-			vertex_position = glm::vec3(0, cylinder_height / 2, 0);
-			vertex_color = glm::vec3(1.0, 0.0, 0.0);
-			vertex_coord = glm::vec2(theta / 2.0*glm::pi<GLfloat>(),
-				theta / 2.0*glm::pi<GLfloat>());
-
-			positions.push_back(vertex_position);
-
-			// Add vectors to the data buffer
-			for (int k = 0; k < 3; k++) {
-				vertex[k] = vertex_position[k];
-				vertex[k + 3] = vertex_normal[k];
-				vertex[k + 6] = vertex_color[k];
-			}
-			vertex[9] = vertex_coord[0];
-			vertex[10] = vertex_coord[1];
-
-			// bottom centerpoint
-			vertex_normal = glm::vec3(0, 0, -1);
-			vertex_position = glm::vec3(0, -cylinder_height / 2, 0);
-			vertex_color = glm::vec3(1.0, 0.0, 0.0);
-
-			positions.push_back(vertex_position);
-
-			// Add vectors to the data buffer
-			for (int k = 0; k < 3; k++) {
-				vertex[k + vertex_att] = vertex_position[k];
-				vertex[k + 3 + vertex_att] = vertex_normal[k];
-				vertex[k + 6 + vertex_att] = vertex_color[k];
-			}
-			vertex[9 + vertex_att] = vertex_coord[0];
-			vertex[10 + vertex_att] = vertex_coord[1];
-
-			for (int i = 0; i < num_circle_samples; i++) {
-				theta = 2.0*glm::pi<GLfloat>() * i / num_circle_samples; // where around the endcap circle you are
-
-				// top set of vertices
-				vertex_normal = glm::vec3(0, 0, 1);
-				vertex_position = glm::vec3((cos(theta)*circle_radius),
-					cylinder_height / 2,
-					(sin(theta)*circle_radius));
-				vertex_color = glm::vec3(0.0, 0.0, 1.0);
-
-				positions.push_back(vertex_position);
-
-				// Add vectors to the data buffer
-				for (int k = 0; k < 3; k++) {
-					vertex[(i + 2)*vertex_att + k] = vertex_position[k];
-					vertex[(i + 2)*vertex_att + k + 3] = vertex_normal[k];
-					vertex[(i + 2)*vertex_att + k + 6] = vertex_color[k];
-				}
-				vertex[(i + 2)*vertex_att + 9] = vertex_coord[0];
-				vertex[(i + 2)*vertex_att + 10] = vertex_coord[1];
-
-				// bottom set of vertices
-				vertex_normal = glm::vec3(0, 0, -1);
-				vertex_position = glm::vec3((cos(theta)*circle_radius),
-					-cylinder_height / 2,
-					(sin(theta)*circle_radius));
-				vertex_color = glm::vec3(0.0, 0.0, 1.0);
-
-				positions.push_back(vertex_position);
-
-				// Add vectors to the data buffer
-				for (int k = 0; k < 3; k++) {
-					vertex[(i + 2 + num_circle_samples)*vertex_att + k] = vertex_position[k];
-					vertex[(i + 2 + num_circle_samples)*vertex_att + k + 3] = vertex_normal[k];
-					vertex[(i + 2 + num_circle_samples)*vertex_att + k + 6] = vertex_color[k];
-				}
-				vertex[(i + 2 + num_circle_samples)*vertex_att + 9] = vertex_coord[0];
-				vertex[(i + 2 + num_circle_samples)*vertex_att + 10] = vertex_coord[1];
-			}
-
-			// create triangles
-			for (int i = 0; i < num_circle_samples - 1; i++) {
-				// top cap triangle
-				glm::vec3 t1(0, i + 2, i + 3);
-
-				// middle triangle 1		
-				glm::vec3 t2(i + 2, i + 3, i + 3 + num_circle_samples);
-
-				// middle triangle 2
-				glm::vec3 t3(i + 2, i + 2 + num_circle_samples, i + 3 + num_circle_samples);
-
-				// bottom cap triangle
-				glm::vec3 t4(1, i + 2 + num_circle_samples, i + 3 + num_circle_samples);
-
-				for (int k = 0; k < 3; k++) {
-					face[i * face_att * 4 + k] = (GLuint)t1[k];
-					face[i * face_att * 4 + k + face_att] = (GLuint)t2[k];
-					face[i * face_att * 4 + k + face_att * 2] = (GLuint)t3[k];
-					face[i * face_att * 4 + k + face_att * 3] = (GLuint)t4[k];
-				}
-			}
-
-			// add the remaining sides - missed by the loop
-			// top cap triangle between start of circle and end
-			glm::vec3 t1(0, 2, num_circle_samples + 1);
-
-			// middle triangle 1		
-			glm::vec3 t2(2, num_circle_samples + 1, num_circle_samples + 2);
-
-			// middle triangle 2
-			glm::vec3 t3(num_circle_samples + 1, num_circle_samples + 2, num_circle_samples * 2 + 1);
-
-			// bottom cap triangle between start of circle and end
-			glm::vec3 t4(1, num_circle_samples + 2, num_circle_samples * 2 + 1);
-
-			for (int k = 0; k < 3; k++) {
-				face[(num_circle_samples - 1) * face_att * 4 + k] = (GLuint)t1[k];
-				face[(num_circle_samples - 1) * face_att * 4 + k + face_att] = (GLuint)t2[k];
-				face[(num_circle_samples - 1) * face_att * 4 + k + face_att * 2] = (GLuint)t3[k];
-				face[(num_circle_samples - 1) * face_att * 4 + k + face_att * 3] = (GLuint)t4[k];
-			}
-
-			// Create OpenGL buffers and copy data
-			// Create buffer for vertices
-			GLuint vbo, ebo;
-			glGenBuffers(1, &vbo);
-			glBindBuffer(GL_ARRAY_BUFFER, vbo);
-			glBufferData(GL_ARRAY_BUFFER, vertex_num * vertex_att * sizeof(GLfloat), vertex, GL_STATIC_DRAW);
-
-			// Create buffer for faces
-			glGenBuffers(1, &ebo);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, face_num * face_att * sizeof(GLuint), face, GL_STATIC_DRAW);
-
-			// Free data buffers
-			delete[] vertex;
-			delete[] face;
-
-			// Return number of elements in array buffer
-			AddResource(Mesh, object_name, vbo, ebo, face_num * face_att, genHitbox(positions));
+		// Allocate memory for buffers
+		try {
+			vertex = new GLfloat[vertex_num * vertex_att];
+			face = new GLuint[face_num * face_att];
+		}
+		catch (std::exception &e) {
+			throw e;
 		}
 
+		// Create vertices 
+		float theta = 0; // Angle for circle
+		glm::vec3 vertex_position;
+		glm::vec3 vertex_normal;
+		glm::vec3 vertex_color;
+		glm::vec2 vertex_coord;
+
+		std::vector<glm::vec3> positions = std::vector<glm::vec3>(); // for generating hitbox
+
+		// vertices at
+		// - one in center of each endcap
+		// - num_circle_samples worth on edges of each endcap
+
+		// top centerpoint
+		vertex_normal = glm::vec3(0, 0, 1);
+		vertex_position = glm::vec3(0, cylinder_height / 2, 0);
+		vertex_color = glm::vec3(1.0, 0.0, 0.0);
+		vertex_coord = glm::vec2(theta / 2.0*glm::pi<GLfloat>(),
+			theta / 2.0*glm::pi<GLfloat>());
+
+		positions.push_back(vertex_position);
+
+		// Add vectors to the data buffer
+		for (int k = 0; k < 3; k++) {
+			vertex[k] = vertex_position[k];
+			vertex[k + 3] = vertex_normal[k];
+			vertex[k + 6] = vertex_color[k];
+		}
+		vertex[9] = vertex_coord[0];
+		vertex[10] = vertex_coord[1];
+
+		// bottom centerpoint
+		vertex_normal = glm::vec3(0, 0, -1);
+		vertex_position = glm::vec3(0, -cylinder_height / 2, 0);
+		vertex_color = glm::vec3(1.0, 0.0, 0.0);
+
+		positions.push_back(vertex_position);
+
+		// Add vectors to the data buffer
+		for (int k = 0; k < 3; k++) {
+			vertex[k + vertex_att] = vertex_position[k];
+			vertex[k + 3 + vertex_att] = vertex_normal[k];
+			vertex[k + 6 + vertex_att] = vertex_color[k];
+		}
+		vertex[9 + vertex_att] = vertex_coord[0];
+		vertex[10 + vertex_att] = vertex_coord[1];
+
+		for (int i = 0; i < num_circle_samples; i++) {
+			theta = 2.0*glm::pi<GLfloat>() * i / num_circle_samples; // where around the endcap circle you are
+
+			// top set of vertices
+			vertex_normal = glm::vec3(0, 0, 1);
+			vertex_position = glm::vec3((cos(theta)*circle_radius),
+				cylinder_height / 2,
+				(sin(theta)*circle_radius));
+			vertex_color = glm::vec3(0.0, 0.0, 1.0);
+
+			positions.push_back(vertex_position);
+
+			// Add vectors to the data buffer
+			for (int k = 0; k < 3; k++) {
+				vertex[(i + 2)*vertex_att + k] = vertex_position[k];
+				vertex[(i + 2)*vertex_att + k + 3] = vertex_normal[k];
+				vertex[(i + 2)*vertex_att + k + 6] = vertex_color[k];
+			}
+			vertex[(i + 2)*vertex_att + 9] = vertex_coord[0];
+			vertex[(i + 2)*vertex_att + 10] = vertex_coord[1];
+
+			// bottom set of vertices
+			vertex_normal = glm::vec3(0, 0, -1);
+			vertex_position = glm::vec3((cos(theta)*circle_radius),
+				-cylinder_height / 2,
+				(sin(theta)*circle_radius));
+			vertex_color = glm::vec3(0.0, 0.0, 1.0);
+
+			positions.push_back(vertex_position);
+
+			// Add vectors to the data buffer
+			for (int k = 0; k < 3; k++) {
+				vertex[(i + 2 + num_circle_samples)*vertex_att + k] = vertex_position[k];
+				vertex[(i + 2 + num_circle_samples)*vertex_att + k + 3] = vertex_normal[k];
+				vertex[(i + 2 + num_circle_samples)*vertex_att + k + 6] = vertex_color[k];
+			}
+			vertex[(i + 2 + num_circle_samples)*vertex_att + 9] = vertex_coord[0];
+			vertex[(i + 2 + num_circle_samples)*vertex_att + 10] = vertex_coord[1];
+		}
+
+		// create triangles
+		for (int i = 0; i < num_circle_samples - 1; i++) {
+			// top cap triangle
+			glm::vec3 t1(0, i + 2, i + 3);
+
+			// middle triangle 1		
+			glm::vec3 t2(i + 2, i + 3, i + 3 + num_circle_samples);
+
+			// middle triangle 2
+			glm::vec3 t3(i + 2, i + 2 + num_circle_samples, i + 3 + num_circle_samples);
+
+			// bottom cap triangle
+			glm::vec3 t4(1, i + 2 + num_circle_samples, i + 3 + num_circle_samples);
+
+			for (int k = 0; k < 3; k++) {
+				face[i * face_att * 4 + k] = (GLuint)t1[k];
+				face[i * face_att * 4 + k + face_att] = (GLuint)t2[k];
+				face[i * face_att * 4 + k + face_att * 2] = (GLuint)t3[k];
+				face[i * face_att * 4 + k + face_att * 3] = (GLuint)t4[k];
+			}
+		}
+
+		// add the remaining sides - missed by the loop
+		// top cap triangle between start of circle and end
+		glm::vec3 t1(0, 2, num_circle_samples + 1);
+
+		// middle triangle 1		
+		glm::vec3 t2(2, num_circle_samples + 1, num_circle_samples + 2);
+
+		// middle triangle 2
+		glm::vec3 t3(num_circle_samples + 1, num_circle_samples + 2, num_circle_samples * 2 + 1);
+
+		// bottom cap triangle between start of circle and end
+		glm::vec3 t4(1, num_circle_samples + 2, num_circle_samples * 2 + 1);
+
+		for (int k = 0; k < 3; k++) {
+			face[(num_circle_samples - 1) * face_att * 4 + k] = (GLuint)t1[k];
+			face[(num_circle_samples - 1) * face_att * 4 + k + face_att] = (GLuint)t2[k];
+			face[(num_circle_samples - 1) * face_att * 4 + k + face_att * 2] = (GLuint)t3[k];
+			face[(num_circle_samples - 1) * face_att * 4 + k + face_att * 3] = (GLuint)t4[k];
+		}
+
+		// Create OpenGL buffers and copy data
+		// Create buffer for vertices
+		GLuint vbo, ebo;
+		glGenBuffers(1, &vbo);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, vertex_num * vertex_att * sizeof(GLfloat), vertex, GL_STATIC_DRAW);
+
+		// Create buffer for faces
+		glGenBuffers(1, &ebo);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, face_num * face_att * sizeof(GLuint), face, GL_STATIC_DRAW);
+
+		// Free data buffers
+		delete[] vertex;
+		delete[] face;
+
+		// Return number of elements in array buffer
+		AddResource(Mesh, object_name, vbo, ebo, face_num * face_att, genHitbox(positions));
+	}
+
+	void ResourceManager::CreateSphereParticles(std::string object_name, int num_particles) {
+
+		// Create a set of points which will be the particles
+		// This is similar to drawing a sphere: we will sample points on a sphere, but will allow them to also deviate a bit from the sphere along the normal (change of radius)
+
+		// Data buffer
+		GLfloat *particle = NULL;
+
+		// Number of attributes per particle: position (3), normal (3), and color (3), texture coordinates (2)
+		const int particle_att = 11;
+
+		// Allocate memory for buffer
+		try {
+			particle = new GLfloat[num_particles * particle_att];
+		}
+		catch (std::exception &e) {
+			throw e;
+		}
+
+		float trad = 0.2; // Defines the starting point of the particles along the normal
+		float maxspray = 0.5; // This is how much we allow the points to deviate from the sphere
+		float u, v, w, theta, phi, spray; // Work variables
+
+		for (int i = 0; i < num_particles; i++) {
+
+			// Get three random numbers
+			u = ((double)rand() / (RAND_MAX));
+			v = ((double)rand() / (RAND_MAX));
+			w = ((double)rand() / (RAND_MAX));
+
+			// Use u to define the angle theta along one direction of the sphere
+			theta = u * 2.0*glm::pi<float>();
+			// Use v to define the angle phi along the other direction of the sphere
+			phi = acos(2.0*v - 1.0);
+			// Use w to define how much we can deviate from the surface of the sphere (change of radius)
+			spray = maxspray*pow((float)w, (float)(1.0 / 3.0)); // Cubic root of w
+
+																// Define the normal and point based on theta, phi and the spray
+			glm::vec3 normal(spray*cos(theta)*sin(phi), spray*sin(theta)*sin(phi), spray*cos(phi));
+			glm::vec3 position(normal.x*trad, normal.y*trad, normal.z*trad);
+			glm::vec3 color(i / (float)num_particles, 0.0, 1.0 - (i / (float)num_particles)); // We can use the color for debug, if needed
+
+																							  // Add vectors to the data buffer
+			for (int k = 0; k < 3; k++) {
+				particle[i*particle_att + k] = position[k];
+				particle[i*particle_att + k + 3] = normal[k];
+				particle[i*particle_att + k + 6] = color[k];
+			}
+		}
+
+		// Create OpenGL buffers and copy data
+		GLuint vbo;
+		glGenBuffers(1, &vbo);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, num_particles * particle_att * sizeof(GLfloat), particle, GL_STATIC_DRAW);
+
+		// Free data buffers
+		delete[] particle;
+
+		// Create resource
+		AddResource(PointSet, object_name, vbo, 0, num_particles);
+	}
 } // namespace game;

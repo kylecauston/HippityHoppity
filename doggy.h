@@ -8,7 +8,7 @@ namespace game {
 		Doggy(const std::string name, SceneNode* targ, const Resource* geometry, const Resource* mat, const Resource *tex = NULL);
 		~Doggy();
 		
-		void Update(float t);
+		void Update(double t);
 		void setTurret(SceneNode* t);
 
 		AttackNode* getAttack();

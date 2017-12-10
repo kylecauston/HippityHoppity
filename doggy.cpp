@@ -33,8 +33,9 @@ namespace game {
 		return shot;
 	}
 
-	void Doggy::Update(float t) {
+	void Doggy::Update(double time) {
 		//Enemy::Update(t);
+		float t = time;
 
 		glm::vec3 toTarget = target->GetPosition() - GetEntityPosition();
 		// 2D to target vector, ignoring height

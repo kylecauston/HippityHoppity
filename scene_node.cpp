@@ -199,6 +199,10 @@ namespace game {
 	}
 
 	glm::mat4 SceneNode::Draw(Camera *camera, glm::mat4 parent_transf, bool sun) {
+		glDisable(GL_BLEND);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+
 		if (name_ == "Laser1") { //laser drawn in front of the helicopter for now
 			parent_transf = glm::mat4(1.0);
 		}
@@ -235,7 +239,7 @@ namespace game {
 		}
 	}
 
-	void SceneNode::Update(float deltaTime) {
+	void SceneNode::Update(double deltaTime) {
 		// Do nothing for this generic type of scene node
 	}
 

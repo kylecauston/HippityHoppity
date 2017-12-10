@@ -29,7 +29,7 @@ namespace game {
 		void setProjectileTexture(Resource* t);
 			
 		// Update: move, attack etc
-		void Update(float deltaTime);
+		void Update(double deltaTime);
 
 		void collide(Collidable* other);
 

@@ -55,7 +55,7 @@ namespace game {
 		virtual glm::mat4 Draw(Camera *camera, glm::mat4 parent_transf, bool sun);
 
 		// Update the node
-		virtual void Update(float deltaTime);
+		virtual void Update(double deltaTime);
 
 		virtual void onCollide(Collidable* other);
 
@@ -73,13 +73,12 @@ namespace game {
 		std::vector<SceneNode *> children_;
 
 		SceneNode *parent_;
-
+		double time_to_live = -5000.0;
 	protected:
 		static glm::vec3 default_forward;
-
+		
 		void destroy();
 
-	private:
 		std::string name_; // Name of the scene node
 		GLuint array_buffer_; // References to geometry: vertex and array buffers
 		GLuint element_array_buffer_;
@@ -99,7 +98,7 @@ namespace game {
 		// Set matrices that transform the node in a shader program
 		// Return transformation of current node combined with
 		// parent transformation, without including scaling
-		glm::mat4 SetupShader(GLuint program, glm::mat4 parent_transf, bool sun);
+		virtual glm::mat4 SetupShader(GLuint program, glm::mat4 parent_transf, bool sun);
 
 	}; // class SceneNode
 

@@ -1,6 +1,7 @@
 //COMP3501 Final Project - Hippity Hoppity
 #include <iostream>
 #include <exception>
+#include <time.h>
 #include "game.h"
 
 // Macro for printing exceptions
@@ -10,7 +11,7 @@
 // Main function that builds and runs the game
 int main(void) {
 	game::Game app; // Game application
-
+	srand(time(NULL));
 	try {
 		// Initialize game
 		app.Init();

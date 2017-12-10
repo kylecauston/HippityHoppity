@@ -1,5 +1,5 @@
-#ifndef LASER_H_
-#define LASER_H_
+#ifndef BOMB_H_
+#define BOMB_H_
 #include <string>
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -11,24 +11,28 @@
 #include "scene_node.h"
 
 namespace game {
-	class Laser : public SceneNode {
+	class Bomb : public SceneNode {
 	public:
-		Laser(const std::string name, const Resource *geometry, const Resource *material, const Resource *tex = NULL);
+		Bomb(const std::string name, const Resource *geometry, const Resource *material, double ttl = 4.0,
+			glm::vec3 rgb = glm::vec3(0.8, 0.8, 0.8), const Resource *tex = NULL);
 
 		// Destructor
-		~Laser();
+		~Bomb();
 
 		glm::vec3 GetDir(void) const;
 		void SetDir(glm::vec3 dir);
 
 		// Update geometry configuration
 		void Update(double delta_time);
+		glm::mat4 Draw(Camera * camera, glm::mat4 parent_transf, bool sun);
+		glm::mat4 SetupShader(GLuint program, glm::mat4 parent_transf, bool sun);
+		glm::vec3 rgb_col;
 
 	private:
 		glm::vec3 direction;
-		float speed = 5.0;
+		float speed = 3.0;
 	}; // class
 
 } // namespace game
 
-#endif // LASER_H_
+#endif // BOMB _H_

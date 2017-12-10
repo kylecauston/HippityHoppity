@@ -10,8 +10,8 @@ namespace game {
 		accel = a;
 	}
 
-	void Projectile::Update(float t) {
-		vel += accel*t;
-		Translate(vel*100.0f*t);
+	void Projectile::Update(double t) {
+		vel += accel*(float)t;
+		Translate(vel*100.0f*(float)t);
 	}
 }

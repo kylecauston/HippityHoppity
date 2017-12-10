@@ -9,7 +9,7 @@ namespace game {
 	public:
 		Projectile(glm::vec3 p, glm::vec3 v, glm::vec3 a, const Resource *geometry, const Resource *material, const Resource *tex = NULL);
 
-		void Update(float d);
+		void Update(double d);
 
 	private:
 		static int ID;

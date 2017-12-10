@@ -8,7 +8,8 @@ namespace game {
 
 	Enemy::~Enemy() {}
 
-	void Enemy::Update(float deltaTime) {
+	void Enemy::Update(double t) {
+		float deltaTime = t;
 		if (target == NULL)
 			return;
 

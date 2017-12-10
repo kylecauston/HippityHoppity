@@ -87,7 +87,7 @@ namespace game {
 		}
 	}
 
-	void SceneGraph::Update(float deltaTime) {
+	void SceneGraph::Update(double deltaTime) {
 		// Traverse hierarchy to update all nodes
 		std::stack<SceneNode *> stck;
 		stck.push(root_);
@@ -189,7 +189,7 @@ namespace game {
 				n2 != root_->children_end(); n2++) {
 
 				if (CollisionManager::checkHierarchicalCollision(*n1, *n2)) {
-					std::cout << "Collision between " << (*n1)->GetName() << " and " << (*n2)->GetName() << std::endl;
+					//std::cout << "Collision between " << (*n1)->GetName() << " and " << (*n2)->GetName() << std::endl;
 				}
 			}
 		}
@@ -275,9 +275,16 @@ namespace game {
 		glViewport(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);
 
 		// Clear background
-		glClearColor(background_color_[0],
-			background_color_[1],
-			background_color_[2], 0.0);
+		if (sun) {
+			glClearColor(background_color_[0],
+				background_color_[1],
+				background_color_[2], 0.0);
+		}
+		else {
+			glClearColor(background_color_[0] * 0.3,
+				background_color_[1] * 0.4,
+				background_color_[2] * 0.5, 0.0);
+		}
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Draw all scene nodes
@@ -310,7 +317,6 @@ namespace game {
 				transf.push(current_transf);
 			}
 		}
-
 
 		// Reset frame buffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);

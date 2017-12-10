@@ -11,6 +11,7 @@
 // Default extensions for different shader source files
 #define VERTEX_PROGRAM_EXTENSION "_vp.glsl"
 #define FRAGMENT_PROGRAM_EXTENSION "_fp.glsl"
+#define GEOMETRY_PROGRAM_EXTENSION "_gp.glsl"
 
 namespace game {
 	// Class that manages all resources
@@ -21,7 +22,7 @@ namespace game {
 		~ResourceManager();
 		// Add a resource that was already loaded and allocated to memory
 		void AddResource(ResourceType type, const std::string name, GLuint resource, GLsizei size);
-		void AddResource(ResourceType type, const std::string name, GLuint array_buffer, GLuint element_array_buffer, GLsizei size, Hitbox _hb);
+		void AddResource(ResourceType type, const std::string name, GLuint array_buffer, GLuint element_array_buffer, GLsizei size, Hitbox _hb = Hitbox());
 		// Load a resource from a file, according to the specified type
 		void LoadResource(ResourceType type, const std::string name, const char *filename);
 		// Get the resource with the specified name
@@ -33,6 +34,7 @@ namespace game {
 		void CreateCube(std::string object_name);
 		void CreateGround(std::string object_name); //terrain mesh
 		void CreateCylinder(std::string object_name, float cylinder_height = 1, float circle_radius=1, int num_circle_samples=90);
+		void CreateSphereParticles(std::string object_name, int num_particles = 20000);
 
 		Hitbox genHitbox(std::vector<glm::vec3> points);
 
