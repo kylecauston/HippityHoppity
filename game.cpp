@@ -259,7 +259,7 @@ namespace game {
 		player->SetPosition(200, 100, 200);
 		ground->AddChild(player);
 
-		SceneNode *target = new SceneNode("Target", cube, mat, NULL, true);
+		SceneNode *target = new SceneNode("Target", cube, NULL, NULL, true);
 		target->SetPosition(190, 30.5, 200);
 		target->SetScale(1, 1, 1);
 		ground->AddChild(target);
@@ -282,7 +282,7 @@ namespace game {
 			}
 		}
 
-		SceneNode* ground_bound = new SceneNode("Ground_Box", cube, mat);
+		SceneNode* ground_bound = new SceneNode("Ground_Box", cube, NULL);
 		ground_bound->setCollidable(true);
 		ground_bound->SetScale(1000, 300, 1000);
 		ground_bound->SetPosition(500, -153, 500);
@@ -290,7 +290,7 @@ namespace game {
 
 		SceneNode* tree;
 
-		for (int i = 0; i < 15; i++)
+		for (int i = 0; i < 10; i++)
 		{
 			ground->AddChild(SpawnTree());
 		}
@@ -311,6 +311,7 @@ namespace game {
 	}
 
 	void Game::MainLoop(void) {
+		temp = true;
 		// Loop while the user did not close the window
 		while (!glfwWindowShouldClose(window_)) {
 			if (game_state == TITLE) { //on title screen we do nothing but display the UI
@@ -403,11 +404,6 @@ namespace game {
 				enemy->setRotateSpeed(std::max(0.0f, std::min(enemy->getRotateSpeed() - 0.1f, 1.0f)));
 				std::cout << enemy->getRotateSpeed() << std::endl;
 			}
-			if (key == GLFW_KEY_Y && action == GLFW_PRESS) { //tell me target position
-				glm::vec3 pos = game->scene_.GetNode("Target")->GetPosition();
-
-				std::cout << "Targ @ [" << pos.x << ", " << pos.y << ", " << pos.z << "]" << std::endl;
-			}
 			if (key == GLFW_KEY_KP_1 && action == GLFW_PRESS) {
 				game->scene_.GetNode("Target")->Translate(0, 0.1, 0);
 				vel = glm::vec3(0, 1, 0);
@@ -436,7 +432,6 @@ namespace game {
 				//game->animating_ = !game->animating_;
 			}
 			if (key == GLFW_KEY_T && action == GLFW_PRESS) {
-				temp = true;
 				glm::vec3 forward = game->camera_.GetForward();
 				glm::vec3 origin = game->camera_.GetPosition();
 
@@ -446,9 +441,25 @@ namespace game {
 					throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
 				}
 
-				Projectile* p = new Projectile("Player", game->camera_.GetPosition() - game->scene_.GetNode("Ground")->GetAbsolutePosition(), forward*1.0f, glm::vec3(0, -0.5, 0), INFINITY, cube, mat);
+				Projectile* p = new Projectile("Player", game->camera_.GetPosition() - game->scene_.GetNode("Ground")->GetAbsolutePosition() + game->camera_.GetUp()*-1.0f, forward*5.0f, glm::vec3(0, -0.05, 0), 5, cube, mat);
 				p->SetScale(0.5, 0.5, 2);
+				game->scene_.AddProjectile(p);
 			}
+
+			if (key == GLFW_KEY_Y && action == GLFW_PRESS) { //tell me target position
+				glm::vec3 forward = game->camera_.GetForward();
+				glm::vec3 origin = game->camera_.GetPosition();
+
+				game->FireTracer();
+				std::vector<std::pair<SceneNode*, glm::vec2*>> hit = game->scene_.CheckRayCollisions(Ray(origin, forward));
+
+				for (int i = 0; i < hit.size(); i++) {
+					if (hit[i].first->GetName() != "Target" && hit[i].first->GetName() != "Ground_Box") {
+						hit[i].first->takeDamage(INFINITY);
+					}
+				}
+			}
+
 			if (key == GLFW_KEY_V && action == GLFW_PRESS) { //change polygon display modes
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			}
@@ -545,9 +556,6 @@ namespace game {
 
 			if (key == GLFW_KEY_R && action == GLFW_PRESS) { //fires a bomb with particle effects
 				game->FireBomb();
-			}
-			if (key == GLFW_KEY_C && action == GLFW_PRESS) { //fires a tracer with particle effects
-				game->FireTracer();
 			}
 			if (key == GLFW_KEY_F && action == GLFW_PRESS) { //fire a laser
 				game->FireLaser();

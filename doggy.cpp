@@ -7,6 +7,7 @@ namespace game {
 	{
 		turret = NULL;
 		speed = 6.0;
+		firerate = 0.75;
 	}
 
 	Doggy::~Doggy() {}
