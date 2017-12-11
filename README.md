@@ -12,7 +12,9 @@ TAB - switches between first and third person cams
   
 C - fires a tracer with particle effects  
 R - fires a bomb with particle effects  
-F - fire a laser that collides with roughly center of screen  
+F - fire a laser that can destroy the sun  
+T - fire a projectile weapon  
+Y - fire a hitscan weapon
 G/H - lower and increase HP  
   
 ESC - close the window  
@@ -24,4 +26,3 @@ Y - reset position of target
 1/3 - y axis movement of target  
 2/8 - z axis movement of target  
 5 - stop movement of target  
-T - ??temp??  

@@ -311,10 +311,6 @@ namespace game {
 	}
 
 	void Game::MainLoop(void) {
-		//glEnable(GL_CULL_FACE);
-		//glCullFace(GL_BACK);
-		//glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
-
 		// Loop while the user did not close the window
 		while (!glfwWindowShouldClose(window_)) {
 			if (game_state == TITLE) { //on title screen we do nothing but display the UI
@@ -332,14 +328,6 @@ namespace game {
 					if (deltaTime > 0.01) {
 						scene_.Update(deltaTime);
 						camera_.Update(); //update our camera to keep momentum going with thrusters
-
-					/*	SceneNode* player = scene_.GetNode("Player");
-
-
-						glm::vec3 forward = SceneNode::default_forward * player->GetOrientation();
-						player->Translate(player_vel * forward);
-						camera_.SetPosition(scene_.GetNode("Player")->GetAbsolutePosition() + camera_.GetForward());
-						*/
 
 						heli_.Update(deltaTime);
 						last_time = current_time;
@@ -460,17 +448,6 @@ namespace game {
 
 				Projectile* p = new Projectile("Player", game->camera_.GetPosition() - game->scene_.GetNode("Ground")->GetAbsolutePosition(), forward*1.0f, glm::vec3(0, -0.5, 0), INFINITY, cube, mat);
 				p->SetScale(0.5, 0.5, 2);
-				//game->scene_.AddProjectile(p);
-
-				//game->scene_.GetNode("Ground")->AddChild(game->SpawnDog());
-
-				//std::vector<std::pair<SceneNode*, glm::vec2*>> hit = game->scene_.CheckRayCollisions(Ray(origin, forward));
-
-				/*for (int i = 0; i < hit.size(); i++) {
-				if (hit[i].first->GetName() != "Target") {
-				hit[i].first->takeDamage(9999);
-				}
-				}*/
 			}
 			if (key == GLFW_KEY_V && action == GLFW_PRESS) { //change polygon display modes
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -493,51 +470,39 @@ namespace game {
 
 			//MOVEMENT HERE
 			if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) { // spacebar hovers upwards
-				//game->player_vel.y = trans_factor;
 				game->camera_.vel_y = trans_factor;
 			}
 			if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
-				//game->player_vel.y = 0.0;
 				game->camera_.vel_y = 0.0;
 			}
 			if (key == GLFW_KEY_X && action == GLFW_PRESS) { // x hovers downwards
-				//game->player_vel.y = -trans_factor;
 				game->camera_.vel_y = -trans_factor;
 			}
 			if (key == GLFW_KEY_X && action == GLFW_RELEASE) {
-				//game->player_vel.y= 0.0;
 				game->camera_.vel_y = 0;
 			}
 			if (key == GLFW_KEY_S && action == GLFW_PRESS) { // s moves backwards
-				//game->player_vel.z = -trans_factor;
 				game->camera_.vel_z = -trans_factor;
 			}
 			if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
-				//game->player_vel.z = 0.0;
 				game->camera_.vel_z = 0;
 			}
 			if (key == GLFW_KEY_W && action == GLFW_PRESS) { // w moves forwards
-				//game->player_vel.z = trans_factor;
 				game->camera_.vel_z = trans_factor;
 			}
 			if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
-				//game->player_vel.z = 0.0;
 				game->camera_.vel_z = 0;
 			}
 			if (key == GLFW_KEY_Q && action == GLFW_PRESS) { // Q strafes left
-				//game->player_vel.x = -trans_factor;
 				game->camera_.vel_x = -trans_factor;
 			}
 			if (key == GLFW_KEY_Q && action == GLFW_RELEASE) {
-				//game->player_vel.x = 0.0;
 				game->camera_.vel_x = 0;
 			}
 			if (key == GLFW_KEY_E && action == GLFW_PRESS) { // E strafes right
-				//game->player_vel.x = trans_factor;
 				game->camera_.vel_x = trans_factor;
 			}
 			if (key == GLFW_KEY_E && action == GLFW_RELEASE) {
-				//game->player_vel.x = 0.0;
 				game->camera_.vel_x = 0;
 			}
 
@@ -681,7 +646,7 @@ namespace game {
 		float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
 		game::Bomb *particles = (Bomb*)Cube(BombType, "TracerInstance" + scene_.exploCount++, "LineParticles", "LineMaterial",
-			glm::vec3(r, g, b), 6.0, "Firework");
+			glm::vec3(r, g, b), 2.5, "Firework");
 		particles->SetScale(glm::vec3(0.02, 0.02, 1000.0)); //1000 is ~far away~
 		particles->SetPosition(camera_.GetPosition() + (camera_.GetForward() * 200.0f) + (camera_.GetUp() * -0.3f)); //200.0f starts the line on the playerish
 		particles->SetOrientation(camera_.GetOrientation());
@@ -834,7 +799,6 @@ namespace game {
 
 		return n;
 	}
-	
 	
 	SceneNode* Game::CreateTree() {
 		Resource *cyl = resman_.GetResource("CylinderMesh");
