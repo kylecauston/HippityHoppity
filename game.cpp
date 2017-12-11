@@ -153,7 +153,7 @@ namespace game {
 
 	void Game::SetupScene(void) {
 		scene_.world_bl_corner = glm::vec3(280, 0, 280);
-		scene_.world_tr_corner = glm::vec3(700, 400, 700);
+		scene_.world_tr_corner = glm::vec3(700, 200, 700);
 
 		scene_.SetResourceManager(&resman_);
 
@@ -200,7 +200,7 @@ namespace game {
 		for (int i = 0; i < 2; i++)
 		{
 			if (rand() > -1 ){// RAND_MAX / 2) {
-				scene_.root_->AddChild(SpawnMole());
+				scene_.root_->AddChild(SpawnCat());
 			}
 			else {
 				scene_.root_->AddChild(SpawnDog());
@@ -738,6 +738,26 @@ namespace game {
 		return trunk;
 	}
 	
+	SceneNode* Game::CreateCat() {
+		Resource *sphere = resman_.GetResource("SimpleSphereMesh");
+		Resource *cube = resman_.GetResource("CubePointSet");
+		Resource *mat = resman_.GetResource("ObjectMaterial");
+		if (!mat) {
+			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
+		}
+
+		std::string name = "Enemy" + std::to_string(EnemyID++);
+
+		Cat* c = new Cat(name, scene_.GetNode("Target"), cube, mat, NULL);
+		c->setCollidable(true);
+		c->SetScale(1.0, 2.0, 1.0);
+
+		c->setProjectileGeometry(sphere);
+		c->setProjectileMaterial(mat);
+
+		return c;
+	}
+
 	SceneNode* Game::SpawnMole() {
 		// create a mole
 		SceneNode* m = CreateMole();
@@ -770,6 +790,13 @@ namespace game {
 		t->SetPosition(v.x, t->GetScale().y/2, v.z);
 
 		return t;
+	}
+
+	SceneNode* Game::SpawnCat() {
+		SceneNode* cat = CreateCat();
+		cat->SetPosition(scene_.GetRandomBoundedPosition());
+
+		return cat;
 	}
 
 } // namespace game
