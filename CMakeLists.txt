@@ -5,11 +5,11 @@ project(HippityHoppity)
 
 # Specify project files: header files and source files
 set(HDRS
-    aabb.h attack_node.h bomb.h camera.h collidable.h collision_manager.h defs.h doggy.h enemy.h game.h helicopter.h hitbox.h hitscan.h laser.h mole.h projectile.h ray.h resource.h resource_manager.h scene_graph.h scene_node.h
+    aabb.h attack_node.h bomb.h camera.h cat.h collidable.h collision_manager.h defs.h doggy.h enemy.h game.h helicopter.h hitbox.h hitscan.h laser.h mole.h projectile.h ray.h resource.h resource_manager.h scene_graph.h scene_node.h
 )
  
 set(SRCS
-    aabb.cpp attack_node.cpp bomb.cpp camera.cpp collidable.cpp collision_manager.cpp doggy.cpp enemy.cpp game.cpp helicopter.cpp hitbox.cpp hitscan.cpp laser.cpp main.cpp mole.cpp projectile.cpp ray.cpp resource.cpp resource_manager.cpp scene_graph.cpp scene_node.cpp dark_fp.glsl dark_vp.glsl line_fp.glsl line_gp.glsl line_vp.glsl material_fp.glsl material_vp.glsl particle_fp.glsl particle_gp.glsl particle_vp.glsl screen_hp_fp.glsl screen_hp_vp.glsl shiny_texture_fp.glsl shiny_texture_vp.glsl
+    aabb.cpp attack_node.cpp bomb.cpp camera.cpp cat.cpp collidable.cpp collision_manager.cpp doggy.cpp enemy.cpp game.cpp helicopter.cpp hitbox.cpp hitscan.cpp laser.cpp main.cpp mole.cpp projectile.cpp ray.cpp resource.cpp resource_manager.cpp scene_graph.cpp scene_node.cpp dark_fp.glsl dark_vp.glsl line_fp.glsl line_gp.glsl line_vp.glsl material_fp.glsl material_vp.glsl particle_fp.glsl particle_gp.glsl particle_vp.glsl screen_hp_fp.glsl screen_hp_vp.glsl shiny_texture_fp.glsl shiny_texture_vp.glsl
 )
 
 # Add path name to configuration file
