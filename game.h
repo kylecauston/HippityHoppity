@@ -53,7 +53,6 @@ namespace game {
 		float hp; //player's health
 		bool sun; //tells the game if the sun has exploded
 		bool tpCam; //third person camera switch
-		int exploCount = 0; //helps name our bombs for proper deletion
 
 	private:
 		// GLFW window

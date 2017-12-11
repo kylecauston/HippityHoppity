@@ -75,6 +75,7 @@ namespace game {
 		}
 		else {
 			shot_CD = 1 / firerate;
+			shot_CD *= 0.75f + ((float)rand() / (float)RAND_MAX)/2.0f;
 		}
 	}
 } // namespace game

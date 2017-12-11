@@ -153,7 +153,9 @@ namespace game {
 
 	void Game::SetupScene(void) {
 		scene_.world_bl_corner = glm::vec3(280, 0, 280);
-		scene_.world_tr_corner = glm::vec3(700, 0, 700);
+		scene_.world_tr_corner = glm::vec3(700, 400, 700);
+
+		scene_.SetResourceManager(&resman_);
 
 		// Set background color for the scene
 		scene_.SetBackgroundColor(viewport_background_color_g);
@@ -193,10 +195,11 @@ namespace game {
 		target->SetPosition(190, 30.5, 200);
 		target->SetScale(1, 1, 1);
 		ground->AddChild(target);
+		//target->
 
-		for (int i = 0; i < 10; i++)
+		for (int i = 0; i < 2; i++)
 		{
-			if (rand() > RAND_MAX / 2) {
+			if (rand() > -1 ){// RAND_MAX / 2) {
 				scene_.root_->AddChild(SpawnMole());
 			}
 			else {
@@ -210,7 +213,7 @@ namespace game {
 		box->SetPosition(0, 100, 480);
 
 
-		ground->AddChild(SpawnDog());
+		//ground->AddChild(SpawnDog());
 
 		SceneNode* tree;
 
@@ -386,7 +389,7 @@ namespace game {
 				p->SetScale(0.5, 0.5, 2);
 				//game->scene_.AddProjectile(p);
 
-				game->scene_.GetNode("Ground")->AddChild(game->SpawnMole());
+				game->scene_.GetNode("Ground")->AddChild(game->SpawnDog());
 
 				//std::vector<std::pair<SceneNode*, glm::vec2*>> hit = game->scene_.CheckRayCollisions(Ray(origin, forward));
 
@@ -592,7 +595,7 @@ namespace game {
 		float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 		float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
-		game::Bomb *particles = (Bomb*)Cube(BombType, "ParticleInstance" + exploCount++, "SphereParticles", "ParticleMaterial",
+		game::Bomb *particles = (Bomb*)Cube(BombType, "ParticleInstance" + std::to_string(scene_.exploCount++), "SphereParticles", "ParticleMaterial",
 			glm::vec3(r, g, b), 4.0, "Firework");
 		particles->SetPosition(camera_.GetPosition() + (camera_.GetForward() * 12.0f) + (camera_.GetUp() * -0.5f));
 		particles->SetScale(glm::vec3(0.4, 0.4, 0.4)); //increasing the scale makes the explosion more dense
@@ -604,7 +607,7 @@ namespace game {
 		float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 		float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
-		game::Bomb *particles = (Bomb*)Cube(BombType, "TracerInstance" + exploCount++, "LineParticles", "LineMaterial",
+		game::Bomb *particles = (Bomb*)Cube(BombType, "TracerInstance" + scene_.exploCount++, "LineParticles", "LineMaterial",
 			glm::vec3(r, g, b), 6.0, "Firework");
 		particles->SetScale(glm::vec3(0.02, 0.02, 1000.0)); //1000 is ~far away~
 		particles->SetPosition(camera_.GetPosition() + (camera_.GetForward() * 200.0f) + (camera_.GetUp() * -0.3f)); //200.0f starts the line on the playerish
