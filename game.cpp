@@ -470,51 +470,39 @@ namespace game {
 
 			//MOVEMENT HERE
 			if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) { // spacebar hovers upwards
-				//game->player_vel.y = trans_factor;
 				game->camera_.vel_y = trans_factor;
 			}
 			if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
-				//game->player_vel.y = 0.0;
 				game->camera_.vel_y = 0.0;
 			}
 			if (key == GLFW_KEY_X && action == GLFW_PRESS) { // x hovers downwards
-				//game->player_vel.y = -trans_factor;
 				game->camera_.vel_y = -trans_factor;
 			}
 			if (key == GLFW_KEY_X && action == GLFW_RELEASE) {
-				//game->player_vel.y= 0.0;
 				game->camera_.vel_y = 0;
 			}
 			if (key == GLFW_KEY_S && action == GLFW_PRESS) { // s moves backwards
-				//game->player_vel.z = -trans_factor;
 				game->camera_.vel_z = -trans_factor;
 			}
 			if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
-				//game->player_vel.z = 0.0;
 				game->camera_.vel_z = 0;
 			}
 			if (key == GLFW_KEY_W && action == GLFW_PRESS) { // w moves forwards
-				//game->player_vel.z = trans_factor;
 				game->camera_.vel_z = trans_factor;
 			}
 			if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
-				//game->player_vel.z = 0.0;
 				game->camera_.vel_z = 0;
 			}
 			if (key == GLFW_KEY_Q && action == GLFW_PRESS) { // Q strafes left
-				//game->player_vel.x = -trans_factor;
 				game->camera_.vel_x = -trans_factor;
 			}
 			if (key == GLFW_KEY_Q && action == GLFW_RELEASE) {
-				//game->player_vel.x = 0.0;
 				game->camera_.vel_x = 0;
 			}
 			if (key == GLFW_KEY_E && action == GLFW_PRESS) { // E strafes right
-				//game->player_vel.x = trans_factor;
 				game->camera_.vel_x = trans_factor;
 			}
 			if (key == GLFW_KEY_E && action == GLFW_RELEASE) {
-				//game->player_vel.x = 0.0;
 				game->camera_.vel_x = 0;
 			}
 
@@ -693,7 +681,6 @@ namespace game {
 		Resource *mat = resman_.GetResource("ShinyTextureMaterial");
 		Resource *gunMesh = resman_.GetResource("GunMesh");
 		Resource *gunTex = resman_.GetResource("GunTex");
-		Resource *ob = resman_.GetResource("ObjectMaterial");
 		if (!mat) {
 			throw(GameException(std::string("Could not find resource \"") + "TextureMat" + std::string("\"")));
 		}
@@ -706,18 +693,18 @@ namespace game {
 		//n->setMovementSpeed(0);
 		//n->setRotateSpeed(0);
 
-		Mole* body = new Mole(name + "_body", scene_.GetNode("Target"), moleMesh, ob, moleTex);
+		Mole* body = new Mole(name + "_body", scene_.GetNode("Target"), moleMesh, mat, moleTex);
 		body->setCollidable(true);
 		body->SetPosition(0, 0.5, 0);
 	
-		SceneNode* gun = new SceneNode(name + "_gun", gunMesh, ob, gunTex);
+		SceneNode* gun = new SceneNode(name + "_gun", gunMesh, mat, gunTex);
 		gun->SetPosition(1.0, 0.5, 1.5);
 		gun->setCollidable(true);
 		gun->SetScale(0.5, 0.5, 5.0);
 
 		body->setProjectileGeometry(fireworkMesh);
 		body->setProjectileTexture(fireworkTex);
-		body->setProjectileMaterial(ob);
+		//body->setProjectileMaterial(ob);
 
 		n->AddChild(body);
 		body->AddChild(gun);
