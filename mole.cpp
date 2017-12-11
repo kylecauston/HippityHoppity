@@ -1,13 +1,14 @@
 #include "mole.h"
 
 namespace game {
-	float Mole::damage = 0.5;
+	float Mole::damage = 1.5;
 
 	Mole::Mole(const std::string name, SceneNode* targ, const Resource* geometry, const Resource* mat, const Resource *tex)
 		: Enemy(name, targ, geometry, mat, tex)
 	{
 		speed = 0;
 		rotateSpeed = 0.1;
+		firerate = 0.5;
 	}
 
 	Mole::~Mole() {}

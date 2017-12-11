@@ -195,11 +195,18 @@ namespace game {
 		target->SetPosition(190, 30.5, 200);
 		target->SetScale(1, 1, 1);
 		ground->AddChild(target);
-		//target->
 
-		for (int i = 0; i < 2; i++)
+		scene_.root_->AddChild(SpawnCat());
+		scene_.root_->AddChild(SpawnMole());
+		scene_.root_->AddChild(SpawnDog());
+
+		for (int i = 0; i < 3; i++)
 		{
-			if (rand() > -1 ){// RAND_MAX / 2) {
+			float v = (double)rand() / (double)RAND_MAX;
+			if (v > 0.6) { 
+				scene_.root_->AddChild(SpawnMole());
+			}
+			else if (v > 0.3) {
 				scene_.root_->AddChild(SpawnCat());
 			}
 			else {
@@ -207,17 +214,15 @@ namespace game {
 			}
 		}
 
-		SceneNode* box = new SceneNode("testing box", sphere, mat);
-		box->setCollidable(true);
-		box->SetScale(10, 10, 10);
-		box->SetPosition(0, 100, 480);
-
-
-		//ground->AddChild(SpawnDog());
+		SceneNode* ground_bound = new SceneNode("Ground_Box", cube, mat);
+		ground_bound->setCollidable(true);
+		ground_bound->SetScale(1000, 300, 1000);
+		ground_bound->SetPosition(500, -153, 500);
+		ground->AddChild(ground_bound);
 
 		SceneNode* tree;
 
-		for (int i = 0; i < 20; i++)
+		for (int i = 0; i < 15; i++)
 		{
 			ground->AddChild(SpawnTree());
 		}
@@ -254,7 +259,7 @@ namespace game {
 					static double last_time = 0;
 					double current_time = glfwGetTime();
 					double deltaTime = current_time - last_time;
-					time_since_spawn += deltaTime;
+					//time_since_spawn += deltaTime;
 
 					if (deltaTime > 0.01) {
 						scene_.Update(deltaTime);
@@ -389,7 +394,7 @@ namespace game {
 				p->SetScale(0.5, 0.5, 2);
 				//game->scene_.AddProjectile(p);
 
-				game->scene_.GetNode("Ground")->AddChild(game->SpawnDog());
+				//game->scene_.GetNode("Ground")->AddChild(game->SpawnDog());
 
 				//std::vector<std::pair<SceneNode*, glm::vec2*>> hit = game->scene_.CheckRayCollisions(Ray(origin, forward));
 

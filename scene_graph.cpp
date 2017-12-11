@@ -177,7 +177,7 @@ namespace game {
 				if (e->GetName().find(n.first->GetName()) != std::string::npos) continue;
 
 				// if this node is closer than the previous closest
-				if (n.second->x < min) {
+				if (n.second->x < min && n.second->x > 0) {
 					min = n.second->x;
 					closest = n.first;
 				}
@@ -198,9 +198,9 @@ namespace game {
 			float g = 0.1; //static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 			float b = 0.1;// static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
-			SceneNode* line = new Bomb("ParticleInstance" + std::to_string(exploCount++), geom, mat, 0.2, glm::vec3(r,g,b), tex); //help
+			SceneNode* line = new Bomb("ParticleInstance" + std::to_string(exploCount++), geom, mat, 0.5, glm::vec3(r,g,b), tex); //help
 			root_->AddChild(line);
-			line->SetScale(glm::vec3(0.02, 0.02, 5000.0)); //1000 is ~far away~
+			line->SetScale(glm::vec3(0.02, 0.02, 4000.0)); //1000 is ~far away~
 			line->SetPosition(e->GetAbsolutePosition());
 			line->SetOrientation(e->GetOrientation());
 		}
