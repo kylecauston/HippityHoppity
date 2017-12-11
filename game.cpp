@@ -716,7 +716,6 @@ namespace game {
 		Resource *mat = resman_.GetResource("ShinyTextureMaterial");
 		Resource *gunMesh = resman_.GetResource("GunMesh");
 		Resource *gunTex = resman_.GetResource("GunTex");
-		Resource *ob = resman_.GetResource("ObjectMaterial");
 		if (!mat) {
 			throw(GameException(std::string("Could not find resource \"") + "TextureMat" + std::string("\"")));
 		}
@@ -729,11 +728,11 @@ namespace game {
 		//n->setMovementSpeed(0);
 		//n->setRotateSpeed(0);
 
-		Mole* body = new Mole(name + "_body", scene_.GetNode("Target"), moleMesh, ob, moleTex);
+		Mole* body = new Mole(name + "_body", scene_.GetNode("Target"), moleMesh, mat, moleTex);
 		body->setCollidable(true);
 		body->SetPosition(0, 0.5, 0);
 	
-		SceneNode* gun = new SceneNode(name + "_gun", gunMesh, ob, gunTex);
+		SceneNode* gun = new SceneNode(name + "_gun", gunMesh, mat, gunTex);
 		gun->SetPosition(1.0, 0.5, 1.5);
 		gun->setCollidable(true);
 		gun->SetScale(0.5, 0.5, 5.0);
@@ -803,7 +802,6 @@ namespace game {
 		Resource *propTex = resman_.GetResource("PropellerTex");
 
 		Resource *mat = resman_.GetResource("ShinyTextureMaterial");
-		Resource *ob = resman_.GetResource("ObjectMaterial");
 		
 		if (!mat) {
 			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
@@ -813,7 +811,7 @@ namespace game {
 		numEnemies++;
 		SceneNode* n = new SceneNode(name, NULL, NULL, NULL);
 
-		SceneNode* prop = new SceneNode(name + "_prop", propMesh, ob, propTex);
+		SceneNode* prop = new SceneNode(name + "_prop", propMesh, mat, propTex);
 		turret->setCollidable(true);
 		turret->SetScale(0.5, 0.5, 4.0);
 		turret->SetPosition(0, 0.75, 0);

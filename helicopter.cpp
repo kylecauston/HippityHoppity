@@ -366,8 +366,8 @@ namespace game {
 	
 	SceneNode* Helicopter::initHeli(ResourceManager * resman, SceneGraph *scene) {
 
-		body = CreateInstance("BunnyBody", "BunnyBodMesh", "ObjectMaterial", "BunnyBodTex", resman, scene);
-		ears = CreateInstance("BunnyEars", "BunnyEarMesh", "ObjectMaterial", "BunnyEarTex", resman, scene);
+		body = CreateInstance("BunnyBody", "BunnyBodMesh", "ShinyTextureMaterial", "BunnyBodTex", resman, scene);
+		ears = CreateInstance("BunnyEars", "BunnyEarMesh", "ShinyTextureMaterial", "BunnyEarTex", resman, scene);
 		ears->Translate(glm::vec3(0, 15, 0));
 		ears->Rotate(glm::angleAxis(glm::radians(90.0f), glm::vec3(0.f, 1.f, 0.f)));
 
