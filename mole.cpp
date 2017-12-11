@@ -6,11 +6,13 @@ namespace game {
 	Mole::Mole(const std::string name, SceneNode* targ, const Resource* geometry, const Resource* mat, const Resource *tex)
 		: Enemy(name, targ, geometry, mat, tex)
 	{
+		speed = 0;
+		rotateSpeed = 0.1;
 	}
 
 	Mole::~Mole() {}
 
-	void Mole::Update(float deltaTime) {
+	void Mole::Update(double deltaTime) {
 		// The mole enemy rotates to face the target, but doesn't move
 		Enemy::Update(deltaTime);
 

@@ -6,6 +6,7 @@ namespace game {
 		: Enemy(name, targ, geometry, mat, tex)
 	{
 		turret = NULL;
+		speed = 6.0;
 	}
 
 	Doggy::~Doggy() {}
@@ -41,10 +42,10 @@ namespace game {
 		glm::vec3 toTarget_flat = glm::vec3(toTarget.x, 0, toTarget.z);
 
 		if (glm::length(toTarget_flat) != 0) {
-			glm::quat body_rotation = glm::slerp(GetOrientation(), VectorToRotation(toTarget_flat), 0.05f);
+			glm::quat body_rotation = glm::slerp(GetOrientation(), VectorToRotation(toTarget_flat), 1*t);
 			SetOrientation(body_rotation);
 
-			glm::quat turret_rotation = glm::slerp(turret->GetOrientation(), VectorToRotation(toTarget), 0.5f);
+			glm::quat turret_rotation = glm::slerp(turret->GetOrientation(), VectorToRotation(toTarget), 10 * t);
 			turret->SetOrientation(turret_rotation);
 		}
 

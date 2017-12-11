@@ -31,6 +31,9 @@ namespace game {
 		SceneGraph(void);
 		~SceneGraph();
 
+		glm::vec3 world_tr_corner;
+		glm::vec3 world_bl_corner;
+
 		// Background color
 		void SetBackgroundColor(glm::vec3 color);
 		glm::vec3 GetBackgroundColor(void) const;
@@ -56,6 +59,8 @@ namespace game {
 		void EnemyAttacking(Enemy* e);
 
 		void Remove(std::string node_name); //remove a node with a given name
+
+		glm::vec3 GetRandomBoundedPosition();
 
 		void SetupDrawToTexture(void);
 		GLuint frame_buffer_;

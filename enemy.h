@@ -40,8 +40,8 @@ namespace game {
 
 		float threatRange; // radius that enemy begins attacking from
 
-		float rotateSpeed = 0.5; // factor for rotation speed [0, 1]
-		float speed = 6.0; // how fast the enemy moves per second
+		float rotateSpeed; // factor for rotation speed [0, 1]
+		float speed; // how fast the enemy moves per second
 
 		float firerate = 1; // how many shots per second
 		float shot_CD = 0; // how long until this can shoot

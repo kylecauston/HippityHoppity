@@ -76,6 +76,8 @@ namespace game {
 		int numEnemies = 0;
 		int TreeID = 0;
 
+		float time_since_spawn = 0;
+
 		// Methods to initialize the game
 		void InitWindow(void);
 		void InitView(void);
@@ -97,6 +99,10 @@ namespace game {
 		SceneNode* CreateMole();
 		SceneNode* CreateDog();
 		SceneNode* CreateTree();
+		SceneNode* SpawnMole();
+		SceneNode* SpawnDog();
+		SceneNode* SpawnTree();
+
 
 	}; // class Game
 } // namespace game

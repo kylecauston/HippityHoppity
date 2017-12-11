@@ -142,7 +142,7 @@ namespace game {
 
 		// Create particles for firework weapon and tracer
 		resman_.CreateSphereParticles("SphereParticles");
-		resman_.CreateTorusParticles("LineParticles");
+		resman_.CreateLineParticles("LineParticles");
 
 		// Load texture to be applied to particles
 		filename = std::string(MATERIAL_DIRECTORY) + std::string("/firework.png");
@@ -152,6 +152,9 @@ namespace game {
 	}
 
 	void Game::SetupScene(void) {
+		scene_.world_bl_corner = glm::vec3(280, 0, 280);
+		scene_.world_tr_corner = glm::vec3(700, 0, 700);
+
 		// Set background color for the scene
 		scene_.SetBackgroundColor(viewport_background_color_g);
 
@@ -191,28 +194,29 @@ namespace game {
 		target->SetScale(1, 1, 1);
 		ground->AddChild(target);
 
-		SceneNode* mole = CreateMole();
-		mole->SetPosition(200, 26, 200);
-		ground->AddChild(mole);
+		for (int i = 0; i < 10; i++)
+		{
+			if (rand() > RAND_MAX / 2) {
+				scene_.root_->AddChild(SpawnMole());
+			}
+			else {
+				scene_.root_->AddChild(SpawnDog());
+			}
+		}
 
 		SceneNode* box = new SceneNode("testing box", sphere, mat);
 		box->setCollidable(true);
 		box->SetScale(10, 10, 10);
 		box->SetPosition(0, 100, 480);
 
-		SceneNode* tester = CreateDog();
-		tester->SetPosition(0, 80, 510);
-		ground->AddChild(tester);
+
+		ground->AddChild(SpawnDog());
 
 		SceneNode* tree;
 
-		for (int i = 0; i < 6; i++)
+		for (int i = 0; i < 20; i++)
 		{
-			for (int j = 0; j < 6; j++)
-			{
-				tree = CreateTree();
-				tree->SetPosition(i * 10, 80 + tree->GetScale().y / 2, 500 - j * 10);
-			}
+			ground->AddChild(SpawnTree());
 		}
 
 		target->SetPosition(0, 100, 510);
@@ -247,6 +251,8 @@ namespace game {
 					static double last_time = 0;
 					double current_time = glfwGetTime();
 					double deltaTime = current_time - last_time;
+					time_since_spawn += deltaTime;
+
 					if (deltaTime > 0.01) {
 						scene_.Update(deltaTime);
 						camera_.Update(); //update our camera to keep momentum going with thrusters
@@ -275,6 +281,17 @@ namespace game {
 						}
 						else if (turning == DOWN) {
 							camera_.Pitch(-rot_factor);
+						}
+
+						if (time_since_spawn > 20) {
+							if (rand() > RAND_MAX / 2) {
+								scene_.root_->AddChild(SpawnMole());
+							}
+							else {
+								scene_.root_->AddChild(SpawnDog());
+							}
+
+							time_since_spawn = 0;
 						}
 
 						SceneNode* targ = scene_.GetNode("Target");
@@ -355,7 +372,7 @@ namespace game {
 				//game->animating_ = !game->animating_;
 			}
 			if (key == GLFW_KEY_T && action == GLFW_PRESS) {
-				//temp = true;
+				temp = true;
 				glm::vec3 forward = game->camera_.GetForward();
 				glm::vec3 origin = game->camera_.GetPosition();
 
@@ -367,7 +384,9 @@ namespace game {
 
 				Projectile* p = new Projectile("Player", game->camera_.GetPosition() - game->scene_.GetNode("Ground")->GetAbsolutePosition(), forward*1.0f, glm::vec3(0, -0.5, 0), INFINITY, cube, mat);
 				p->SetScale(0.5, 0.5, 2);
-				game->scene_.AddProjectile(p);
+				//game->scene_.AddProjectile(p);
+
+				game->scene_.GetNode("Ground")->AddChild(game->SpawnMole());
 
 				//std::vector<std::pair<SceneNode*, glm::vec2*>> hit = game->scene_.CheckRayCollisions(Ray(origin, forward));
 
@@ -567,6 +586,7 @@ namespace game {
 	}
 
 	void Game::FireBomb() {
+		//139,69,19
 		float ttlr = 3.0 + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (4.5 - 3.0)));
 		float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 		float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
@@ -585,7 +605,7 @@ namespace game {
 		float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
 		game::Bomb *particles = (Bomb*)Cube(BombType, "TracerInstance" + exploCount++, "LineParticles", "LineMaterial",
-			glm::vec3(r, g, b), 2.5, "Firework");
+			glm::vec3(r, g, b), 6.0, "Firework");
 		particles->SetScale(glm::vec3(0.02, 0.02, 1000.0)); //1000 is ~far away~
 		particles->SetPosition(camera_.GetPosition() + (camera_.GetForward() * 200.0f) + (camera_.GetUp() * -0.3f)); //200.0f starts the line on the playerish
 		particles->SetOrientation(camera_.GetOrientation());
@@ -698,7 +718,8 @@ namespace game {
 		std::string name = "Tree" + std::to_string(TreeID++);
 
 		int height = rand() % 7 + 5;
-		float thicc = fmax(((double)rand() / (double)RAND_MAX) * 2, 0.3);
+		float thicc = height / 10.0f + (((double)rand() / (double)RAND_MAX) - 0.5);
+		//fmax(((double)rand() / (double)RAND_MAX) * 2, 0.3) + height/50.0f;
 
 		SceneNode* trunk = new SceneNode(name, cyl, mat);
 		trunk->setCollidable(true);
@@ -707,10 +728,45 @@ namespace game {
 		SceneNode* top = new SceneNode(name + "_leaves", sphere, mat);
 		top->setCollidable(false);
 		top->SetPosition(0, height / 2.0, 0);
-		top->SetScale(thicc * 1.5, thicc * 1.5, thicc * 1.5);
+		top->SetScale(thicc * 2, thicc * 2, thicc * 2);
 
 		trunk->AddChild(top);
 
 		return trunk;
 	}
+	
+	SceneNode* Game::SpawnMole() {
+		// create a mole
+		SceneNode* m = CreateMole();
+
+		// spawn it somewhere in the world
+		glm::vec3 v = scene_.GetRandomBoundedPosition();
+
+		m->SetPosition(v.x, 0, v.z);
+
+		return m;
+	}
+
+	SceneNode* Game::SpawnDog() {
+		SceneNode* d = CreateDog();
+
+		glm::vec3 v = scene_.GetRandomBoundedPosition();
+
+		d->SetPosition(v.x, 0, v.z);
+
+		return d;
+	}
+
+	SceneNode* Game::SpawnTree() {
+		// create a tree
+		SceneNode* t = CreateTree();
+
+		// spawn it somewhere in the world
+		glm::vec3 v = scene_.GetRandomBoundedPosition();
+
+		t->SetPosition(v.x, t->GetScale().y/2, v.z);
+
+		return t;
+	}
+
 } // namespace game

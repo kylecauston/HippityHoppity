@@ -35,7 +35,7 @@ namespace game {
 		void CreateGround(std::string object_name); //terrain mesh
 		void CreateCylinder(std::string object_name, float cylinder_height = 1, float circle_radius = 1, int num_circle_samples = 90);
 		void CreateSphereParticles(std::string object_name, int num_particles = 20000);
-		void CreateTorusParticles(std::string object_name, int num_particles = 20000, float loop_radius = 0.6, float circle_radius = 0.2);
+		void CreateLineParticles(std::string object_name, int num_particles = 20000, float loop_radius = 0.6, float circle_radius = 0.2);
 
 		Hitbox genHitbox(std::vector<glm::vec3> points);
 

@@ -8,8 +8,7 @@ namespace game {
 		Mole(const std::string name, SceneNode* targ, const Resource* geometry, const Resource* mat, const Resource *tex = NULL);
 		~Mole();
 
-		void Update(float t);
-
+		void Update(double t);
 		AttackNode* getAttack();
 
 	private:

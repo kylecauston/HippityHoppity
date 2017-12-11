@@ -874,7 +874,7 @@ namespace game {
 		AddResource(PointSet, object_name, vbo, 0, num_particles);
 	}
 
-	void ResourceManager::CreateTorusParticles(std::string object_name, int num_particles, float loop_radius, float circle_radius) {
+	void ResourceManager::CreateLineParticles(std::string object_name, int num_particles, float loop_radius, float circle_radius) {
 
 		// Create a set of points which will be the particles
 		// This is similar to drawing a torus

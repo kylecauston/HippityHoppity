@@ -195,6 +195,14 @@ namespace game {
 		}
 	}
 
+	glm::vec3 SceneGraph::GetRandomBoundedPosition() {
+		float x = fmod(rand(), (world_tr_corner.x - world_bl_corner.x + 1.0f)) + world_bl_corner.x;
+		float y = fmod(rand(), (world_tr_corner.y - world_bl_corner.y + 1.0f)) + world_bl_corner.y;
+		float z = fmod(rand(), (world_tr_corner.z - world_bl_corner.z + 1.0f)) + world_bl_corner.z;
+
+		return glm::vec3(x, y, z);
+	}
+
 	void SceneGraph::AddProjectile(SceneNode* p) {
 		if (projectiles == NULL)
 		{
@@ -226,6 +234,8 @@ namespace game {
 				}
 
 				if (CollisionManager::checkHierarchicalCollision(*n1, *n2)) {
+					(*n1)->onCollide(*n2);
+					(*n2)->onCollide(*n1);
 					//std::cout << "Collision between " << (*n1)->GetName() << " and " << (*n2)->GetName() << std::endl;
 				}
 			}
