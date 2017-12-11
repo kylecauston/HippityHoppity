@@ -10,11 +10,10 @@ UP/DOWN - turns helicopter up/downwards
 LEFT/RIGHT - rolls helicopter left/right  
 TAB - switches between first and third person cams  
   
-C - fires a tracer with particle effects  
 R - fires a bomb with particle effects  
 F - fire a laser that can destroy the sun  
 T - fire a projectile weapon  
-Y - fire a hitscan weapon
+Y - fires a tracer with particle effects  
 G/H - lower and increase HP  
   
 ESC - close the window  
