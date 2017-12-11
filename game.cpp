@@ -739,7 +739,7 @@ namespace game {
 
 		body->setProjectileGeometry(fireworkMesh);
 		body->setProjectileTexture(fireworkTex);
-		body->setProjectileMaterial(ob);
+		body->setProjectileMaterial(mat);
 
 		n->AddChild(body);
 		body->AddChild(gun);
@@ -792,11 +792,14 @@ namespace game {
 		return n;
 	}
 
-/*	SceneNode* Game::CreateCat() {
+	SceneNode* Game::CreateCat() {
 		
 		Resource *cube = resman_.GetResource("CubePointSet");
 		Resource *catMesh = resman_.GetResource("CatMesh");
 		Resource *catTex = resman_.GetResource("CatTex");
+
+		Resource *ballMesh = resman_.GetResource("FurrBallMesh");
+		Resource *ballTex = resman_.GetResource("FurrBallTex");
 		
 		Resource *propMesh = resman_.GetResource("PropellerMesh");
 		Resource *propTex = resman_.GetResource("PropellerTex");
@@ -812,25 +815,26 @@ namespace game {
 		SceneNode* n = new SceneNode(name, NULL, NULL, NULL);
 
 		SceneNode* prop = new SceneNode(name + "_prop", propMesh, mat, propTex);
-		turret->setCollidable(true);
-		turret->SetScale(0.5, 0.5, 4.0);
-		turret->SetPosition(0, 0.75, 0);
+		prop->setCollidable(true);
+		prop->SetScale(0.5, 0.5, 4.0);
+		prop->SetPosition(0, 0.75, 0);
 		//turret->setMovementSpeed(0);
 
-		Doggy* cat = new Doggy(name + "_body", scene_.GetNode("Target"), catMesh, mat, catTex);
+		Cat* cat = new Cat(name + "_body", scene_.GetNode("Target"), catMesh, mat, catTex);
 		cat->SetScale(2.0, 1.0, 6.0);
 		cat->setCollidable(true);
-		cat->setTurret(turret);
-		cat->setProjectileGeometry(sphere);
+
+		cat->setProjectileGeometry(ballMesh);
+		cat->setProjectileTexture(ballTex);
 		cat->setProjectileMaterial(mat);
 
-		n->AddChild(turret);
+		cat->AddChild(prop);
 		n->AddChild(cat);
 		//n->setAttackingComponent(cat);
 
 		return n;
 	}
-	*/
+	
 	
 	SceneNode* Game::CreateTree() {
 		Resource *cyl = resman_.GetResource("CylinderMesh");
@@ -861,26 +865,6 @@ namespace game {
 		return trunk;
 	}
 	
-	SceneNode* Game::CreateCat() {
-		Resource *sphere = resman_.GetResource("SimpleSphereMesh");
-		Resource *cube = resman_.GetResource("CubePointSet");
-		Resource *mat = resman_.GetResource("ObjectMaterial");
-		if (!mat) {
-			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
-		}
-
-		std::string name = "Enemy" + std::to_string(EnemyID++);
-
-		Cat* c = new Cat(name, scene_.GetNode("Target"), cube, mat, NULL);
-		c->setCollidable(true);
-		c->SetScale(1.0, 2.0, 1.0);
-
-		c->setProjectileGeometry(sphere);
-		c->setProjectileMaterial(mat);
-
-		return c;
-	}
-
 	SceneNode* Game::SpawnMole() {
 		// create a mole
 		SceneNode* m = CreateMole();
@@ -903,16 +887,6 @@ namespace game {
 		return d;
 	}
 	
-/*	SceneNode* Game::SpawnCat() {
-		SceneNode* d = CreateCat();
-
-		glm::vec3 v = scene_.GetRandomBoundedPosition();
-
-		d->SetPosition(v.x, 0, v.z);
-
-		return d;
-	}
-*/
 	SceneNode* Game::SpawnTree() {
 		// create a tree
 		SceneNode* t = CreateTree();
