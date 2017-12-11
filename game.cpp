@@ -368,7 +368,7 @@ namespace game {
 				// Draw the scene
 				if (tpCam) { //third person
 					scene_.Draw(&camera_);
-				//	heli_.DrawHelicopter(prgm, &camera_); //helicopter is just drawn as UI for now
+					heli_.DrawHelicopter(prgm, &camera_); //helicopter is just drawn as UI for now
 				}
 				else { //first person
 					scene_.DrawToTexture(&camera_, sun);
