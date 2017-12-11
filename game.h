@@ -48,8 +48,8 @@ namespace game {
 		SceneNode *title; //cube that displays the title screen
 		int turning; //direction player is turning (left,right,up,down)
 
+		// Player stuff
 		glm::vec3 player_vel;
-
 		float hp; //player's health
 		bool sun; //tells the game if the sun has exploded
 		bool tpCam; //third person camera switch

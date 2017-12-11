@@ -363,6 +363,41 @@ namespace game {
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, faceBuffer);
 		}
 	}
+	
+	SceneNode* Helicopter::initHeli(ResourceManager * resman, SceneGraph *scene) {
+
+		body = CreateInstance("BunBody", "BunBodMaterial", "Texture", "BunBodTexture", resman, scene);
+		ears = CreateInstance("BunEars", "BunEarMaterial", "Texture", "BunEarTexture", resman, scene);
+		ears->Translate(glm::vec3(0, 15, 0));
+		ears->Rotate(glm::angleAxis(glm::radians(90.0f), glm::vec3(0.f, 1.f, 0.f)));
+
+		SceneNode* n = new SceneNode("bunny", NULL, NULL);
+		n->AddChild(body);
+		body->AddChild(ears);
+		return n;
+	}
+
+	SceneNode *Helicopter::CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name,
+		ResourceManager *resman_, SceneGraph *scene_) {
+
+		Resource *geom = resman_->GetResource(object_name);
+		if (!geom) {
+			//throw(GameException(std::string("Could not find resource \"") + object_name + std::string("\"")));
+		}
+
+		Resource *mat = resman_->GetResource(material_name);
+		if (!mat) {
+			//throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+		}
+
+		Resource *tex = resman_->GetResource(texture_name);
+		if (!tex) {
+			//issue
+		}
+
+		SceneNode *scn = new SceneNode(entity_name, geom, mat, tex);
+		return scn;
+	}
 
 	void Helicopter::DrawHelicopter(GLuint program, Camera *camera) {
 		if (first) { //only generate the meshes on the first run

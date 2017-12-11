@@ -9,7 +9,7 @@
 
 namespace game {
 	// Main window settings
-	const std::string window_title_g = "Demo";
+	const std::string window_title_g = "Hippity Hoppity";
 	const unsigned int window_width_g = 800;
 	const unsigned int window_height_g = 600;
 	const bool window_full_screen_g = false;
@@ -128,6 +128,74 @@ namespace game {
 
 		filename = std::string(MATERIAL_DIRECTORY) + std::string("/gametitle.jpg");
 		resman_.LoadResource(Texture, "GameTitle", filename.c_str());
+		
+		// load textures for models
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/texture/bunBodTex.png");
+		resman_.LoadResource(Texture, "BunnyBodTex", filename.c_str());
+		
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/texture/bunEarTex.png");
+		resman_.LoadResource(Texture, "BunnyEarTex", filename.c_str());
+		
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/texture/catTex.png");
+		resman_.LoadResource(Texture, "CatTex", filename.c_str());
+		
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/texture/pupperTex.png");
+		resman_.LoadResource(Texture, "DogTex", filename.c_str());
+		
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/texture/fireworkTex.png");
+		resman_.LoadResource(Texture, "FireworkTex", filename.c_str());
+		
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/texture/furrTex.png");
+		resman_.LoadResource(Texture, "FurrBallTex", filename.c_str());
+		
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/texture/gunTex.png");
+		resman_.LoadResource(Texture, "GunTex", filename.c_str());
+		
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/texture/moleTex.png");
+		resman_.LoadResource(Texture, "MoleTex", filename.c_str());
+		
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/texture/propTex.png");
+		resman_.LoadResource(Texture, "PropellerTex", filename.c_str());
+		
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/texture/tennisTex.png");
+		resman_.LoadResource(Texture, "TennisBallTex", filename.c_str());
+		
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/texture/carrotTex.png");
+		resman_.LoadResource(Texture, "CarrotTex", filename.c_str());
+		
+		// Load Meshes
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/mesh/bunny_body.obj");
+		resman_.LoadResource(Mesh, "BunnyBodMesh", filename.c_str());
+		
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/mesh/carrotMesh.obj");
+		resman_.LoadResource(Mesh, "CarrotMesh", filename.c_str());
+		
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/mesh/bunny_ears.obj");
+		resman_.LoadResource(Mesh, "BunnyEarMesh", filename.c_str());
+		
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/mesh/catMesh.obj");
+		resman_.LoadResource(Mesh, "CatMesh", filename.c_str());
+		
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/mesh/fireworkMesh.obj");
+		resman_.LoadResource(Mesh, "FireworkMesh", filename.c_str());
+		
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/mesh/furrBallMesh.obj");
+		resman_.LoadResource(Mesh, "FurrBallMesh", filename.c_str());
+		
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/mesh/gunMesh.obj");
+		resman_.LoadResource(Mesh, "GunMesh", filename.c_str());
+		
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/mesh/moleMesh.obj");
+		resman_.LoadResource(Mesh, "MoleMesh", filename.c_str());
+		
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/mesh/propMesh.obj");
+		resman_.LoadResource(Mesh, "PropellerMesh", filename.c_str());
+		
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/mesh/pupperMesh.obj");
+		resman_.LoadResource(Mesh, "DogMesh", filename.c_str());
+		
+		filename = std::string(MATERIAL_DIRECTORY) + std::string("/mesh/tennisBallMesh.obj");
+		resman_.LoadResource(Mesh, "TennisBallMesh", filename.c_str());
 
 		//screen space effect
 		filename = std::string(MATERIAL_DIRECTORY) + std::string("/screen_hp");
@@ -185,7 +253,7 @@ namespace game {
 		Resource *torus = resman_.GetResource("TorusMesh");
 		Resource *cyl = resman_.GetResource("CylinderMesh");
 
-		SceneNode* player = new SceneNode("Player", cube, mat, NULL, true);
+		SceneNode* player = heli_.initHeli(&resman_, &scene_);
 		player->SetPosition(200, 100, 200);
 		ground->AddChild(player);
 
@@ -304,7 +372,7 @@ namespace game {
 				// Draw the scene
 				if (tpCam) { //third person
 					scene_.Draw(&camera_);
-					heli_.DrawHelicopter(prgm, &camera_); //helicopter is just drawn as UI for now
+				//	heli_.DrawHelicopter(prgm, &camera_); //helicopter is just drawn as UI for now
 				}
 				else { //first person
 					scene_.DrawToTexture(&camera_, sun);
@@ -631,13 +699,18 @@ namespace game {
 	SceneNode* Game::CreateMole() {
 		// Create a Mole SceneNode tree
 
-		Resource *sphere = resman_.GetResource("SimpleSphereMesh");
+		Resource *fireworkMesh = resman_.GetResource("FireworkMesh");
+		Resource *fireworkTex = resman_.GetResource("FireworkTex");
 		Resource *cube = resman_.GetResource("CubePointSet");
-		Resource *torus = resman_.GetResource("TorusMesh");
+		Resource *moleMesh = resman_.GetResource("MoleMesh");
+		Resource *moleTex = resman_.GetResource("MoleTex");
 
-		Resource *mat = resman_.GetResource("ObjectMaterial");
+		Resource *mat = resman_.GetResource("ShinyTextureMaterial");
+		Resource *gunMesh = resman_.GetResource("GunMesh");
+		Resource *gunTex = resman_.GetResource("GunTex");
+		Resource *ob = resman_.GetResource("ObjectMaterial");
 		if (!mat) {
-			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
+			throw(GameException(std::string("Could not find resource \"") + "TextureMat" + std::string("\"")));
 		}
 
 		std::string name = "Enemy" + std::to_string(EnemyID++);
@@ -648,36 +721,40 @@ namespace game {
 		//n->setMovementSpeed(0);
 		//n->setRotateSpeed(0);
 
-		SceneNode* dirt = new SceneNode(name + "_dirt", torus, mat);
-		dirt->setCollidable(false);
-		dirt->SetScale(2.0, 2.0, 2.0);
-		dirt->SetOrientation(glm::angleAxis(glm::pi<float>() / 2, glm::vec3(1.0, 0.0, 0.0)));
-
-		Mole* body = new Mole(name + "_body", scene_.GetNode("Target"), sphere, mat);
+		Mole* body = new Mole(name + "_body", scene_.GetNode("Target"), moleMesh, ob, moleTex);
 		body->setCollidable(true);
 		body->SetPosition(0, 0.5, 0);
-
-		SceneNode* gun = new SceneNode(name + "_gun", cube, mat);
+	
+		SceneNode* gun = new SceneNode(name + "_gun", gunMesh, ob, gunTex);
 		gun->SetPosition(1.0, 0.5, 1.5);
 		gun->setCollidable(true);
 		gun->SetScale(0.5, 0.5, 5.0);
 
-		body->setProjectileGeometry(sphere);
-		body->setProjectileMaterial(mat);
+		body->setProjectileGeometry(fireworkMesh);
+		body->setProjectileTexture(fireworkTex);
+		body->setProjectileMaterial(ob);
 
-		n->AddChild(dirt);
 		n->AddChild(body);
-		//n->setAttackingComponent(body);
 		body->AddChild(gun);
 
 		return n;
 	}
 
 	SceneNode* Game::CreateDog() {
+		
 		Resource *cube = resman_.GetResource("CubePointSet");
-		Resource *sphere = resman_.GetResource("SimpleSphereMesh");
+		Resource *dogMesh = resman_.GetResource("DogMesh");
+		Resource *dogTex = resman_.GetResource("DogTex");
 
-		Resource *mat = resman_.GetResource("ObjectMaterial");
+		Resource *ballMesh = resman_.GetResource("TennisBallMesh");
+		Resource *ballTex = resman_.GetResource("TennisBallTex");
+
+		Resource *mat = resman_.GetResource("ShinyTextureMaterial");
+		Resource *ob = resman_.GetResource("ObjectMaterial");
+		
+		Resource *gunMesh = resman_.GetResource("GunMesh");
+		Resource *gunTex = resman_.GetResource("GunTex");
+
 		if (!mat) {
 			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
 		}
@@ -686,17 +763,19 @@ namespace game {
 		numEnemies++;
 		SceneNode* n = new SceneNode(name, NULL, NULL, NULL);
 
-		SceneNode* turret = new SceneNode(name + "_turret", cube, mat);
+		SceneNode* turret = new SceneNode(name + "_turret", gunMesh, mat, gunTex);
 		turret->setCollidable(true);
 		turret->SetScale(0.5, 0.5, 4.0);
 		turret->SetPosition(0, 0.75, 0);
 		//turret->setMovementSpeed(0);
 
-		Doggy* dog = new Doggy(name + "_body", scene_.GetNode("Target"), cube, mat);
+		Doggy* dog = new Doggy(name + "_body", scene_.GetNode("Target"), dogMesh, mat, dogTex);
 		dog->SetScale(2.0, 1.0, 6.0);
+		dog->Translate(0, 1, 0);
 		dog->setCollidable(true);
 		dog->setTurret(turret);
-		dog->setProjectileGeometry(sphere);
+		dog->setProjectileGeometry(ballMesh);
+		dog->setProjectileTexture(ballTex);
 		dog->setProjectileMaterial(mat);
 
 		n->AddChild(turret);
@@ -706,6 +785,47 @@ namespace game {
 		return n;
 	}
 
+/*	SceneNode* Game::CreateCat() {
+		
+		Resource *cube = resman_.GetResource("CubePointSet");
+		Resource *catMesh = resman_.GetResource("CatMesh");
+		Resource *catTex = resman_.GetResource("CatTex");
+		
+		Resource *propMesh = resman_.GetResource("PropellerMesh");
+		Resource *propTex = resman_.GetResource("PropellerTex");
+
+		Resource *mat = resman_.GetResource("ShinyTextureMaterial");
+		Resource *ob = resman_.GetResource("ObjectMaterial");
+		
+		if (!mat) {
+			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
+		}
+
+		std::string name = "Enemy" + std::to_string(EnemyID++);
+		numEnemies++;
+		SceneNode* n = new SceneNode(name, NULL, NULL, NULL);
+
+		SceneNode* prop = new SceneNode(name + "_prop", propMesh, ob, propTex);
+		turret->setCollidable(true);
+		turret->SetScale(0.5, 0.5, 4.0);
+		turret->SetPosition(0, 0.75, 0);
+		//turret->setMovementSpeed(0);
+
+		Doggy* cat = new Doggy(name + "_body", scene_.GetNode("Target"), catMesh, mat, catTex);
+		cat->SetScale(2.0, 1.0, 6.0);
+		cat->setCollidable(true);
+		cat->setTurret(turret);
+		cat->setProjectileGeometry(sphere);
+		cat->setProjectileMaterial(mat);
+
+		n->AddChild(turret);
+		n->AddChild(cat);
+		//n->setAttackingComponent(cat);
+
+		return n;
+	}
+	*/
+	
 	SceneNode* Game::CreateTree() {
 		Resource *cyl = resman_.GetResource("CylinderMesh");
 		Resource *sphere = resman_.GetResource("SimpleSphereMesh");
@@ -756,7 +876,17 @@ namespace game {
 
 		return d;
 	}
+	
+/*	SceneNode* Game::SpawnCat() {
+		SceneNode* d = CreateCat();
 
+		glm::vec3 v = scene_.GetRandomBoundedPosition();
+
+		d->SetPosition(v.x, 0, v.z);
+
+		return d;
+	}
+*/
 	SceneNode* Game::SpawnTree() {
 		// create a tree
 		SceneNode* t = CreateTree();

@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include "resource_manager.h"
 #include "camera.h"
+#include "scene_graph.h"
 
 namespace game {
 	// Abstraction of a camera
@@ -31,6 +32,9 @@ namespace game {
 		glm::vec3 GetForward(void) const;
 		glm::vec3 GetSide(void) const;
 		glm::vec3 GetUp(void) const;
+		
+		SceneNode *body;
+		SceneNode *ears;
 
 		void SetView(glm::vec3 position, glm::vec3 look_at, glm::vec3 up);
 		void SetProjection(GLfloat fov, GLfloat near, GLfloat far, GLfloat w, GLfloat h);
@@ -51,6 +55,9 @@ namespace game {
 		int CreateCylinder(float cylinder_height = 1, float circle_radius = 0.5, int num_circle_samples = 30);
 		void switchBuffer(GLuint vertexBuffer, GLuint faceBuffer, GLuint shader, int atts);
 
+		SceneNode* initHeli(ResourceManager *resman, SceneGraph *scene);
+		SceneNode* CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name, ResourceManager *resman_, SceneGraph *scene_);
+		
 		void DrawHelicopter(GLuint program, Camera *camera);
 
 	private:

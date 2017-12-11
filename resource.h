@@ -30,6 +30,7 @@ namespace game {
 	public:
 		Resource(ResourceType type, std::string name, GLuint resource, GLsizei size);
 		Resource(ResourceType type, std::string name, GLuint array_buffer, GLuint element_array_buffer, GLsizei size, Hitbox _hb);
+		Resource(ResourceType type, std::string name, GLuint array_buffer, GLuint element_array_buffer, GLsizei size);
 		~Resource();
 		ResourceType GetType(void) const;
 		const std::string GetName(void) const;

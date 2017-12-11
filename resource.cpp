@@ -18,6 +18,14 @@ namespace game {
 		hb = _hb;
 	}
 
+	Resource::Resource(ResourceType type, std::string name, GLuint array_buffer, GLuint element_array_buffer, GLsizei size) {
+		type_ = type;
+		name_ = name;
+		array_buffer_ = array_buffer;
+		element_array_buffer_ = element_array_buffer;
+		size_ = size;
+	}
+	
 	Resource::~Resource() {}
 
 	ResourceType Resource::GetType(void) const {

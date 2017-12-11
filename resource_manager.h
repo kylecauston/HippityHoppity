@@ -7,6 +7,7 @@
 #include <GLFW/glfw3.h>
 #include "resource.h"
 #include "CImg-2.1.6_pre110917\CImg.h"
+#include "model_loader.h"
 
 // Default extensions for different shader source files
 #define VERTEX_PROGRAM_EXTENSION "_vp.glsl"
@@ -48,6 +49,7 @@ namespace game {
 		// Load a text file into memory (could be source code)
 		std::string LoadTextFile(const char *filename);
 		void LoadTexture(const std::string name, const char *filename);
+		void LoadMesh(const std::string name, const char *filename);
 	}; // class ResourceManager
 } // namespace game
 #endif // RESOURCE_MANAGER_H_
