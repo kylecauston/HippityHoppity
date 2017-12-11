@@ -221,7 +221,9 @@ namespace game {
 
 	void Game::SetupScene(void) {
 		scene_.world_bl_corner = glm::vec3(280, 0, 280);
-		scene_.world_tr_corner = glm::vec3(700, 0, 700);
+		scene_.world_tr_corner = glm::vec3(700, 200, 700);
+
+		scene_.SetResourceManager(&resman_);
 
 		// Set background color for the scene
 		scene_.SetBackgroundColor(viewport_background_color_g);
@@ -262,27 +264,33 @@ namespace game {
 		target->SetScale(1, 1, 1);
 		ground->AddChild(target);
 
-		for (int i = 0; i < 10; i++)
+		scene_.root_->AddChild(SpawnCat());
+		scene_.root_->AddChild(SpawnMole());
+		scene_.root_->AddChild(SpawnDog());
+
+		for (int i = 0; i < 3; i++)
 		{
-			if (rand() > RAND_MAX / 2) {
+			float v = (double)rand() / (double)RAND_MAX;
+			if (v > 0.6) { 
 				scene_.root_->AddChild(SpawnMole());
+			}
+			else if (v > 0.3) {
+				scene_.root_->AddChild(SpawnCat());
 			}
 			else {
 				scene_.root_->AddChild(SpawnDog());
 			}
 		}
 
-		SceneNode* box = new SceneNode("testing box", sphere, mat);
-		box->setCollidable(true);
-		box->SetScale(10, 10, 10);
-		box->SetPosition(0, 100, 480);
-
-
-		ground->AddChild(SpawnDog());
+		SceneNode* ground_bound = new SceneNode("Ground_Box", cube, mat);
+		ground_bound->setCollidable(true);
+		ground_bound->SetScale(1000, 300, 1000);
+		ground_bound->SetPosition(500, -153, 500);
+		ground->AddChild(ground_bound);
 
 		SceneNode* tree;
 
-		for (int i = 0; i < 20; i++)
+		for (int i = 0; i < 15; i++)
 		{
 			ground->AddChild(SpawnTree());
 		}
@@ -319,7 +327,7 @@ namespace game {
 					static double last_time = 0;
 					double current_time = glfwGetTime();
 					double deltaTime = current_time - last_time;
-					time_since_spawn += deltaTime;
+					//time_since_spawn += deltaTime;
 
 					if (deltaTime > 0.01) {
 						scene_.Update(deltaTime);
@@ -454,7 +462,7 @@ namespace game {
 				p->SetScale(0.5, 0.5, 2);
 				//game->scene_.AddProjectile(p);
 
-				game->scene_.GetNode("Ground")->AddChild(game->SpawnMole());
+				//game->scene_.GetNode("Ground")->AddChild(game->SpawnDog());
 
 				//std::vector<std::pair<SceneNode*, glm::vec2*>> hit = game->scene_.CheckRayCollisions(Ray(origin, forward));
 
@@ -660,7 +668,7 @@ namespace game {
 		float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 		float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
-		game::Bomb *particles = (Bomb*)Cube(BombType, "ParticleInstance" + exploCount++, "SphereParticles", "ParticleMaterial",
+		game::Bomb *particles = (Bomb*)Cube(BombType, "ParticleInstance" + std::to_string(scene_.exploCount++), "SphereParticles", "ParticleMaterial",
 			glm::vec3(r, g, b), 4.0, "Firework");
 		particles->SetPosition(camera_.GetPosition() + (camera_.GetForward() * 12.0f) + (camera_.GetUp() * -0.5f));
 		particles->SetScale(glm::vec3(0.4, 0.4, 0.4)); //increasing the scale makes the explosion more dense
@@ -672,7 +680,7 @@ namespace game {
 		float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 		float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
-		game::Bomb *particles = (Bomb*)Cube(BombType, "TracerInstance" + exploCount++, "LineParticles", "LineMaterial",
+		game::Bomb *particles = (Bomb*)Cube(BombType, "TracerInstance" + scene_.exploCount++, "LineParticles", "LineMaterial",
 			glm::vec3(r, g, b), 6.0, "Firework");
 		particles->SetScale(glm::vec3(0.02, 0.02, 1000.0)); //1000 is ~far away~
 		particles->SetPosition(camera_.GetPosition() + (camera_.GetForward() * 200.0f) + (camera_.GetUp() * -0.3f)); //200.0f starts the line on the playerish
@@ -855,6 +863,26 @@ namespace game {
 		return trunk;
 	}
 	
+	SceneNode* Game::CreateCat() {
+		Resource *sphere = resman_.GetResource("SimpleSphereMesh");
+		Resource *cube = resman_.GetResource("CubePointSet");
+		Resource *mat = resman_.GetResource("ObjectMaterial");
+		if (!mat) {
+			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
+		}
+
+		std::string name = "Enemy" + std::to_string(EnemyID++);
+
+		Cat* c = new Cat(name, scene_.GetNode("Target"), cube, mat, NULL);
+		c->setCollidable(true);
+		c->SetScale(1.0, 2.0, 1.0);
+
+		c->setProjectileGeometry(sphere);
+		c->setProjectileMaterial(mat);
+
+		return c;
+	}
+
 	SceneNode* Game::SpawnMole() {
 		// create a mole
 		SceneNode* m = CreateMole();
@@ -897,6 +925,13 @@ namespace game {
 		t->SetPosition(v.x, t->GetScale().y/2, v.z);
 
 		return t;
+	}
+
+	SceneNode* Game::SpawnCat() {
+		SceneNode* cat = CreateCat();
+		cat->SetPosition(scene_.GetRandomBoundedPosition());
+
+		return cat;
 	}
 
 } // namespace game

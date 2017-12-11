@@ -14,6 +14,7 @@
 #include "enemy.h"
 #include "doggy.h"
 #include "mole.h"
+#include "cat.h"
 #include "defs.h"
 
 namespace game {
@@ -53,7 +54,6 @@ namespace game {
 		float hp; //player's health
 		bool sun; //tells the game if the sun has exploded
 		bool tpCam; //third person camera switch
-		int exploCount = 0; //helps name our bombs for proper deletion
 
 	private:
 		// GLFW window
@@ -99,9 +99,11 @@ namespace game {
 		SceneNode* CreateMole();
 		SceneNode* CreateDog();
 		SceneNode* CreateTree();
+		SceneNode* CreateCat();
 		SceneNode* SpawnMole();
 		SceneNode* SpawnDog();
 		SceneNode* SpawnTree();
+		SceneNode* SpawnCat();
 
 
 	}; // class Game

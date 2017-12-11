@@ -262,7 +262,16 @@ namespace game {
 	}
 
 	void SceneNode::onCollide(Collidable* other) {
-		// do nothing for generic type
+		takeDamage(0.1);
+
+		// if this collided with the world bounds, destroy object
+		if (SceneNode* n = dynamic_cast<SceneNode*>(other))
+		{
+			if (n->GetName() == "Ground_Box")
+			{
+				destroy();
+			}
+		}
 	}
 
 	glm::quat SceneNode::VectorToRotation(glm::vec3 v) {

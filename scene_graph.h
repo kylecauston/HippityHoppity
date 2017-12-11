@@ -11,6 +11,7 @@
 #include "bomb.h"
 #include "camera.h"
 #include "collision_manager.h"
+#include "resource_manager.h"
 #include <queue>
 
 #define FRAME_BUFFER_WIDTH 1024
@@ -33,6 +34,7 @@ namespace game {
 
 		glm::vec3 world_tr_corner;
 		glm::vec3 world_bl_corner;
+		int exploCount = 0; //helps name our bombs for proper deletion
 
 		// Background color
 		void SetBackgroundColor(glm::vec3 color);
@@ -54,6 +56,9 @@ namespace game {
 		// run collisions on the children of node (the separate entities)
 		void CheckCollisions();
 		std::vector<std::pair<SceneNode*, glm::vec2*>> CheckRayCollisions(Ray r);
+
+		void SetResourceManager(ResourceManager* rm);
+		ResourceManager* rm_;
 
 		// function for if an enemy has raised an attack flag
 		void EnemyAttacking(Enemy* e);

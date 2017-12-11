@@ -92,7 +92,7 @@ namespace game {
 		glm::quat orientation_; // Orientation of node
 		glm::vec3 scale_; // Scale of node
 
-		float health = 20;
+		float health = INFINITY;
 		bool enemy = false;
 		bool collidable = false;
 
